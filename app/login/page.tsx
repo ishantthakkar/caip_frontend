@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { API_BASE_URL } from '@/config/apiConfig';
 
-export default function LoginPage() {
+function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [loading, setLoading] = useState(false);
@@ -189,5 +189,17 @@ export default function LoginPage() {
                 </p>
             </footer>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-[#2e7d32]">
+                <div className="animate-spin h-10 w-10 border-4 border-white border-t-transparent rounded-full"></div>
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     );
 }
