@@ -110,11 +110,18 @@ export default function RegisterPage() {
         if (!passwords.password) newErrors.password = "Password is required";
         if (!passwords.confirm) newErrors.confirmPassword = "Confirm Password is required";
         if (passwords.password !== passwords.confirm) newErrors.confirmPassword = "Passwords do not match";
-        if (!formData.get('phone')) newErrors.phone = "Phone Number is required";
+        const phone = formData.get('phone') as string;
+        if (!phone) {
+            newErrors.phone = "Phone Number is required";
+        } else if (!/^\d{10}$/.test(phone)) {
+            newErrors.phone = "Enter a valid 10-digit mobile number";
+        }
         if (!termsAgreed) newErrors.terms = "You must agree to the Terms";
 
         return newErrors;
     };
+
+    const [isRegistered, setIsRegistered] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -145,16 +152,22 @@ export default function RegisterPage() {
             const data = await response.json();
 
             if (response.ok) {
+                setIsRegistered(true);
                 setMessage({ type: 'success', text: 'Registration successful! Proceeding...' });
                 setTimeout(() => {
-                    router.push('/login?message=registered');
-                }, 2000);
+                    router.replace('/login?message=registered');
+                }, 1500);
             } else {
+                if (data.msg === "Phone number already exists") {
+                    setErrors({ ...errors, phone: "This mobile number is already registered" });
+                } else if (data.msg === "Email already exists") {
+                    setErrors({ ...errors, email: "This email is already registered" });
+                }
                 setMessage({ type: 'error', text: data.msg || 'Registration failed.' });
+                setLoading(false);
             }
         } catch (error) {
             setMessage({ type: 'error', text: 'A network error occurred.' });
-        } finally {
             setLoading(false);
         }
     };
@@ -199,112 +212,128 @@ export default function RegisterPage() {
                     </div>
 
                     {/* Card Body */}
-                    <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                            <FormInput label="Name" name="name" placeholder="Full Name" required error={errors.name} />
-                            <FormInput label="Email" name="email" type="email" placeholder="Email" required error={errors.email} />
-                            <FormInput label="Company Name" name="companyName" placeholder="Company Name" required error={errors.companyName} />
-                            <FormInput label="GST Number" name="gst" placeholder="GST Registration No" required error={errors.gst} />
-                            <FormInput label="Pan" name="pan" placeholder="Permanent Account No" required error={errors.pan} />
-                            <FormSelect
-                                label="State"
-                                name="state"
-                                value={selectedState}
-                                onChange={(e: any) => { setSelectedState(e.target.value); setSelectedDistrict(""); setSelectedSubDistrict(""); }}
-                                options={locations}
-                                placeholder="Select State"
-                                required
-                                error={errors.state}
-                            />
-                            <FormSelect
-                                label="District"
-                                name="district"
-                                value={selectedDistrict}
-                                onChange={(e: any) => { setSelectedDistrict(e.target.value); setSelectedSubDistrict(""); }}
-                                options={districts}
-                                placeholder="Select District"
-                                required
-                                error={errors.district}
-                            />
-                            <FormSelect
-                                label="Sub District"
-                                name="subDistrict"
-                                value={selectedSubDistrict}
-                                onChange={(e: any) => setSelectedSubDistrict(e.target.value)}
-                                options={subDistricts}
-                                placeholder="Select Sub District"
-                                required
-                                error={errors.subDistrict}
-                            />
-                            <FormInput
-                                label="Password"
-                                name="password"
-                                type="password"
-                                placeholder="Create Password"
-                                required
-                                value={passwords.password}
-                                onChange={(e: any) => setPasswords({ ...passwords, password: e.target.value })}
-                                error={errors.password}
-                            />
-                            <FormInput
-                                label="Confirm Password"
-                                name="confirmPassword"
-                                type="password"
-                                placeholder="Repeat Password"
-                                required
-                                value={passwords.confirm}
-                                onChange={(e: any) => setPasswords({ ...passwords, confirm: e.target.value })}
-                                error={errors.confirmPassword}
-                            />
-                            <FormInput label="Phone" name="phone" placeholder="Enter Phone" required error={errors.phone} />
-
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-gray-700 uppercase ml-1">
-                                    Business Document
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="file"
-                                        name="businessDocument"
-                                        className="w-full border border-blue-100 py-2 px-4 rounded-lg text-[10px] text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-600 hover:file:bg-gray-200 transition-all shadow-sm"
-                                    />
-                                </div>
+                    {isRegistered ? (
+                        <div className="p-16 text-center space-y-6 animate-in zoom-in-95 duration-500">
+                            <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-100 shadow-inner">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1b5e20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                             </div>
-                        </div>
-
-                        <div className="space-y-3 pt-2">
-                            <div className="flex items-start gap-2 group cursor-pointer" onClick={() => setTermsAgreed(!termsAgreed)}>
-                                <input type="checkbox" checked={termsAgreed} onChange={() => { }} className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 accent-[#1b5e20]" />
-                                <div className="space-y-0.5">
-                                    <p className={`text-[10px] font-bold uppercase tracking-tight ${errors.terms ? 'text-red-500' : 'text-gray-800'}`}>
-                                        I agree to the <span className="text-green-700 underline">Terms and Conditions</span> of CAIP
-                                    </p>
-                                    <p className="text-[9px] text-gray-400 font-medium leading-relaxed">
-                                        CAIP is a unified platform for agricultural protection. All data remains subject to our privacy guidelines.
-                                    </p>
-                                </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-gray-900 tracking-tight">Success!</h3>
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Registration Protocol Complete</p>
                             </div>
-                        </div>
-
-                        <div className="flex flex-col items-center pt-2">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={`w-full bg-[#3d6e50] hover:bg-[#2d523c] text-white font-bold py-3 rounded-xl shadow-lg transition-all transform active:scale-[0.98] uppercase text-[11px] flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                            >
-                                {loading ? (
-                                    <>
-                                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                        Creating Account...
-                                    </>
-                                ) : 'Create My Account'}
-                            </button>
-
-                            <p className="mt-6 text-[11px] font-bold text-gray-500">
-                                Already a member? <Link href="/login" className="text-green-700 hover:underline">Log In Now</Link>
+                            <p className="text-sm font-medium text-gray-600">
+                                Moving you to secure login console...
                             </p>
                         </div>
-                    </form>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                                <FormInput label="Name" name="name" placeholder="Full Name" required error={errors.name} />
+                                <FormInput label="Phone" name="phone" placeholder="Enter Phone" required error={errors.phone} />
+
+                                <FormInput label="Company Name" name="companyName" placeholder="Company Name" required error={errors.companyName} />
+                                <FormInput label="GST Number" name="gst" placeholder="GST Registration No" required error={errors.gst} />
+                                <FormInput label="Pan" name="pan" placeholder="Permanent Account No" required error={errors.pan} />
+                                <FormSelect
+                                    label="State"
+                                    name="state"
+                                    value={selectedState}
+                                    onChange={(e: any) => { setSelectedState(e.target.value); setSelectedDistrict(""); setSelectedSubDistrict(""); }}
+                                    options={locations}
+                                    placeholder="Select State"
+                                    required
+                                    error={errors.state}
+                                />
+                                <FormSelect
+                                    label="District"
+                                    name="district"
+                                    value={selectedDistrict}
+                                    onChange={(e: any) => { setSelectedDistrict(e.target.value); setSelectedSubDistrict(""); }}
+                                    options={districts}
+                                    placeholder="Select District"
+                                    required
+                                    error={errors.district}
+                                />
+                                <FormSelect
+                                    label="Sub District"
+                                    name="subDistrict"
+                                    value={selectedSubDistrict}
+                                    onChange={(e: any) => setSelectedSubDistrict(e.target.value)}
+                                    options={subDistricts}
+                                    placeholder="Select Sub District"
+                                    required
+                                    error={errors.subDistrict}
+                                />
+                                <FormInput
+                                    label="Password"
+                                    name="password"
+                                    type="password"
+                                    placeholder="Create Password"
+                                    required
+                                    value={passwords.password}
+                                    onChange={(e: any) => setPasswords({ ...passwords, password: e.target.value })}
+                                    error={errors.password}
+                                />
+                                <FormInput
+                                    label="Confirm Password"
+                                    name="confirmPassword"
+                                    type="password"
+                                    placeholder="Repeat Password"
+                                    required
+                                    value={passwords.confirm}
+                                    onChange={(e: any) => setPasswords({ ...passwords, confirm: e.target.value })}
+                                    error={errors.confirmPassword}
+                                />
+                                <FormInput label="Email" name="email" type="email" placeholder="Email" required error={errors.email} />
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-gray-700 uppercase ml-1">
+                                        Business Document
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            name="businessDocument"
+                                            className="w-full border border-blue-100 py-2 px-4 rounded-lg text-[10px] text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-600 hover:file:bg-gray-200 transition-all shadow-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 pt-2">
+                                <div className="flex items-start gap-2 group cursor-pointer" onClick={() => setTermsAgreed(!termsAgreed)}>
+                                    <input type="checkbox" checked={termsAgreed} onChange={() => { }} className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 accent-[#1b5e20]" />
+                                    <div className="space-y-0.5">
+                                        <p className={`text-[10px] font-bold uppercase tracking-tight ${errors.terms ? 'text-red-500' : 'text-gray-800'}`}>
+                                            I agree to the <span className="text-green-700 underline">Terms and Conditions</span> of CAIP
+                                        </p>
+                                        <p className="text-[9px] text-gray-400 font-medium leading-relaxed">
+                                            CAIP is a unified platform for agricultural protection. All data remains subject to our privacy guidelines.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col items-center pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className={`w-full bg-[#3d6e50] hover:bg-[#2d523c] text-white font-bold py-3 rounded-xl shadow-lg transition-all transform active:scale-[0.98] uppercase text-[11px] flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                >
+                                    {loading ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                            Creating Account...
+                                        </>
+                                    ) : 'Create My Account'}
+                                </button>
+
+                                <p className="mt-6 text-[11px] font-bold text-gray-500">
+                                    Already a member? <Link href="/login" className="text-green-700 hover:underline">Log In Now</Link>
+                                </p>
+                            </div>
+                        </form>
+                    )}
                 </div>
             </div>
 

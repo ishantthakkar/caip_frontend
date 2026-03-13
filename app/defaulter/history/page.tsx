@@ -22,6 +22,11 @@ export default function SearchHistoryPage() {
     const [loading, setLoading] = useState(true);
     const [selectedLog, setSelectedLog] = useState<any>(null);
     const [showDetails, setShowDetails] = useState(false);
+    
+    // Pagination & Search
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         fetchHistory();
@@ -42,6 +47,29 @@ export default function SearchHistoryPage() {
         }
     };
 
+    // Filtered data based on search
+    const filteredHistory = history.filter(log => {
+        const searchStr = searchQuery.toLowerCase();
+        return (
+            log.filters?.name?.toLowerCase().includes(searchStr) ||
+            log.filters?.gst?.toLowerCase().includes(searchStr) ||
+            log.filters?.pan?.toLowerCase().includes(searchStr) ||
+            log.user_id?.name?.toLowerCase().includes(searchStr) ||
+            log.filters?.state?.toLowerCase().includes(searchStr) ||
+            log.filters?.district?.toLowerCase().includes(searchStr)
+        );
+    });
+
+    // Pagination calculations
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredHistory.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
     if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin h-8 w-8 border-4 border-green-600 border-t-transparent rounded-full"></div>
     </div>;
@@ -57,6 +85,37 @@ export default function SearchHistoryPage() {
                 </div>
 
                 <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
+                    {/* Header Controls */}
+                    <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-gray-500">Show</span>
+                            <select 
+                                value={itemsPerPage} 
+                                onChange={(e) => {
+                                    setItemsPerPage(Number(e.target.value));
+                                    setCurrentPage(1);
+                                }}
+                                className="border border-gray-200 rounded px-2 py-1 text-xs outline-none focus:border-green-600 font-bold"
+                            >
+                                {[10, 25, 50, 100].map(v => <option key={v} value={v}>{v}</option>)}
+                            </select>
+                            <span className="text-xs font-bold text-gray-500">entries</span>
+                        </div>
+                        <div className="relative w-full sm:w-64">
+                            <input 
+                                type="text"
+                                placeholder="Search in history..."
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-xs outline-none focus:border-green-600 font-medium"
+                            />
+                            <svg className="absolute left-3 top-2.5 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        </div>
+                    </div>
+
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-[#0a2f0a] text-white">
@@ -78,9 +137,9 @@ export default function SearchHistoryPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {history.map((log, i) => (
+                                {currentItems.map((log, i) => (
                                     <tr key={i} className="hover:bg-gray-50 bg-white transition-colors text-[11px] font-medium text-gray-700">
-                                        <td className="px-3 py-4 text-center border-r border-gray-100">{i + 1}</td>
+                                        <td className="px-3 py-4 text-center border-r border-gray-100">{indexOfFirstItem + i + 1}</td>
                                         <td className="px-3 py-4 text-center border-r border-gray-100 whitespace-nowrap">
                                             {new Date(log.createdAt).toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}
                                         </td>
@@ -118,9 +177,56 @@ export default function SearchHistoryPage() {
                         </table>
                     </div>
 
-                    {history.length === 0 && (
+                    {filteredHistory.length === 0 && (
                         <div className="p-20 text-center bg-white">
-                            <p className="text-gray-400 text-sm font-semibold italic">No search entries found in history.</p>
+                            <p className="text-gray-400 text-sm font-semibold italic">No search entries found matching your criteria.</p>
+                        </div>
+                    )}
+
+                    {/* Footer Controls */}
+                    {filteredHistory.length > 0 && (
+                        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <p className="text-xs font-bold text-gray-500">
+                                Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredHistory.length)} of {filteredHistory.length} entries
+                            </p>
+                            <div className="flex items-center gap-1">
+                                <button 
+                                    disabled={currentPage === 1}
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m15 18-6-6 6-6"/></svg>
+                                </button>
+                                
+                                <div className="flex items-center gap-1 mx-2">
+                                    {[...Array(totalPages)].map((_, i) => {
+                                        const page = i + 1;
+                                        // Show first, last, and current +/- 1
+                                        if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                                            return (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => handlePageChange(page)}
+                                                    className={`w-8 h-8 text-xs font-bold rounded-lg transition-all ${currentPage === page ? 'bg-green-600 text-white shadow-md' : 'text-gray-500 hover:bg-white border border-transparent hover:border-gray-200'}`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            );
+                                        } else if (page === currentPage - 2 || page === currentPage + 2) {
+                                            return <span key={page} className="text-gray-400 text-[10px]">...</span>;
+                                        }
+                                        return null;
+                                    })}
+                                </div>
+
+                                <button 
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m9 18 6-6-6-6"/></svg>
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>

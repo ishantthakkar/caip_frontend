@@ -36,6 +36,7 @@ export default function MemberDefaulterListPage() {
     const [paymentRows, setPaymentRows] = useState<any[]>([{ amount: '', date: '' }]);
     const [processingPayment, setProcessingPayment] = useState(false);
     const [user, setUser] = useState<any>(null);
+    const [isSubMember, setIsSubMember] = useState(false);
 
     useEffect(() => {
         fetchMyReports();
@@ -43,6 +44,9 @@ export default function MemberDefaulterListPage() {
 
         const userData = localStorage.getItem('user');
         if (userData) setUser(JSON.parse(userData));
+
+        const smData = localStorage.getItem('subMember');
+        if (smData) setIsSubMember(true);
     }, []);
 
     const fetchMyReports = async () => {
@@ -216,6 +220,33 @@ export default function MemberDefaulterListPage() {
         }
     };
 
+    const handleApproveReject = async (reportId: string, status: number) => {
+        const action = status === 1 ? 'approve' : 'reject';
+        if (!confirm(`Are you sure you want to ${action} this report?`)) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE_URL}member/approve-sub-report`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ reportId, status })
+            });
+
+            if (res.ok) {
+                alert(`Report ${status === 1 ? 'approved' : 'rejected'} successfully!`);
+                fetchMyReports();
+            } else {
+                const data = await res.json();
+                alert(data.msg || "Error updating status");
+            }
+        } catch (error) {
+            console.error("Approval error:", error);
+        }
+    };
+
     const districtsList = locations.find(s => s.state === editForm.state)?.districts || [];
 
     return (
@@ -274,8 +305,12 @@ export default function MemberDefaulterListPage() {
                                             <td className="px-6 py-4 text-sm font-semibold text-gray-900">₹{Number(def.default_amount).toLocaleString('en-IN')}</td>
                                             <td className="px-6 py-4 text-sm font-semibold text-red-600">₹{Number(def.outstanding_amount || def.default_amount).toLocaleString('en-IN')}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${def.status === 1 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                                    {def.status === 1 ? 'Approved' : 'Pending'}
+                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                                                    def.status === 1 ? 'bg-green-100 text-green-700' : 
+                                                    def.status === 2 ? 'bg-red-100 text-red-700' : 
+                                                    'bg-yellow-100 text-yellow-700'
+                                                }`}>
+                                                    {def.status === 1 ? 'Approved' : def.status === 2 ? 'Rejected' : 'Pending'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
@@ -289,7 +324,8 @@ export default function MemberDefaulterListPage() {
                                             <td className="px-6 py-4">
                                                 <button
                                                     onClick={() => handlePaymentClick(def)}
-                                                    disabled={Number(def.outstanding_amount) === 0}
+                                                    disabled={def.status !== 1 || Number(def.outstanding_amount) === 0}
+                                                    title={def.status !== 1 ? "Approval required before payment" : ""}
                                                     className="bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-800 disabled:opacity-50 flex items-center gap-1"
                                                 >
                                                     <span className="text-sm">+</span> Add Payment
@@ -297,6 +333,16 @@ export default function MemberDefaulterListPage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-center gap-2">
+                                                    {!isSubMember && def.status === 0 && (
+                                                        <>
+                                                            <button onClick={() => handleApproveReject(def._id, 1)} title="Approve" className="bg-green-600 text-white p-1.5 rounded hover:bg-green-700 transition-all shadow-sm">
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                            </button>
+                                                            <button onClick={() => handleApproveReject(def._id, 2)} title="Reject" className="bg-red-600 text-white p-1.5 rounded hover:bg-red-700 transition-all shadow-sm">
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                            </button>
+                                                        </>
+                                                    )}
                                                     <button onClick={() => handleEditClick(def)} disabled={Number(def.outstanding_amount) === 0} className="bg-orange-400 text-white text-[10px] font-black uppercase px-3 py-1.5 rounded hover:bg-orange-500 transition-all shadow-sm disabled:opacity-30">Edit</button>
                                                     <button onClick={() => handleViewClick(def)} className="bg-[#0051a8] text-white text-[10px] font-black uppercase px-3 py-1.5 rounded hover:bg-[#003d80] transition-all shadow-sm">View</button>
                                                 </div>

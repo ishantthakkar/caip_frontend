@@ -19,6 +19,9 @@ export default function AdminMembersPage() {
     const [modalLoading, setModalLoading] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [showDocModal, setShowDocModal] = useState(false);
+    const [showRejectionModal, setShowRejectionModal] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState('');
+    const [processingUserId, setProcessingUserId] = useState<string | null>(null);
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
@@ -56,17 +59,29 @@ export default function AdminMembersPage() {
         }
     };
 
-    const handleAction = async (userId: string, action: string) => {
+    const handleAction = async (userId: string, action: string, reason: string = "") => {
         const status = action === 'approved' ? 1 : 2;
+        
+        // If rejecting and modal isn't open yet, open it
+        if (status === 2 && !showRejectionModal) {
+            setProcessingUserId(userId);
+            setShowRejectionModal(true);
+            setRejectionReason("");
+            return;
+        }
+
         try {
             const response = await fetch(`${API_BASE_URL}user/change-staus`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, status }),
+                body: JSON.stringify({ userId, status, rejectionReason: reason }),
             });
 
             if (response.ok) {
-                setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: status.toString() } : u));
+                setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: status.toString(), rejectionReason: reason } : u));
+                setShowRejectionModal(false);
+                setProcessingUserId(null);
+                setRejectionReason("");
                 alert(`User ${action} successfully.`);
             } else {
                 const errorData = await response.json();
@@ -228,6 +243,14 @@ export default function AdminMembersPage() {
                                                             <div className="w-1 h-1 rounded-full bg-gray-300"></div>
                                                             <span className="text-[10px] font-bold text-gray-400">{user.phone}</span>
                                                         </div>
+                                                        {user.status === '2' && user.rejectionReason && (
+                                                            <div className="mt-2 flex items-start gap-1.5 max-w-[200px]">
+                                                                <span className="text-[10px] mt-0.5">⚠️</span>
+                                                                <p className="text-[10px] font-bold text-rose-500 italic bg-rose-50 px-2 py-1 rounded-lg border border-rose-100">
+                                                                    Reason: {user.rejectionReason}
+                                                                </p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </td>
@@ -453,6 +476,57 @@ export default function AdminMembersPage() {
 
                         <div className="p-8 border-t border-gray-100 flex justify-end">
                             <button onClick={() => setShowDocModal(false)} className="px-10 py-3 bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-black transition-all shadow-xl active:scale-95">Safe Exit</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Rejection Reason Modal */}
+            {showRejectionModal && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="bg-rose-600 px-10 py-8 text-white">
+                            <h3 className="text-xl font-black tracking-tight flex items-center gap-3">
+                                <span className="text-2xl">🚫</span> Action Authentication
+                            </h3>
+                            <p className="text-xs font-bold text-white/70 uppercase tracking-widest mt-2">Specify Rejection Rationale</p>
+                        </div>
+
+                        <div className="p-10 space-y-6">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                                    Reason for Rejection <span className="opacity-50 italic font-medium">(Optional)</span>
+                                </label>
+                                <textarea
+                                    value={rejectionReason}
+                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                    placeholder="Enter reason for rejection here... (e.g., Document mismatch, Invalid identity, etc.)"
+                                    className="w-full h-40 bg-gray-50 border border-gray-100 rounded-2xl p-6 text-sm text-gray-700 placeholder:text-gray-300 outline-none focus:border-rose-500 focus:bg-white transition-all shadow-inner resize-none font-medium"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => {
+                                        setShowRejectionModal(false);
+                                        setProcessingUserId(null);
+                                        setRejectionReason("");
+                                    }}
+                                    className="px-6 py-4 bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-gray-200 transition-all active:scale-95"
+                                >
+                                    Abort
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (processingUserId) {
+                                            handleAction(processingUserId, 'rejected', rejectionReason);
+                                        }
+                                    }}
+                                    className="px-6 py-4 bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-rose-700 transition-all shadow-xl shadow-rose-900/20 active:scale-95"
+                                >
+                                    Confirm Rejection
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

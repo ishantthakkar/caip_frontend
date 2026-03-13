@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import MemberPortalContainer from '@/components/MemberPortalContainer';
 import dynamic from 'next/dynamic';
 import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
@@ -34,6 +35,7 @@ export default function SearchDefaulterPage() {
     // Modal States
     const [selectedDefaulter, setSelectedDefaulter] = useState<any>(null);
     const [showDetails, setShowDetails] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
     const [filters, setFilters] = useState({
         gst: '', pan: '', cin: '', aadhar: '', name: '', address: '', state: '', district: '', subDistrict: ''
@@ -94,6 +96,7 @@ export default function SearchDefaulterPage() {
         setHasSearched(false);
         setDefaulters([]);
         setError('');
+        setShowAdvanced(false);
     };
 
     const handleFilterChange = (field: string, value: string) => {
@@ -119,9 +122,18 @@ export default function SearchDefaulterPage() {
             <div className="space-y-6 animate-in fade-in duration-500">
                 {/* Search Form Card */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                        <h2 className="text-lg font-bold text-gray-800">Global Search</h2>
-                        <p className="text-xs text-gray-500">Search for defaulters by GST, PAN, Mobile, or Name</p>
+                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-800">Global Search</h2>
+                            <p className="text-xs text-gray-500">Search for defaulters by GST, PAN, Mobile, or Name</p>
+                        </div>
+                        <Link 
+                            href="/defaulter/history" 
+                            className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></svg>
+                            Search History
+                        </Link>
                     </div>
 
                     <form onSubmit={handleSearch} className="p-6 space-y-6">
@@ -153,44 +165,65 @@ export default function SearchDefaulterPage() {
                                 </div>
                             ))}
 
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-600">State</label>
-                                <select
-                                    value={filters.state}
-                                    onChange={(e) => handleFilterChange('state', e.target.value)}
-                                    className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
-                                >
-                                    <option value="">All States</option>
-                                    {locations.map(s => <option key={s.state} value={s.state}>{s.state}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-600">District</label>
-                                <select
-                                    value={filters.district}
-                                    onChange={(e) => handleFilterChange('district', e.target.value)}
-                                    className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
-                                    disabled={!filters.state}
-                                >
-                                    <option value="">All Districts</option>
-                                    {districts.map((d: any) => <option key={d.district} value={d.district}>{d.district}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-600">Sub-District</label>
-                                <select
-                                    value={filters.subDistrict}
-                                    onChange={(e) => handleFilterChange('subDistrict', e.target.value)}
-                                    className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
-                                    disabled={!filters.district}
-                                >
-                                    <option value="">All Sub-Districts</option>
-                                    {subDistricts.map((sd: any) => <option key={sd} value={sd}>{sd}</option>)}
-                                </select>
-                            </div>
                         </div>
+
+                        <div className="flex items-center pt-6 pb-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowAdvanced(!showAdvanced)}
+                                className="px-6 py-2.5 bg-green-50 text-green-700 font-bold text-sm rounded-lg hover:bg-green-100 transition-all flex items-center gap-3 border border-green-200/50 shadow-sm active:scale-95"
+                            >
+                                <div className="p-1 bg-green-600 rounded-md">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`}>
+                                        <path d="M12 5v14M5 12h14" className={showAdvanced ? 'opacity-0' : 'opacity-100'} transition-opacity="true" />
+                                        <path d="M5 12h14" />
+                                    </svg>
+                                </div>
+                                {showAdvanced ? "Basic Search Mode" : "Advanced Filters (Location)"}
+                            </button>
+                        </div>
+
+                        {showAdvanced && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 border-t border-gray-50 animate-in slide-in-from-top-2 duration-300">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">State</label>
+                                    <select
+                                        value={filters.state}
+                                        onChange={(e) => handleFilterChange('state', e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
+                                    >
+                                        <option value="">All States</option>
+                                        {locations.map(s => <option key={s.state} value={s.state}>{s.state}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">District</label>
+                                    <select
+                                        value={filters.district}
+                                        onChange={(e) => handleFilterChange('district', e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
+                                        disabled={!filters.state}
+                                    >
+                                        <option value="">All Districts</option>
+                                        {districts.map((d: any) => <option key={d.district} value={d.district}>{d.district}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">Sub-District</label>
+                                    <select
+                                        value={filters.subDistrict}
+                                        onChange={(e) => handleFilterChange('subDistrict', e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
+                                        disabled={!filters.district}
+                                    >
+                                        <option value="">All Sub-Districts</option>
+                                        {subDistricts.map((sd: any) => <option key={sd} value={sd}>{sd}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
                             <button
@@ -233,7 +266,9 @@ export default function SearchDefaulterPage() {
                                         <tr>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Reported By</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Defaulter Name</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Reporting Company</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Defaulter Company</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Defaulter Address</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">GST/PAN No.</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Location</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Status</th>
@@ -245,10 +280,16 @@ export default function SearchDefaulterPage() {
                                             <tr key={def._id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4 text-xs text-gray-500">{i + 1}</td>
                                                 <td className="px-6 py-4">
+                                                    <p className="text-xs font-bold text-gray-700">{def.user_id?.name || 'N/A'}</p>
+                                                </td>
+                                                <td className="px-6 py-4">
                                                     <p className="text-xs font-bold text-green-700">{def.user_id?.companyName || 'Verified Member'}</p>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <p className="text-sm font-bold text-gray-900">{def.defaulter_name}</p>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <p className="text-xs text-gray-600 line-clamp-2 max-w-[200px]">{def.defaulter_address || 'N/A'}</p>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <p className="text-xs text-gray-500 font-mono">{def.gst_number || def.pan_number || 'N/A'}</p>

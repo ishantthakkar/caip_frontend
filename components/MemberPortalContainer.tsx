@@ -23,6 +23,8 @@ export default function MemberPortalContainer({
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
@@ -65,29 +67,31 @@ export default function MemberPortalContainer({
     }
 
     return (
-        <div className="h-screen bg-[#f8fafc] flex flex-col font-sans text-slate-900 overflow-hidden">
-            <MemberHeader user={user} title={title} />
+        <div className="h-screen bg-[#f8fafc] flex font-sans text-slate-900 overflow-hidden">
+            <MemberSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-            <div className="flex flex-1 overflow-hidden">
-                <MemberSidebar />
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                <div className="px-6 pt-6">
+                    <MemberHeader user={user} title={title} isCollapsed={isCollapsed} />
+                </div>
 
-                <main className={`flex-1 overflow-y-auto no-scrollbar bg-[#f8fafc] ${showFullWidth ? 'w-full' : 'max-w-[1920px] mx-auto w-full'}`}>
+                <main className={`flex-1 overflow-y-auto no-scrollbar bg-[#f8fafc] transition-all duration-300 ${showFullWidth ? 'w-full' : 'max-w-[1920px] mx-auto w-full'}`}>
                     <div className="p-6 lg:p-10 pb-20">
                         {children}
                     </div>
                 </main>
-            </div>
 
-            <footer className="h-10 bg-white border-t border-gray-100 flex items-center justify-between px-10 text-gray-400 text-[10px] font-bold relative z-40">
-                <p>© 2026 Chamber for Agri Input Protection</p>
-                <div className="flex items-center gap-6">
-                    <p className="text-gray-400 font-medium">Ver 2.0.4 - Industrial</p>
-                    <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                        <p className="text-green-600">Secure Live</p>
+                <footer className="h-10 bg-white border-t border-gray-100 flex items-center justify-between px-10 text-gray-400 text-[10px] font-bold relative z-40">
+                    <p>© 2026 Chamber for Agri Input Protection</p>
+                    <div className="flex items-center gap-6">
+                        <p className="text-gray-400 font-medium">Ver 2.0.4 - Industrial</p>
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                            <p className="text-green-600">Secure Live</p>
+                        </div>
                     </div>
-                </div>
-            </footer>
+                </footer>
+            </div>
         </div>
     );
 }
