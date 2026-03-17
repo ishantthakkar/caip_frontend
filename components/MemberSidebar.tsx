@@ -59,8 +59,8 @@ export default function MemberSidebar({ isCollapsed, setIsCollapsed }: MemberSid
                 icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>,
                 hasSub: true,
                 subItems: [
-                    { name: 'Defaulters List', path: '/defaulter/list' },
-                    { name: 'Search Defaulters', path: '/defaulter/search' },
+                    { name: 'Defaulters List', path: '/defaulter/list', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> },
+                    { name: 'Search Defaulters', path: '/defaulter/search', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> },
                 ]
             },
             {
@@ -147,14 +147,15 @@ export default function MemberSidebar({ isCollapsed, setIsCollapsed }: MemberSid
                                         )}
                                     </div>
                                     {defaulterOpen && !isCollapsed && (
-                                        <div className="pl-12 space-y-1">
+                                        <div className="pl-12 space-y-1.5 mt-2">
                                             {item.subItems?.map((sub, sIdx) => (
                                                 <Link
                                                     key={sIdx}
                                                     href={sub.path}
-                                                    className={`block py-2 text-sm font-bold transition-all ${pathname === sub.path ? 'text-[#1b5e20]' : 'text-gray-400 hover:text-[#1b5e20]'}`}
+                                                    className={`flex items-center gap-3 py-2 px-3 rounded-lg text-sm font-bold transition-all ${pathname === sub.path ? 'text-[#1b5e20] bg-green-50/50' : 'text-gray-400 hover:text-[#1b5e20] hover:bg-gray-50/50'}`}
                                                 >
-                                                    • {sub.name}
+                                                    <span className={pathname === sub.path ? 'text-[#1b5e20]' : 'text-gray-400'}>{sub.icon}</span>
+                                                    {sub.name}
                                                 </Link>
                                             ))}
                                         </div>

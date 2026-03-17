@@ -46,7 +46,7 @@ function LoginContent() {
 
             if (response.ok) {
                 setStep('enter_otp');
-                setSuccessMessage('OTP sent successfully (Static OTP: 123456)');
+                setSuccessMessage('OTP sent successfully');
             } else {
                 setError(data.msg || 'Invalid mobile number or approval pending');
             }
@@ -61,6 +61,7 @@ function LoginContent() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setSuccessMessage(null);
 
         try {
             const response = await fetch(`${API_BASE_URL}verify-otp`, {
@@ -140,8 +141,8 @@ function LoginContent() {
                             {step === 'enter_mobile' ? 'Member Login' : 'OTP Verification'}
                         </h2>
                         <p className="text-white/80 text-[10px] font-medium tracking-tight">
-                            {step === 'enter_mobile' 
-                                ? 'Sign in with your mobile number to continue.' 
+                            {step === 'enter_mobile'
+                                ? 'Sign in with your mobile number to continue.'
                                 : `Verification code sent to +91 ${phone}`}
                         </p>
                     </div>
@@ -179,7 +180,7 @@ function LoginContent() {
                                         </>
                                     ) : 'Get OTP'}
                                 </button>
-                                
+
                                 <p className="text-center text-[11px] font-semibold text-gray-500 pt-2">
                                     If you want to become a member, <Link href="/register" className="text-blue-500 hover:underline">Register here</Link>
                                 </p>
@@ -199,7 +200,6 @@ function LoginContent() {
                                             className="w-full max-w-[200px] border border-blue-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-100 py-3 text-center rounded-lg outline-none transition-all text-2xl font-black text-gray-800 tracking-[0.5em] placeholder:text-gray-200 shadow-sm"
                                         />
                                     </div>
-                                    <p className="text-[10px] text-gray-400 font-bold mt-2">Static OTP for Testing: 123456</p>
                                 </div>
 
                                 <button
@@ -215,8 +215,8 @@ function LoginContent() {
                                     ) : 'Verify & Login'}
                                 </button>
 
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => setStep('enter_mobile')}
                                     className="w-full text-xs font-bold text-blue-500 hover:text-blue-600 transition-colors py-2"
                                 >

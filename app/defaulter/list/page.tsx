@@ -4,6 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import MemberPortalContainer from '@/components/MemberPortalContainer';
 import Link from 'next/link';
 import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const InfoItem = ({ icon, label, value }: { icon: any, label: string, value: any }) => (
     <div className="flex items-start gap-4">
@@ -249,6 +251,134 @@ export default function MemberDefaulterListPage() {
 
     const districtsList = locations.find(s => s.state === editForm.state)?.districts || [];
 
+    const handleExportPDF = async () => {
+        try {
+            const doc = new jsPDF('landscape');
+
+            // Generate base64 of the logo
+            let base64Img: string | null = null;
+            try {
+                base64Img = await new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous";
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.drawImage(img, 0, 0);
+                            resolve(canvas.toDataURL('image/png'));
+                        } else {
+                            resolve(null);
+                        }
+                    };
+                    img.onerror = () => resolve(null);
+                    img.src = '/images/caip_logo.png';
+                });
+            } catch (e) { }
+
+
+            // Header Texts
+            doc.setFontSize(18);
+            doc.setTextColor(27, 94, 32); // #1b5e20
+            doc.text("Member Defaulter Report", 14, 22);
+
+            // Member details
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            const memberName = user?.name || 'Not Available';
+            const companyName = user?.companyName || 'Not Available';
+            const memberId = user?.memberId || user?._id?.slice(-8).toUpperCase() || 'N/A';
+            const memberEmail = user?.email || 'N/A';
+
+            doc.text(`Downloaded By: ${memberName} (${memberId})`, 14, 32);
+            doc.text(`Email: ${memberEmail}`, 14, 38);
+            doc.text(`Downloaded On: ${new Date().toLocaleString('en-GB')}`, 14, 44);
+
+            // Generate Table
+            const tableColumn = [
+                "Sr.",
+                "Defaulter Company",
+                "Reported Date",
+                "Amount",
+                "Outstanding",
+                "GST",
+                "PAN",
+                "CIN",
+                "Aadhar",
+                "State",
+                "City",
+                "District"
+            ];
+
+            const tableRows = processedData.map((def, idx) => [
+                idx + 1,
+                def.defaulter_name || '-',
+                new Date(def.createdAt).toLocaleDateString('en-GB'),
+                `Rs. ${Number(def.default_amount).toLocaleString('en-IN')}`,
+                `Rs. ${Number(def.outstanding_amount || def.default_amount).toLocaleString('en-IN')}`,
+                def.gst_number || '-',
+                def.pan_number || '-',
+                def.cin_number || '-',
+                def.aadhar_number || '-',
+                def.state || '-',
+                def.cities || '-',
+                def.district || '-'
+            ]);
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 52,
+                theme: 'grid',
+                headStyles: { fillColor: [27, 94, 32], textColor: 255, fontSize: 8 },
+                styles: { fontSize: 8 },
+                alternateRowStyles: { fillColor: [245, 245, 245] },
+                didDrawPage: (data) => {
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+
+                    // BACKGROUND WATERMARKS
+                    doc.setGState(new (doc as any).GState({ opacity: 0.08 })); // Slightly lower opacity for text+image
+
+                    // 1. Image Watermark (Logo)
+                    if (base64Img) {
+                        doc.addImage(base64Img, 'PNG', (pageWidth - 150) / 2, (pageHeight - 150) / 2, 150, 150);
+                    }
+
+                    // 2. Text Watermark (Member Info below Logo)
+                    const watermarkText = `${memberName.toUpperCase()} | ID: ${memberId}`;
+                    doc.setFontSize(20); // Slightly smaller for better fit
+                    doc.setTextColor(200, 0, 0);
+                    // Positioned exactly 8 units below the logo center area
+                    doc.text(watermarkText, pageWidth / 2, (pageHeight / 2) + 85, {
+                        align: 'center'
+                    });
+
+                    doc.setGState(new (doc as any).GState({ opacity: 1 }));
+
+                    // --- FOOTER SECTION ---
+                    // Footer warning text
+                    const footerText = "This document is intended only for the designated recipient. Unauthorized sharing, distribution, or duplication is strictly prohibited.";
+                    doc.setFontSize(9);
+                    doc.setTextColor(200, 0, 0);
+                    doc.text(footerText, 14, pageHeight - 10);
+
+                    // Page number
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(`Page ${data.pageNumber}`, pageWidth - 25, pageHeight - 10);
+                }
+            });
+
+            doc.save('CAIP_Defaulter_Report.pdf');
+        } catch (err) {
+            console.error("PDF Export Error: ", err);
+            alert("Failed to export PDF.");
+        }
+    };
+
     return (
         <MemberPortalContainer title="My Reported Defaulters">
             <div className="space-y-6 animate-in fade-in duration-500">
@@ -268,7 +398,24 @@ export default function MemberDefaulterListPage() {
                             />
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
                         </div>
-                        <Link href="/defaulter/add" className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors shadow-sm">
+                        <button
+                            onClick={handleExportPDF}
+                            className="group relative flex items-center gap-3 bg-red-50 text-red-600 border border-red-100 px-4 py-2 rounded-xl hover:bg-red-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
+                        >
+                            <div className="relative">
+                                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-600">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" />
+                                    </svg>
+                                </div>
+                                <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-[7px] font-black px-1 rounded-sm border border-white">PDF</div>
+                            </div>
+                            <div className="flex flex-col items-start leading-tight">
+                                <span className="text-xs font-bold uppercase tracking-wide">Export PDF</span>
+                                <span className="text-[8px] font-medium opacity-80 uppercase whitespace-normal text-left max-w-[120px]">Do not share this document with anyone</span>
+                            </div>
+                        </button>
+                        <Link href="/defaulter/add" className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors shadow-sm whitespace-nowrap">
                             + Add New
                         </Link>
                     </div>
@@ -303,13 +450,12 @@ export default function MemberDefaulterListPage() {
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">{new Date(def.createdAt).toLocaleDateString('en-GB')}</td>
                                             <td className="px-6 py-4 text-sm font-semibold text-gray-900">₹{Number(def.default_amount).toLocaleString('en-IN')}</td>
-                                            <td className="px-6 py-4 text-sm font-semibold text-red-600">₹{Number(def.outstanding_amount || def.default_amount).toLocaleString('en-IN')}</td>
+                                            <td className="px-6 py-4 text-sm font-semibold">₹{Number(def.outstanding_amount || def.default_amount).toLocaleString('en-IN')}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                                                    def.status === 1 ? 'bg-green-100 text-green-700' : 
-                                                    def.status === 2 ? 'bg-red-100 text-red-700' : 
-                                                    'bg-yellow-100 text-yellow-700'
-                                                }`}>
+                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${def.status === 1 ? 'bg-green-100 text-green-700' :
+                                                    def.status === 2 ? 'bg-red-100 text-red-700' :
+                                                        'bg-yellow-100 text-yellow-700'
+                                                    }`}>
                                                     {def.status === 1 ? 'Approved' : def.status === 2 ? 'Rejected' : 'Pending'}
                                                 </span>
                                             </td>
@@ -336,10 +482,10 @@ export default function MemberDefaulterListPage() {
                                                     {!isSubMember && def.status === 0 && (
                                                         <>
                                                             <button onClick={() => handleApproveReject(def._id, 1)} title="Approve" className="bg-green-600 text-white p-1.5 rounded hover:bg-green-700 transition-all shadow-sm">
-                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                                                             </button>
                                                             <button onClick={() => handleApproveReject(def._id, 2)} title="Reject" className="bg-red-600 text-white p-1.5 rounded hover:bg-red-700 transition-all shadow-sm">
-                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                                                             </button>
                                                         </>
                                                     )}
@@ -369,16 +515,32 @@ export default function MemberDefaulterListPage() {
                             <button
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(p => p - 1)}
-                                className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold disabled:opacity-50 hover:bg-gray-50"
+                                className="px-3 py-2 border border-gray-200 rounded-lg text-xs font-semibold disabled:opacity-50 hover:bg-gray-50 text-gray-600"
                             >
-                                Previous
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
                             </button>
+
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: Math.ceil(processedData.length / itemsPerPage) }, (_, i) => i + 1).map((pageNum) => (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${currentPage === pageNum
+                                            ? 'bg-green-600 text-white shadow-md shadow-green-200'
+                                            : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                ))}
+                            </div>
+
                             <button
                                 disabled={currentPage === Math.ceil(processedData.length / itemsPerPage)}
                                 onClick={() => setCurrentPage(p => p + 1)}
-                                className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-semibold disabled:opacity-50 hover:bg-gray-50"
+                                className="px-3 py-2 border border-gray-200 rounded-lg text-xs font-semibold disabled:opacity-50 hover:bg-gray-50 text-gray-600"
                             >
-                                Next
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
                             </button>
                         </div>
                     </div>

@@ -66,7 +66,7 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
                     {getHeaderIcon()}
-                    <h1 className="text-xl font-black text-black tracking-tight">{title}</h1>
+                    <h1 className="text-xl text-black tracking-tight font-serif">{title}</h1>
                 </div>
             </div>
 
@@ -77,7 +77,7 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                     </svg>
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-[#ffd600]">
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] text-white border-2 border-[#ffd600] font-serif">
                         1
                     </div>
                 </div>
@@ -92,7 +92,7 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
                             <span className="text-gray-400 text-xl">👤</span>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-xs font-black text-black whitespace-nowrap">
+                            <span className="text-xs text-black whitespace-nowrap font-serif">
                                 {subMember ? `Sub-Member: ${subMember.firstName}` : (user?.name || 'Member')}
                             </span>
                         </div>
@@ -101,14 +101,14 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
                     {isDropdownOpen && (
                         <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-3 animate-in fade-in slide-in-from-top-2 duration-200 z-[100]">
                             <div className="px-6 py-2 border-b border-gray-50 mb-2">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">CAIP</p>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-serif">CAIP</p>
                             </div>
 
                             {!subMember && (
                                 <Link
                                     href="/profile"
                                     onClick={() => setIsDropdownOpen(false)}
-                                    className="flex items-center gap-4 px-6 py-3 text-sm font-bold text-gray-700 hover:text-[#1b5e20] hover:bg-green-50/50 transition-all"
+                                    className="flex items-center gap-4 px-6 py-3 text-sm text-gray-700 hover:text-[#1b5e20] hover:bg-green-50/50 transition-all font-serif"
                                 >
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                                     My Profile
@@ -117,7 +117,7 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
 
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-4 px-6 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-all"
+                                className="w-full flex items-center gap-4 px-6 py-3 text-sm text-red-600 hover:bg-red-50 transition-all font-serif"
                             >
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
                                 Sign Out

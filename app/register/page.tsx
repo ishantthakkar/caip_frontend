@@ -75,7 +75,6 @@ export default function RegisterPage() {
     const [selectedState, setSelectedState] = useState("");
     const [selectedDistrict, setSelectedDistrict] = useState("");
     const [selectedSubDistrict, setSelectedSubDistrict] = useState("");
-    const [passwords, setPasswords] = useState({ password: "", confirm: "" });
     const [termsAgreed, setTermsAgreed] = useState(false);
     const [errors, setErrors] = useState<any>({});
 
@@ -107,9 +106,6 @@ export default function RegisterPage() {
         if (!selectedState) newErrors.state = "State is required";
         if (!selectedDistrict) newErrors.district = "District is required";
         if (!selectedSubDistrict) newErrors.subDistrict = "Sub District is required";
-        if (!passwords.password) newErrors.password = "Password is required";
-        if (!passwords.confirm) newErrors.confirmPassword = "Confirm Password is required";
-        if (passwords.password !== passwords.confirm) newErrors.confirmPassword = "Passwords do not match";
         const phone = formData.get('phone') as string;
         if (!phone) {
             newErrors.phone = "Phone Number is required";
@@ -263,26 +259,6 @@ export default function RegisterPage() {
                                     placeholder="Select Sub District"
                                     required
                                     error={errors.subDistrict}
-                                />
-                                <FormInput
-                                    label="Password"
-                                    name="password"
-                                    type="password"
-                                    placeholder="Create Password"
-                                    required
-                                    value={passwords.password}
-                                    onChange={(e: any) => setPasswords({ ...passwords, password: e.target.value })}
-                                    error={errors.password}
-                                />
-                                <FormInput
-                                    label="Confirm Password"
-                                    name="confirmPassword"
-                                    type="password"
-                                    placeholder="Repeat Password"
-                                    required
-                                    value={passwords.confirm}
-                                    onChange={(e: any) => setPasswords({ ...passwords, confirm: e.target.value })}
-                                    error={errors.confirmPassword}
                                 />
                                 <FormInput label="Email" name="email" type="email" placeholder="Email" required error={errors.email} />
 

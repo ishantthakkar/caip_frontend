@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import MemberPortalContainer from '@/components/MemberPortalContainer';
 import dynamic from 'next/dynamic';
 import { API_BASE_URL } from '@/config/apiConfig';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // Dynamically import the Map component to avoid SSR issues with Leaflet
 const IndiaMap = dynamic(() => import('@/components/IndiaMap'), {
@@ -220,15 +224,17 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center gap-4 text-white">
-                            <span className="text-xl">🥗</span>
-                            <h3 className="text-base font-bold tracking-wider">Defaulter Industry Types ({new Date().getFullYear()})</h3>
+                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center justify-between text-white">
+                            <div className="flex items-center gap-4">
+                                <span className="text-xl">🏢</span>
+                                <h3 className="text-base font-bold tracking-wider">Defaulter Industry Types({new Date().getFullYear()})</h3>
+                            </div>
+                            <button className="opacity-40 hover:opacity-100 transition-all font-bold">•••</button>
                         </div>
                         <div className="p-10 flex-1 flex flex-col items-center justify-center">
                             {(() => {
                                 const industryData = stats.industryDist || [];
                                 const total = industryData.reduce((acc: number, curr: any) => acc + curr.value, 0);
-                                const colors = ['#1b5e20', '#ffd600', '#ff4081', '#00bcd4', '#9c27b0', '#ff9800'];
 
                                 if (total === 0) {
                                     return (
@@ -241,55 +247,62 @@ export default function DashboardPage() {
                                     );
                                 }
 
-                                let cumulativeOffset = 0;
-                                return (
-                                    <>
-                                        <div className="relative w-48 h-48 mb-10 group">
-                                            <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
-                                                {industryData.map((item: any, i: number) => {
-                                                    const percentage = (item.value / total) * 100;
-                                                    const strokeDasharray = `${percentage} ${100 - percentage}`;
-                                                    const strokeDashoffset = -cumulativeOffset;
-                                                    cumulativeOffset += percentage;
+                                const chartData = {
+                                    labels: industryData.map((s: any) => s.name.toLowerCase().replace(/[^a-z0-9]/g, '')),
+                                    datasets: [
+                                        {
+                                            data: industryData.map((s: any) => s.value),
+                                            backgroundColor: ['#ff5274', '#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#00bcd4'],
+                                            borderWidth: 2,
+                                            borderColor: '#ffffff',
+                                        },
+                                    ],
+                                };
 
-                                                    return (
-                                                        <circle
-                                                            key={i}
-                                                            cx="18"
-                                                            cy="18"
-                                                            r="15.915"
-                                                            fill="transparent"
-                                                            stroke={colors[i % colors.length]}
-                                                            strokeWidth="6"
-                                                            strokeDasharray={strokeDasharray}
-                                                            strokeDashoffset={strokeDashoffset}
-                                                            className="transition-all duration-1000 ease-in-out hover:stroke-black pointer-events-auto cursor-pointer"
-                                                        />
-                                                    );
-                                                })}
-                                            </svg>
-                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                                <div className="text-center group-hover:scale-110 transition-transform">
-                                                    <p className="text-3xl font-black text-gray-900 leading-none">{total}</p>
-                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1">Reported</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4">
-                                            {industryData.map((item: any, i: number) => (
-                                                <div key={i} className="flex items-center gap-2 group cursor-default">
-                                                    <div
-                                                        style={{ backgroundColor: colors[i % colors.length] }}
-                                                        className="w-3 h-3 rounded-full shadow-sm group-hover:scale-125 transition-transform"
-                                                    ></div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] font-black text-gray-700 uppercase tracking-tighter leading-none">{item.name}</span>
-                                                        <span className="text-[9px] font-bold text-gray-400">{((item.value / total) * 100).toFixed(1)}%</span>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </>
+                                const chartOptions = {
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'top' as const,
+                                            labels: {
+                                                boxWidth: 40,
+                                                boxHeight: 12,
+                                                padding: 20,
+                                                font: {
+                                                    family: "'Outfit', sans-serif",
+                                                    size: 13,
+                                                },
+                                                color: '#666',
+                                                generateLabels: (chart: any) => {
+                                                    const datasets = chart.data.datasets;
+                                                    return chart.data.labels.map((label: string, i: number) => ({
+                                                        text: label,
+                                                        fillStyle: datasets[0].backgroundColor[i],
+                                                        strokeStyle: datasets[0].backgroundColor[i],
+                                                        lineWidth: 0,
+                                                        hidden: false,
+                                                        index: i
+                                                    }));
+                                                }
+                                            }
+                                        },
+                                        tooltip: {
+                                            enabled: true,
+                                            backgroundColor: 'rgba(0,0,0,0.8)',
+                                            padding: 12,
+                                            titleFont: { family: "'Outfit', sans-serif", size: 13 },
+                                            bodyFont: { family: "'Outfit', sans-serif", size: 14, weight: 'bold' as const },
+                                            cornerRadius: 8,
+                                        }
+                                    },
+                                    maintainAspectRatio: false,
+                                    cutout: '0%', // This makes it a pie chart instead of a doughnut
+                                };
+
+                                return (
+                                    <div className="w-full h-[280px] relative">
+                                        <Pie data={chartData} options={chartOptions} />
+                                    </div>
                                 );
                             })()}
                         </div>

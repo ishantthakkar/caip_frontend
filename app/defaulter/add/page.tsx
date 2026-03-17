@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MemberPortalContainer from '@/components/MemberPortalContainer';
+import Link from 'next/link';
 import { API_BASE_URL } from '@/config/apiConfig';
 
 export default function AddDefaulterPage() {
@@ -113,6 +114,10 @@ export default function AddDefaulterPage() {
     return (
         <MemberPortalContainer title="Report New Defaulter">
             <div className="max-w-4xl mx-auto animate-in fade-in duration-500 pb-10">
+                <Link href="/defaulter/list" className="inline-flex items-center gap-2 text-gray-500 hover:text-green-600 transition-all mb-4 group bg-white px-4 py-2 rounded-lg border border-gray-100 shadow-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <span className="text-xs font-black uppercase tracking-widest">Back to List</span>
+                </Link>
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
                     <div className="bg-gray-50 px-8 py-6 flex items-center justify-between border-b border-gray-200">
                         <div>

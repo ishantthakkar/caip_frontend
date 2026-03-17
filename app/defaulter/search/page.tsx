@@ -268,8 +268,11 @@ export default function SearchDefaulterPage() {
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Reported By</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Reporting Company</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Defaulter Company</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Defaulter Address</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">GST/PAN No.</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Address</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">GST No.</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">PAN No.</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">CIN No.</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aadhar No.</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Location</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Status</th>
                                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Action</th>
@@ -289,10 +292,19 @@ export default function SearchDefaulterPage() {
                                                     <p className="text-sm font-bold text-gray-900">{def.defaulter_name}</p>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <p className="text-xs text-gray-600 line-clamp-2 max-w-[200px]">{def.defaulter_address || 'N/A'}</p>
+                                                    <p className="text-xs text-gray-600 line-clamp-2 max-w-[150px]">{def.defaulter_address || 'N/A'}</p>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <p className="text-xs text-gray-500 font-mono">{def.gst_number || def.pan_number || 'N/A'}</p>
+                                                    <p className="text-xs text-gray-500 font-mono">{def.gst_number || '-'}</p>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <p className="text-xs text-gray-500 font-mono">{def.pan_number || '-'}</p>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <p className="text-xs text-gray-500 font-mono">{def.cin_number || '-'}</p>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <p className="text-xs text-gray-500 font-mono">{def.aadhar_number || '-'}</p>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
                                                     <p className="text-[11px] font-bold text-gray-700">{def.district}, {def.state}</p>
