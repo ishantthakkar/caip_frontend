@@ -48,12 +48,12 @@ export default function SubMembersPage() {
         e.preventDefault();
         if (!user) return;
 
-        const url = editingMember 
+        const url = editingMember
             ? `${API_BASE_URL}sub-members/update/${editingMember._id}`
             : `${API_BASE_URL}sub-members/create`;
-        
+
         const method = editingMember ? 'PUT' : 'POST';
-        const body = editingMember 
+        const body = editingMember
             ? { ...formData }
             : { ...formData, parentId: user._id };
 
@@ -126,13 +126,13 @@ export default function SubMembersPage() {
                         <h2 className="text-2xl font-bold text-gray-800 tracking-tight">Staff Management</h2>
                         <p className="text-sm text-gray-500 mt-1">Manage secondary access accounts for your organization.</p>
                     </div>
-                    
+
                     <button
                         onClick={() => { setEditingMember(null); setFormData({ firstName: '', email: '', phone: '' }); setShowModal(true); }}
                         disabled={subMembers.length >= 5}
                         className="flex items-center gap-2 px-6 py-3 bg-[#1b5e20] text-white rounded-lg font-bold text-sm shadow-sm hover:bg-green-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
                         Add Sub-Member
                     </button>
                 </div>
@@ -191,25 +191,25 @@ export default function SubMembersPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5 text-center">
-                                            <button 
+                                            <button
                                                 onClick={() => toggleStatus(member._id)}
-                                                className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-widest border transition-all ${member.isActive 
-                                                    ? 'bg-green-50 text-[#1b5e20] border-green-200' 
+                                                className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-widest border transition-all ${member.isActive
+                                                    ? 'bg-green-50 text-[#1b5e20] border-green-200'
                                                     : 'bg-gray-50 text-gray-400 border-gray-200 hover:text-[#1b5e20] hover:border-green-200'
-                                                }`}
+                                                    }`}
                                             >
                                                 {member.isActive ? 'Active' : 'Disabled'}
                                             </button>
                                         </td>
                                         <td className="px-6 py-5 text-right">
                                             <div className="flex justify-end gap-3">
-                                                <button 
+                                                <button
                                                     onClick={() => openEditModal(member)}
                                                     className="p-2 text-gray-400 hover:bg-gray-100 hover:text-[#1b5e20] rounded-lg transition-all"
                                                 >
                                                     <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => handleDelete(member._id)}
                                                     className="p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-all"
                                                 >
@@ -239,38 +239,38 @@ export default function SubMembersPage() {
                         {/* Modal Header */}
                         <div className="bg-[#1b5e20] p-6 text-white flex justify-between items-center">
                             <h3 className="text-lg font-bold">{editingMember ? 'Edit Sub-Member' : 'Add Sub-Member'}</h3>
-                            <button 
+                            <button
                                 onClick={() => setShowModal(false)}
                                 className="text-white/70 hover:text-white transition-colors"
                             >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
                             </button>
                         </div>
 
                         <form onSubmit={handleCreateOrUpdate} className="p-6 space-y-5">
                             <div className="space-y-1.5 flex flex-col">
                                 <label className="text-sm font-bold text-gray-700">Name</label>
-                                <input 
+                                <input
                                     type="text" required placeholder="Enter Name" value={formData.firstName}
-                                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                                     className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20]"
                                 />
                             </div>
-                            
+
                             <div className="space-y-1.5 flex flex-col">
                                 <label className="text-sm font-bold text-gray-700">Email Address</label>
-                                <input 
+                                <input
                                     type="email" required placeholder="Enter Email" value={formData.email}
-                                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20]"
                                 />
                             </div>
 
                             <div className="space-y-1.5 flex flex-col">
                                 <label className="text-sm font-bold text-gray-700">Phone Number</label>
-                                <input 
+                                <input
                                     type="text" required placeholder="Enter Phone" value={formData.phone}
-                                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20]"
                                 />
                             </div>

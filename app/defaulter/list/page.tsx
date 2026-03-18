@@ -373,6 +373,18 @@ export default function MemberDefaulterListPage() {
             });
 
             doc.save('CAIP_Defaulter_Report.pdf');
+
+            // Log the download activity
+            const token = localStorage.getItem('token');
+            fetch(`${API_BASE_URL}defaulter/log-download`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ details: `Downloaded ${processedData.length} defaulter records as PDF` })
+            }).catch(e => console.error("Log download error:", e));
+
         } catch (err) {
             console.error("PDF Export Error: ", err);
             alert("Failed to export PDF.");

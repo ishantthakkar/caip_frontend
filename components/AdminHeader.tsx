@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { API_BASE_URL } from '@/config/apiConfig';
 
 interface AdminHeaderProps {
     admin: any;
@@ -34,7 +35,17 @@ export default function AdminHeader({ admin, title = "Admin Dashboard", isCollap
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            const token = localStorage.getItem('adminToken');
+            if (token) {
+                await fetch(`${API_BASE_URL}auth/log-logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            }
+        } catch (e) { }
+
         localStorage.removeItem('adminToken');
         localStorage.removeItem('adminUser');
         router.push('/admin-login');
@@ -45,7 +56,7 @@ export default function AdminHeader({ admin, title = "Admin Dashboard", isCollap
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
                     {getHeaderIcon()}
-                    <h1 className="text-xl text-black tracking-tight font-serif uppercase font-black">{title}</h1>
+                    <h1 className="text-xl text-black tracking-tight font-sans capitalize font-medium">{title}</h1>
                 </div>
             </div>
 
@@ -56,7 +67,7 @@ export default function AdminHeader({ admin, title = "Admin Dashboard", isCollap
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                     </svg>
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] text-white border-2 border-[#ffd600] font-serif">
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] text-white border-2 border-[#ffd600] font-sans">
                         1
                     </div>
                 </div>
@@ -68,11 +79,11 @@ export default function AdminHeader({ admin, title = "Admin Dashboard", isCollap
                         className="flex items-center gap-2 cursor-pointer group py-1 px-1 pr-6 rounded-full transition-all"
                     >
                         <div className="w-10 h-10 rounded-full bg-white border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
-                            <span className="text-black font-black text-sm">{admin?.name?.[0] || 'A'}</span>
+                            <span className="text-black font-medium text-sm">{admin?.name?.[0] || 'A'}</span>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-xs text-black whitespace-nowrap font-serif font-black uppercase">
-                                Root: {admin?.name || 'Admin'}
+                            <span className="text-xs text-black whitespace-nowrap font-sans font-black uppercase">
+                                {admin?.name || 'Admin'}
                             </span>
                         </div>
                     </div>
@@ -80,15 +91,15 @@ export default function AdminHeader({ admin, title = "Admin Dashboard", isCollap
                     {isDropdownOpen && (
                         <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-3 animate-in fade-in slide-in-from-top-2 duration-200 z-[100]">
                             <div className="px-6 py-2 border-b border-gray-50 mb-2">
-                                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-serif">Authority Central</p>
+                                <p className="text-[10px] text-black uppercase tracking-widest font-sans">CAIP</p>
                             </div>
 
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-4 px-6 py-3 text-sm text-red-600 hover:bg-red-50 transition-all font-serif font-bold uppercase"
+                                 className="w-full flex items-center gap-4 px-6 py-3 text-sm text-red-600 hover:bg-red-50 transition-all font-sans font-medium capitalize"
                             >
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
-                                System Exit
+                                Logout
                             </button>
                         </div>
                     )}

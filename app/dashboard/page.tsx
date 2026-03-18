@@ -79,11 +79,6 @@ export default function DashboardPage() {
                         <div className="p-10 flex-1 flex flex-col min-h-[400px]">
                             {/* Bar Chart Implementation */}
                             <div className="flex-1 flex items-end gap-3 md:gap-6 relative border-b border-gray-100 pb-2">
-                                {/* Grid Lines */}
-                                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-                                    {[1, 2, 3, 4].map(i => <div key={i} className="w-full border-t border-gray-50/50 h-0"></div>)}
-                                </div>
-
                                 {(() => {
                                     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                     const trendData = stats.searchTrend || [];
@@ -93,48 +88,50 @@ export default function DashboardPage() {
                                         return { label: m, count: entry ? entry.count : 0 };
                                     });
 
-                                    const maxCount = Math.max(...fullData.map(d => d.count), 5); // Fallback to 5 for scale
+                                    const maxCount = Math.max(...fullData.map(d => d.count), 500);
 
-                                    return fullData.map((data, i) => {
-                                        const height = (data.count / maxCount) * 100;
-                                        return (
-                                            <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
-                                                {/* Tooltip */}
-                                                <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all bg-gray-900 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg pointer-events-none z-10 whitespace-nowrap shadow-xl">
-                                                    {data.count} Searches in {data.label}
-                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
-                                                </div>
-
-                                                {/* Bar */}
-                                                <div
-                                                    style={{ height: `${height}%` }}
-                                                    className="w-full max-w-[40px] bg-gradient-to-t from-[#1b5e20] to-[#4caf50] rounded-t-lg transition-all duration-700 ease-out group-hover:to-[#ffd600] group-hover:scale-x-110 shadow-lg relative overflow-hidden"
-                                                >
-                                                    {/* Gloss Effect */}
-                                                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                                </div>
-
-                                                {/* Label */}
-                                                <span className="absolute -bottom-8 text-[11px] font-black text-gray-400 uppercase tracking-tighter transition-colors group-hover:text-[#1b5e20]">
-                                                    {data.label}
-                                                </span>
+                                    return (
+                                        <>
+                                            {/* Grid Lines with Y-Axis Labels */}
+                                            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none -left-12">
+                                                {[0, 1, 2, 3, 4].map((i) => (
+                                                    <div key={i} className="flex items-center gap-3 w-[calc(100%+48px)]">
+                                                        <span className="text-[10px] font-bold text-gray-400 w-9 text-right tabular-nums">
+                                                            {Math.round(maxCount - (i * (maxCount / 4)))}
+                                                        </span>
+                                                        <div className="flex-1 border-t border-gray-100 flex-grow"></div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        );
-                                    });
+
+                                            {fullData.map((data, i) => {
+                                                const height = (data.count / maxCount) * 100;
+                                                return (
+                                                    <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end z-10">
+                                                        {/* Tooltip */}
+                                                        <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all bg-gray-900 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg pointer-events-none z-20 whitespace-nowrap shadow-xl">
+                                                            {data.count} Searches in {data.label}
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                                        </div>
+
+                                                        {/* Bar */}
+                                                        <div
+                                                            style={{ height: `${height}%` }}
+                                                            className="w-full max-w-[40px] bg-gradient-to-t from-[#1b5e20] to-[#4caf50] rounded-t-lg transition-all duration-700 ease-out group-hover:to-[#ffd600] group-hover:scale-x-110 shadow-lg relative overflow-hidden"
+                                                        >
+                                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                        </div>
+
+                                                        {/* Label */}
+                                                        <span className="absolute -bottom-8 text-[11px] font-black text-gray-400 uppercase tracking-tighter transition-colors group-hover:text-[#1b5e20]">
+                                                            {data.label}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </>
+                                    );
                                 })()}
-                            </div>
-                            <div className="mt-10 pt-6 border-t border-gray-50 flex items-center justify-between">
-                                <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-[#1b5e20]"></div>
-                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Search Volume</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-[#ffd600]"></div>
-                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Peak Periods</span>
-                                    </div>
-                                </div>
-                                <p className="text-[10px] font-bold text-[#1b5e20] bg-green-50 px-3 py-1 rounded-full uppercase tracking-widest">Analytics Refreshed Every 15m</p>
                             </div>
                         </div>
                     </div>
@@ -179,18 +176,17 @@ export default function DashboardPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50 text-sm font-medium text-gray-600">
-                                    {[
-                                        { type: 'System Login', time: new Date().toLocaleString() },
-                                        { type: 'Defaulter Search', time: '11/03/2026, 11:51 AM' },
-                                        { type: 'Reported Defaulter', time: '11/03/2026, 11:45 AM' },
-                                        { type: 'System Logout', time: '10/03/2026, 06:12 PM' }
-                                    ].map((act, i) => (
+                                    {(stats?.recentActivities || []).length > 0 ? (stats.recentActivities.slice(0, 5).map((act: any, i: number) => (
                                         <tr key={i} className="hover:bg-gray-50 divide-x divide-gray-50">
                                             <td className="px-6 py-4 font-bold">{i + 1}</td>
-                                            <td className="px-6 py-4">{act.type}</td>
-                                            <td className="px-6 py-4 text-gray-400">{act.time}</td>
+                                            <td className="px-6 py-4 font-bold text-gray-900">{act.activityType}</td>
+                                            <td className="px-6 py-4 text-gray-400">{new Date(act.createdAt).toLocaleString('en-GB')}</td>
                                         </tr>
-                                    ))}
+                                    ))) : (
+                                        <tr>
+                                            <td colSpan={3} className="px-6 py-10 text-gray-400 italic">No recent activity detected.</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>

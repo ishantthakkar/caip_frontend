@@ -201,7 +201,6 @@ export default function ProfilePage() {
                                     { label: 'Phone', value: user.phone || '9876543210' },
                                     { label: 'Membership Status', value: user.membership_status === '1' ? 'Active' : 'Pending', valueClass: user.membership_status === '1' ? 'text-green-600' : 'text-amber-500' },
                                     { label: 'Membership Expiry Date', value: 'November 04, 2026' }, // Placeholder based on SS
-                                    { label: 'Total Credits Available', value: '210 Credits' } // Placeholder based on SS
                                 ].map((item, idx) => (
                                     <div key={idx} className="flex justify-between items-center text-sm">
                                         <span className="text-gray-500 font-semibold">{item.label} :</span>

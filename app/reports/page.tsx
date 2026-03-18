@@ -229,7 +229,7 @@ export default function CombinedReportsPage() {
                                 <thead className="bg-[#1b5e20] text-white">
                                     <tr>
                                         <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Date</th>
-                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Defaulter Name</th>
+                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Defaulter Company Name</th>
                                         <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Amount</th>
                                         <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Outstanding</th>
                                         <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Status</th>
@@ -263,8 +263,8 @@ export default function CombinedReportsPage() {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${item.status === 1 ? 'bg-green-100 text-green-700' :
-                                                            item.status === 2 ? 'bg-red-100 text-red-700' :
-                                                                'bg-yellow-100 text-yellow-700'
+                                                        item.status === 2 ? 'bg-red-100 text-red-700' :
+                                                            'bg-yellow-100 text-yellow-700'
                                                         }`}>
                                                         {item.status === 1 ? 'Approved' : item.status === 2 ? 'Rejected' : 'Pending'}
                                                     </span>

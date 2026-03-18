@@ -203,7 +203,7 @@ export default function RegisterPage() {
                     <div className="bg-[#1b5e20] p-6 text-center">
                         <h2 className="text-xl font-bold text-white mb-1">Chamber for Agri Input Protection</h2>
                         <p className="text-white/80 text-[10px] font-medium tracking-tight">
-                            Register your account to access our premium agricultural services
+                            Create your account to access defaulter information and exclusive member resources from the Chamber for Agri Input Protection.
                         </p>
                     </div>
 
@@ -211,7 +211,7 @@ export default function RegisterPage() {
                     {isRegistered ? (
                         <div className="p-16 text-center space-y-6 animate-in zoom-in-95 duration-500">
                             <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-100 shadow-inner">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1b5e20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1b5e20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                             </div>
                             <div>
                                 <h3 className="text-2xl font-black text-gray-900 tracking-tight">Success!</h3>
@@ -284,7 +284,7 @@ export default function RegisterPage() {
                                             I agree to the <span className="text-green-700 underline">Terms and Conditions</span> of CAIP
                                         </p>
                                         <p className="text-[9px] text-gray-400 font-medium leading-relaxed">
-                                            CAIP is a unified platform for agricultural protection. All data remains subject to our privacy guidelines.
+                                            CAIP is a platform dedicated to protecting the interests of the agri-input industry. All data is provided by members, is not owned or controlled by CAIP, and is subject to our privacy guidelines.
                                         </p>
                                     </div>
                                 </div>
