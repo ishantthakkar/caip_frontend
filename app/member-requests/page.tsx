@@ -17,6 +17,8 @@ export default function MemberRequestsPage() {
     const [showRejectionModal, setShowRejectionModal] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [processingUserId, setProcessingUserId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchUsers();
@@ -89,48 +91,79 @@ export default function MemberRequestsPage() {
         });
     }, [users, searchTerm, statusFilter]);
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, statusFilter]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
+    const paginatedUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     const pendingCount = Array.isArray(users) ? users.filter(u => u.status === "0").length : 0;
 
     return (
         <AdminPortalContainer title="Request For Approval">
             <div className="space-y-12">
                 <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
-                    <div className="bg-[#1b5e20] px-10 py-8 flex flex-col md:flex-row justify-between md:items-center gap-6 text-white font-serif">
-                        <div>
-                            <h3 className="text-xl font-black tracking-widest">Member Approval Requests</h3>
+                    <div className="bg-white px-8 py-8 flex flex-wrap items-end gap-8 border-b border-gray-100">
+                        <div className="flex-1 min-w-[200px] space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Report Type</label>
+                            <div className="relative">
+                                <select
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3.5 text-xs font-black text-gray-900 outline-none focus:border-green-500 transition-all appearance-none cursor-pointer"
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                >
+                                    <option value="0">Pending Requests</option>
+                                    <option value="1">Approved Members</option>
+                                    <option value="2">Rejected Requests</option>
+                                    <option value="all">All Records</option>
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">▼</div>
+                            </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 font-sans not-italic">
+                        <div className="flex-1 min-w-[150px] space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Range</label>
+                            <div className="relative">
+                                <select className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3.5 text-xs font-black text-gray-900 outline-none appearance-none">
+                                    <option>All</option>
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">▼</div>
+                            </div>
+                        </div>
+
+                        <div className="flex-[2] min-w-[300px] space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Search</label>
                             <div className="relative group">
                                 <input
                                     type="text"
                                     placeholder="Search..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="bg-white/10 border border-white/20 rounded-2xl px-12 py-3 text-sm font-black text-white placeholder-white/40 outline-none focus:bg-white focus:text-gray-900 focus:border-white transition-all w-80"
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-12 py-3.5 text-xs font-black text-gray-900 placeholder-gray-300 outline-none focus:border-green-500 transition-all shadow-sm"
                                 />
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-opacity">🔎</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">🔎</span>
                             </div>
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="bg-white/10 border border-white/20 rounded-2xl px-6 py-3 text-sm font-black text-white outline-none focus:bg-white focus:text-gray-900 transition-all cursor-pointer"
-                            >
-                                <option className="text-gray-900" value="0">Pending Requests</option>
-                                <option className="text-gray-900" value="1">Approval Entries</option>
-                                <option className="text-gray-900" value="2">Denied Requests</option>
-                            </select>
                         </div>
                     </div>
 
                     <div className="p-4 overflow-x-auto">
                         <table className="w-full text-left font-black">
                             <thead className="bg-[#1b5e20] text-white">
-                                <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90 border-b border-white/10">
-                                    <th className="px-10 py-6">Applicant Credentials</th>
-                                    <th className="px-10 py-6">Operational Zone</th>
-                                    <th className="px-10 py-6">Compliance Identifiers</th>
-                                    <th className="px-10 py-6 text-right">Action</th>
+                                <tr className="text-[10px] font-black tracking-[0.2em] text-white/90 border-b border-white/10">
+                                    <th className="px-6 py-6 min-w-[120px]">Member ID</th>
+                                    <th className="px-6 py-6 min-w-[150px]">Name</th>
+                                    <th className="px-6 py-6 min-w-[200px]">Email</th>
+                                    <th className="px-6 py-6">Phone</th>
+                                    <th className="px-6 py-6">State</th>
+                                    <th className="px-6 py-6">District</th>
+                                    <th className="px-6 py-6">Sub District</th>
+                                    <th className="px-6 py-6 min-w-[150px]">Organization</th>
+                                    <th className="px-6 py-6 text-center">Status</th>
+                                    <th className="px-6 py-6 text-center">Type</th>
+                                    <th className="px-6 py-6 text-center whitespace-nowrap">Joined On</th>
+                                    <th className="px-6 py-6 text-center">Docs</th>
+                                    <th className="px-6 py-6 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -141,63 +174,62 @@ export default function MemberRequestsPage() {
                                             <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Synchronizing Vault Access...</p>
                                         </td>
                                     </tr>
-                                ) : filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                                    <tr key={user._id} className="hover:bg-gray-50/80 transition-all group">
-                                        <td className="px-10 py-8">
-                                            <div className="flex items-center gap-5">
-                                                <div className="w-14 h-14 rounded-2xl bg-[#f0f9f0] flex items-center justify-center text-[#1b5e20] font-black text-xl border border-[#1b5e20]/10 group-hover:bg-[#1b5e20] group-hover:text-white transition-all duration-500 shadow-sm">
-                                                    {user.name?.[0]}
-                                                </div>
-                                                <div className="not-italic">
-                                                    <p className="text-base font-black text-gray-900 tracking-tight group-hover:text-[#1b5e20] transition-colors">{user.name}</p>
-                                                    <div className="flex items-center gap-2 mt-1 lowercase font-bold text-gray-400">
-                                                        <span className="text-[10px]">{user.email}</span>
-                                                        <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                                                        <span className="text-[10px] font-sans">{user.phone}</span>
-                                                    </div>
-                                                    {user.status === '2' && user.rejectionReason && (
-                                                        <div className="mt-3 flex items-start gap-1.5 max-w-[200px]">
-                                                            <p className="text-[9px] font-black text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100 shadow-sm">
-                                                                Refusal: {user.rejectionReason}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
+                                ) : paginatedUsers.length > 0 ? paginatedUsers.map((user) => (
+                                    <tr key={user._id} className="hover:bg-gray-50/50 transition-all group border-b border-gray-50">
+                                        <td className="px-6 py-6">
+                                            <p className="text-[11px] font-black text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 text-center tracking-tighter">
+                                                {user.memberId || 'PENDING'}
+                                            </p>
                                         </td>
-                                        <td className="px-10 py-8">
-                                            <div className="not-italic font-black">
-                                                <p className="text-sm text-gray-800 tracking-tighter">{user.district || 'Unassigned'}</p>
-                                                <p className="text-[9px] text-[#4caf50] mt-1 tracking-wider">{user.state || 'Global'}</p>
-                                            </div>
+                                        <td className="px-6 py-6 text-[11px] font-black text-gray-900 tracking-tight">{user.name}</td>
+                                        <td className="px-6 py-6 text-[10px] font-bold text-gray-400">{user.email}</td>
+                                        <td className="px-6 py-6 text-[10px] font-bold text-gray-500 font-sans">{user.phone}</td>
+                                        <td className="px-6 py-6 text-[10px] font-black text-[#1b5e20] tracking-tight">{user.state || '-'}</td>
+                                        <td className="px-6 py-6 text-[10px] font-bold text-gray-600">{user.district || '-'}</td>
+                                        <td className="px-6 py-6 text-[10px] font-bold text-gray-400 italic">{user.subDistrict || '-'}</td>
+                                        <td className="px-6 py-6 text-[10px] font-black text-gray-900">{user.companyName || '-'}</td>
+                                        <td className="px-6 py-6 text-center">
+                                            <span className={`text-[9px] font-black px-4 py-1.5 rounded-lg tracking-widest block mx-auto w-fit italic ${user.status === '0' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' :
+                                                    user.status === '1' ? 'bg-green-600 text-white shadow-lg shadow-green-600/20' :
+                                                        'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
+                                                }`}>
+                                                {user.status === '0' ? 'PENDING' : user.status === '1' ? 'APPROVED' : 'REJECTED'}
+                                            </span>
                                         </td>
-                                        <td className="px-10 py-8">
-                                            <div className="text-[9px] space-y-2 bg-gray-50/80 p-4 rounded-2xl border border-gray-100 group-hover:bg-white transition-all shadow-inner">
-                                                <p className="text-gray-400 flex justify-between tracking-wider">GST: <span className="text-gray-900 italic font-mono ml-3">{user.gst || 'Null'}</span></p>
-                                                <p className="text-gray-400 flex justify-between tracking-wider">PAN: <span className="text-gray-900 italic font-mono ml-3">{user.pan || 'Null'}</span></p>
-                                            </div>
+                                        <td className="px-6 py-6">
+                                            <p className="text-[10px] font-black text-gray-900 text-center tracking-widest uppercase">Member</p>
                                         </td>
-                                        <td className="px-10 py-8 text-right">
-                                            <div className="flex justify-end gap-3 items-center not-italic">
-                                                {user.status === '0' ? (
+                                        <td className="px-6 py-6">
+                                            <p className="text-[10px] font-bold text-gray-400 text-center whitespace-nowrap">{new Date(user.createdAt).toLocaleDateString('en-GB')}</p>
+                                        </td>
+                                        <td className="px-6 py-6 text-center">
+                                            <button
+                                                onClick={() => { setSelectedUser(user); setShowDocModal(true); }}
+                                                className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all border border-blue-100 shadow-sm"
+                                                title="View Documents"
+                                            >
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                            </button>
+                                        </td>
+                                        <td className="px-6 py-6 text-right">
+                                            <div className="flex justify-end gap-2 items-center not-italic">
+                                                {user.status === '0' && (
                                                     <div className="flex gap-2">
                                                         <button
                                                             onClick={() => handleAction(user._id, 'rejected')}
-                                                            className="px-6 py-3 bg-rose-50 text-rose-600 text-[9px] font-black tracking-wider rounded-xl hover:bg-rose-600 hover:text-white transition-all border border-rose-100 active:scale-95 shadow-lg shadow-rose-900/5"
+                                                            className="p-2.5 bg-rose-50 text-rose-600 rounded-lg group/btn hover:bg-rose-600 hover:text-white transition-all border border-rose-100"
+                                                            title="Reject"
                                                         >
-                                                            Reject
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                                         </button>
                                                         <button
                                                             onClick={() => handleAction(user._id, 'approved')}
-                                                            className="px-10 py-3 bg-[#1b5e20] text-white text-[9px] font-black tracking-wider rounded-xl hover:bg-black transition-all shadow-xl shadow-emerald-900/10 active:scale-95 border-b-2 border-black/20"
+                                                            className="p-2.5 bg-[#1b5e20] text-white rounded-lg hover:bg-black transition-all shadow-lg"
+                                                            title="Approve"
                                                         >
-                                                            Approve
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                                         </button>
                                                     </div>
-                                                ) : (
-                                                    <span className="text-[9px] font-black text-gray-300 bg-gray-50/50 px-6 py-2.5 rounded-xl border border-gray-100 tracking-widest">
-                                                        Protocol settled
-                                                    </span>
                                                 )}
                                             </div>
                                         </td>
@@ -212,6 +244,46 @@ export default function MemberRequestsPage() {
                             </tbody>
                         </table>
                     </div>
+
+                    {!loading && filteredUsers.length > 0 && (
+                        <div className="px-10 py-8 border-t border-gray-50 flex items-center justify-between bg-white">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                Page {currentPage} of {totalPages} <span className="mx-2 opacity-30">•</span> {filteredUsers.length} Indexed Assets
+                            </span>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-8 py-3 rounded-xl border border-gray-100 bg-white text-[10px] font-black tracking-widest text-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 uppercase"
+                                >
+                                    Previous
+                                </button>
+
+                                <div className="flex items-center gap-1.5">
+                                    {Array.from({ length: totalPages }).map((_, idx) => {
+                                        const pageNum = idx + 1;
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-xl' : 'bg-white border border-gray-100 text-gray-400 hover:bg-gray-50'}`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-8 py-3 rounded-xl border border-gray-100 bg-white text-[10px] font-black tracking-widest text-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 uppercase"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -219,10 +291,9 @@ export default function MemberRequestsPage() {
             {showDocModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white font-serif italic">
+                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white font-serif">
                             <div>
-                                <h3 className="text-xl font-black tracking-widest">Audit artifacts</h3>
-                                <p className="text-[10px] font-black text-white/50 tracking-wider font-sans not-italic mt-1">Found {selectedUser?.businessDocuments?.length || 0} legal assets: {selectedUser?.name}</p>
+                                <h3 className="text-xl font-black tracking-widest">Bussiness Documents</h3>
                             </div>
                             <button onClick={() => setShowDocModal(false)} className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all not-italic">✕</button>
                         </div>
@@ -232,7 +303,7 @@ export default function MemberRequestsPage() {
                                 <div className="grid grid-cols-2 gap-8">
                                     {selectedUser.businessDocuments.map((doc: string, idx: number) => {
                                         const isPdf = doc.toLowerCase().endsWith('.pdf');
-                                        const docUrl = `${ASSETS_BASE_URL}${doc}`;
+                                        const docUrl = `${ASSETS_BASE_URL}uploads/${doc}`;
                                         return (
                                             <div key={idx} className="group relative bg-gray-50 rounded-3xl border border-gray-100 p-8 flex flex-col items-center justify-center gap-6 hover:shadow-2xl transition-all hover:bg-white">
                                                 <div className="text-6xl group-hover:scale-110 transition-transform">

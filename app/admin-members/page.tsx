@@ -24,6 +24,8 @@ export default function AdminMembersPage() {
     const [selectedSubMembers, setSelectedSubMembers] = useState<any[]>([]);
     const [subModalLoading, setSubModalLoading] = useState(false);
     const [processingUserId, setProcessingUserId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
 
     useEffect(() => {
         fetchData();
@@ -150,6 +152,13 @@ export default function AdminMembersPage() {
         });
     }, [users, searchTerm, statusFilter]);
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, statusFilter]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
+    const paginatedUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     const pendingCount = Array.isArray(users) ? users.filter(u => u.status === "0").length : 0;
 
     return (
@@ -204,7 +213,7 @@ export default function AdminMembersPage() {
                                                 <p className="text-sm font-bold text-gray-400 animate-pulse tracking-widest uppercase">Loading records...</p>
                                             </td>
                                         </tr>
-                                    ) : filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                                    ) : paginatedUsers.length > 0 ? paginatedUsers.map((user) => (
                                         <tr key={user._id} className="hover:bg-gray-50 transition-colors group">
                                             <td className="px-6 py-5 text-sm">
                                                 {user.memberId || user._id?.slice(-8).toUpperCase()}
@@ -274,6 +283,51 @@ export default function AdminMembersPage() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Pagination Footer */}
+                        {!loading && filteredUsers.length > 0 && (
+                            <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                    Page {currentPage} of {totalPages} <span className="mx-2 opacity-30">•</span> {filteredUsers.length} Members Found
+                                </span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                        className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                    </button>
+
+                                    <div className="flex items-center gap-1">
+                                        {Array.from({ length: totalPages }).map((_, idx) => {
+                                            const pageNum = idx + 1;
+                                            if (totalPages > 5 && (pageNum > 1 && pageNum < totalPages) && (pageNum < currentPage - 1 || pageNum > currentPage + 1)) {
+                                                if (pageNum === currentPage - 2 || pageNum === currentPage + 2) return <span key={pageNum} className="text-gray-300">...</span>;
+                                                return null;
+                                            }
+                                            return (
+                                                <button
+                                                    key={pageNum}
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                    className={`w-8 h-8 rounded-lg text-[10px] font-bold transition-all ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                                                >
+                                                    {pageNum}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                        className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

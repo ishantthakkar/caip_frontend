@@ -307,7 +307,7 @@ export default function SearchDefaulterPage() {
                                                     <p className="text-xs text-gray-500 font-mono">{def.aadhar_number || '-'}</p>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <p className="text-[11px] font-bold text-gray-700">{def.district}, {def.state}</p>
+                                                    <p className="text-[11px] font-bold text-gray-700">{def.city ? `${def.city}, ` : ''}{def.district}, {def.state}</p>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
                                                     <span className="bg-red-50 text-red-600 px-2 py-1 rounded text-[10px] font-bold uppercase border border-red-100">
@@ -363,6 +363,7 @@ export default function SearchDefaulterPage() {
                                         <InfoItem icon="📍" label="State" value={selectedDefaulter.state} />
                                         <InfoItem icon="🏢" label="District" value={selectedDefaulter.district} />
                                         <InfoItem icon="🗾" label="Sub District" value={selectedDefaulter.cities || '-'} />
+                                        <InfoItem icon="🏙️" label="City" value={selectedDefaulter.city || '-'} />
                                         <InfoItem icon="📅" label="Financial Year" value={selectedDefaulter.financial_year || '-'} />
                                         <InfoItem icon="📉" label="Outstanding" value={(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })} />
                                         <InfoItem icon="🏭" label="Industry" value={selectedDefaulter.industry || '-'} />

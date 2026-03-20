@@ -14,7 +14,10 @@ export default function ProfilePage() {
     const [purchasing, setPurchasing] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState<any>({});
-    const [locations, setLocations] = useState<any>(null);
+    const [states, setStates] = useState<string[]>([]);
+    const [districts, setDistricts] = useState<string[]>([]);
+    const [subDistricts, setSubDistricts] = useState<string[]>([]);
+    const [cities, setCities] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
     const [hasMounted, setHasMounted] = useState(false);
     const [businessDocs, setBusinessDocs] = useState<FileList | null>(null);
@@ -33,19 +36,9 @@ export default function ProfilePage() {
 
             fetchProfile(token);
             fetchPlans();
-            fetchLocations();
+            fetchStates();
         }
     }, [router]);
-
-    const fetchLocations = async () => {
-        try {
-            const res = await fetch(`${API_BASE_URL}locations`);
-            const data = await res.json();
-            setLocations(data.states || []);
-        } catch (error) {
-            console.error("Error fetching locations:", error);
-        }
-    };
 
     const fetchPlans = async () => {
         try {
@@ -56,6 +49,48 @@ export default function ProfilePage() {
             }
         } catch (error) {
             console.error("Error fetching plans:", error);
+        }
+    };
+
+    const fetchStates = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}locations`);
+            const data = await response.json();
+            if (response.ok) {
+                setStates(data.states.map((s: any) => s.state) || []);
+            }
+        } catch (err) {
+            console.error("States fetch error:", err);
+        }
+    };
+
+    const fetchDistricts = async (state: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}districts?state=${encodeURIComponent(state)}`);
+            const data = await response.json();
+            if (response.ok) setDistricts(data.districts || []);
+        } catch (err) {
+            console.error("Districts fetch error:", err);
+        }
+    };
+
+    const fetchSubDistricts = async (state: string, district: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}sub-districts?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`);
+            const data = await response.json();
+            if (response.ok) setSubDistricts(data.subDistricts || []);
+        } catch (err) {
+            console.error("Sub-Districts fetch error:", err);
+        }
+    };
+
+    const fetchCities = async (state: string, district: string, subDistrict: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}cities?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}&subDistrict=${encodeURIComponent(subDistrict)}`);
+            const data = await response.json();
+            if (response.ok) setCities(data.cities || []);
+        } catch (err) {
+            console.error("Cities fetch error:", err);
         }
     };
 
@@ -77,6 +112,11 @@ export default function ProfilePage() {
                 setUser(data.data);
                 setFormData(data.data);
                 localStorage.setItem('user', JSON.stringify(data.data));
+
+                // Initial load of dependent locations
+                if (data.data.state) fetchDistricts(data.data.state);
+                if (data.data.state && data.data.district) fetchSubDistricts(data.data.state, data.data.district);
+                if (data.data.state && data.data.district && data.data.subDistrict) fetchCities(data.data.state, data.data.district, data.data.subDistrict);
             }
         } catch (error) {
             console.error("Error fetching profile:", error);
@@ -166,9 +206,6 @@ export default function ProfilePage() {
         );
     }
 
-    const states = (locations || []);
-    const districts = states.find((s: any) => s.state === formData.state)?.districts || [];
-    const subDistricts = districts.find((d: any) => d.district === formData.district)?.subDistricts || [];
 
     return (
         <MemberPortalContainer title="Profile" skipMembershipCheck={true}>
@@ -200,7 +237,23 @@ export default function ProfilePage() {
                                     { label: 'Email', value: user.email || 'testcompany@' },
                                     { label: 'Phone', value: user.phone || '9876543210' },
                                     { label: 'Membership Status', value: user.membership_status === '1' ? 'Active' : 'Pending', valueClass: user.membership_status === '1' ? 'text-green-600' : 'text-amber-500' },
-                                    { label: 'Membership Expiry Date', value: 'November 04, 2026' }, // Placeholder based on SS
+                                    ...(user.membership_status === '1' ? [
+                                        { 
+                                            label: 'Membership Expiry Date', 
+                                            value: user.membershipExpiry === 'Lifetime' 
+                                                ? 'Lifetime' 
+                                                : (user.membershipExpiry && user.membershipExpiry !== 'N/A' 
+                                                    ? new Date(user.membershipExpiry).toLocaleString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        hour12: true
+                                                    })
+                                                    : 'N/A')
+                                        }
+                                    ] : []),
                                 ].map((item, idx) => (
                                     <div key={idx} className="flex justify-between items-center text-sm">
                                         <span className="text-gray-500 font-semibold">{item.label} :</span>
@@ -306,11 +359,18 @@ export default function ProfilePage() {
                                         <select
                                             disabled={!isEditing}
                                             value={formData.state || ''}
-                                            onChange={(e) => setFormData({ ...formData, state: e.target.value, district: '', subDistrict: '' })}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setFormData({ ...formData, state: val, district: '', subDistrict: '', city: '' });
+                                                fetchDistricts(val);
+                                                setDistricts([]);
+                                                setSubDistricts([]);
+                                                setCities([]);
+                                            }}
                                             className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] appearance-none disabled:opacity-100 disabled:bg-gray-50/30`}
                                         >
                                             <option value="">Select State</option>
-                                            {states.map((s: any) => <option key={s.state} value={s.state}>{s.state}</option>)}
+                                            {states.map((s: any) => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                     </div>
 
@@ -319,11 +379,17 @@ export default function ProfilePage() {
                                         <select
                                             disabled={!isEditing}
                                             value={formData.district || ''}
-                                            onChange={(e) => setFormData({ ...formData, district: e.target.value, subDistrict: '' })}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setFormData({ ...formData, district: val, subDistrict: '', city: '' });
+                                                fetchSubDistricts(formData.state, val);
+                                                setSubDistricts([]);
+                                                setCities([]);
+                                            }}
                                             className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] appearance-none disabled:opacity-100 disabled:bg-gray-50/30`}
                                         >
                                             <option value="">Select District</option>
-                                            {districts.map((d: any) => <option key={d.district} value={d.district}>{d.district}</option>)}
+                                            {districts.map((d: any) => <option key={d} value={d}>{d}</option>)}
                                         </select>
                                     </div>
 
@@ -332,11 +398,29 @@ export default function ProfilePage() {
                                         <select
                                             disabled={!isEditing}
                                             value={formData.subDistrict || ''}
-                                            onChange={(e) => setFormData({ ...formData, subDistrict: e.target.value })}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setFormData({ ...formData, subDistrict: val, city: '' });
+                                                fetchCities(formData.state, formData.district, val);
+                                                setCities([]);
+                                            }}
                                             className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] appearance-none disabled:opacity-100 disabled:bg-gray-50/30`}
                                         >
                                             <option value="">Select Sub District</option>
                                             {subDistricts.map((sd: any) => <option key={sd} value={sd}>{sd}</option>)}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-1.5 flex flex-col">
+                                        <label className="text-sm font-bold text-gray-700">City/Village/Town*</label>
+                                        <select
+                                            disabled={!isEditing}
+                                            value={formData.city || ''}
+                                            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                            className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] appearance-none disabled:opacity-100 disabled:bg-gray-50/30`}
+                                        >
+                                            <option value="">Select City/Village/Town</option>
+                                            {cities.map((c: any) => <option key={c} value={c}>{c}</option>)}
                                         </select>
                                     </div>
 
@@ -373,8 +457,10 @@ export default function ProfilePage() {
                                             className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] appearance-none disabled:opacity-100 disabled:bg-gray-50/30`}
                                         >
                                             <option value="Agriculture">Agriculture</option>
-                                            <option value="Chemicals">Chemicals</option>
-                                            <option value="Fertilizers">Fertilizers</option>
+                                            <option value="Agrochemicals & Fertilizers">Agrochemicals & Fertilizers</option>
+                                            <option value="Seed Suppliers">Seed Suppliers</option>
+                                            <option value="Farming Equipment">Farming Equipment</option>
+                                            <option value="Others">Others</option>
                                         </select>
                                     </div>
 
@@ -491,7 +577,55 @@ export default function ProfilePage() {
                             </div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+                        <div className="space-y-8 animate-in fade-in duration-300">
+                            {user.membership_status === '1' && (
+                                <div className="bg-white rounded-2xl shadow-sm border-2 border-green-600/20 overflow-hidden">
+                                    <div className="bg-[#1b5e20] p-6 text-white flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mb-1">Your Currently Active Plan</p>
+                                            <h4 className="text-xl font-bold">{user.planName || "Active Membership"}</h4>
+                                        </div>
+                                        <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg text-right">
+                                            <p className="text-[10px] font-bold uppercase opacity-60">Expires On</p>
+                                            <p className="text-sm font-bold">
+                                                {user.membershipExpiry === 'Lifetime' 
+                                                    ? 'Lifetime Validity' 
+                                                    : new Date(user.membershipExpiry).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="p-8">
+                                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+                                            <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-2xl text-green-600">🛡️</div>
+                                            <div>
+                                                <h5 className="font-bold text-gray-800">Membership Benefits</h5>
+                                                <p className="text-xs text-gray-400 font-medium tracking-tight">Features unlocked with your current subscription</p>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {(user.membershipBenefits || []).map((benefit: string, idx: number) => (
+                                                <div key={idx} className="flex items-center gap-3 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                                                    <div className="w-6 h-6 bg-[#1b5e20] text-white rounded-full flex items-center justify-center text-[10px] shrink-0">✓</div>
+                                                    <span className="text-sm font-semibold text-gray-700">{benefit}</span>
+                                                </div>
+                                            ))}
+                                            {(user.membershipBenefits || []).length === 0 && (
+                                                <div className="col-span-full py-4 text-center text-gray-400 italic text-sm">
+                                                    No specific benefits listed for this plan.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-4 py-2">
+                                <div className="flex-1 h-px bg-gray-100"></div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Available Upgrade Plans</h4>
+                                <div className="flex-1 h-px bg-gray-100"></div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {plans.map((plan: any) => (
                                 <div key={plan._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:border-green-600/30 transition-colors">
                                     <div className="bg-[#1b5e20] p-6 text-white text-center">
@@ -504,7 +638,7 @@ export default function ProfilePage() {
                                             <span className="text-gray-400 font-medium ml-2 text-sm">/ {plan.duration}</span>
                                         </div>
                                         <ul className="space-y-3 flex-1 mb-8">
-                                            {plan.features?.map((f: string, i: number) => (
+                                            {plan.benefits?.map((f: string, i: number) => (
                                                 <li key={i} className="flex items-start gap-3 text-xs font-semibold text-gray-600">
                                                     <span className="text-green-600 mt-1">✓</span> {f}
                                                 </li>
@@ -521,9 +655,10 @@ export default function ProfilePage() {
                                 </div>
                             ))}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
+        </div>
         </MemberPortalContainer>
     );
 }

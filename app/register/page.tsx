@@ -13,7 +13,7 @@ const FormInput = ({ label, name, type = "text", placeholder, required = false, 
 
     return (
         <div className={`space-y-1.5 ${className}`}>
-            <label className="text-[10px] font-bold text-gray-700 uppercase ml-1">
+            <label className="text-[10px] font-bold text-gray-700 ml-1">
                 {label} {required && <span className="text-red-500">*</span>}
             </label>
             <div className="relative">
@@ -58,9 +58,9 @@ const FormSelect = ({ label, name, options, required = false, className = "", va
             className={`w-full border ${error ? 'border-red-400' : 'border-blue-100'} focus:border-blue-400 focus:ring-1 focus:ring-blue-100 py-2.5 px-4 rounded-lg outline-none transition-all text-xs text-gray-600 shadow-sm bg-white appearance-none`}
         >
             <option value="" disabled>{placeholder || `Select ${label}`}</option>
-            {options.map((opt: any) => {
-                const val = typeof opt === 'string' ? opt : (opt.state || opt.district || opt);
-                return <option key={val} value={val}>{val}</option>;
+            {options && options.map((opt: any, index: number) => {
+                const val = typeof opt === 'string' ? opt : (opt.state || opt.district || opt.subDistrict || opt.city || opt.name || index);
+                return <option key={`${val}-${index}`} value={val}>{val}</option>;
             })}
         </select>
         {error && <p className="text-[9px] text-red-500 font-bold ml-1">{error}</p>}
@@ -71,41 +71,193 @@ export default function RegisterPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-    const [locations, setLocations] = useState<any[]>([]);
+    const [states, setStates] = useState<string[]>([]);
+    const [districts, setDistricts] = useState<string[]>([]);
+    const [subDistricts, setSubDistricts] = useState<string[]>([]);
+    const [cities, setCities] = useState<string[]>([]);
     const [selectedState, setSelectedState] = useState("");
     const [selectedDistrict, setSelectedDistrict] = useState("");
     const [selectedSubDistrict, setSelectedSubDistrict] = useState("");
+    const [selectedCity, setSelectedCity] = useState("");
     const [termsAgreed, setTermsAgreed] = useState(false);
     const [errors, setErrors] = useState<any>({});
+    const [formData, setFormData] = useState({
+        name: '',
+        phone: '',
+        companyName: '',
+        gst: '',
+        pan: '',
+        email: '',
+        businessAddress: ''
+    });
+    const [isGstFetching, setIsGstFetching] = useState(false);
+    const [pendingLocation, setPendingLocation] = useState<any>(null);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleGstFetch = async () => {
+        if (!formData.gst) {
+            setMessage({ type: 'error', text: 'Please enter a GST number first' });
+            return;
+        }
+
+        setIsGstFetching(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}verify-gst/${formData.gst}`);
+            const result = await response.json();
+
+            if (response.ok) {
+                const { data } = result;
+                setFormData(prev => ({
+                    ...prev,
+                    companyName: data.lgnm || data.tradeNam || prev.companyName,
+                    businessAddress: data.pradr?.adr || prev.businessAddress,
+                }));
+
+                if (data.pradr?.addr?.stcd) {
+                    const gstState = data.pradr.addr.stcd;
+                    const matchedState = states.find(s => s.toLowerCase() === gstState.toLowerCase()) || gstState;
+                    setSelectedState(matchedState);
+                    
+                    if (data.pradr.addr.dst) {
+                        setPendingLocation({
+                            district: data.pradr.addr.dst,
+                            subDistrict: data.pradr.addr.st,
+                            city: data.pradr.addr.loc
+                        });
+                    }
+                }
+                setMessage({ type: 'success', text: 'GST details fetched successfully!' });
+            } else {
+                setMessage({ type: 'error', text: result.msg || 'Invalid GST number' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'GST verification service unavailable' });
+        } finally {
+            setIsGstFetching(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchLocations = async () => {
+        const fetchStates = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}locations`);
                 const data = await response.json();
                 if (response.ok) {
-                    setLocations(data.states || []);
+                    setStates(data.states.map((s: any) => s.state) || []);
                 }
             } catch (err) {
-                console.error("Locations fetch error:", err);
+                console.error("States fetch error:", err);
             }
         };
-        fetchLocations();
+        fetchStates();
     }, []);
 
-    const districts = locations.find(s => s.state === selectedState)?.districts || [];
-    const subDistricts = districts.find((d: any) => d.district === selectedDistrict)?.subDistricts || [];
+    const fetchDistricts = async (state: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}districts?state=${encodeURIComponent(state)}`);
+            const data = await response.json();
+            if (response.ok) setDistricts(data.districts || []);
+        } catch (err) {
+            console.error("Districts fetch error:", err);
+        }
+    };
+
+    const fetchSubDistricts = async (state: string, district: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}sub-districts?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`);
+            const data = await response.json();
+            if (response.ok) setSubDistricts(data.subDistricts || []);
+        } catch (err) {
+            console.error("Sub-Districts fetch error:", err);
+        }
+    };
+
+    const fetchCities = async (state: string, district: string, subDistrict: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}cities?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}&subDistrict=${encodeURIComponent(subDistrict)}`);
+            const data = await response.json();
+            if (response.ok) setCities(data.cities || []);
+        } catch (err) {
+            console.error("Cities fetch error:", err);
+        }
+    };
+
+    useEffect(() => {
+        if (selectedState) {
+            fetchDistricts(selectedState);
+            setSelectedDistrict("");
+            setSelectedSubDistrict("");
+            setSelectedCity("");
+            setDistricts([]);
+            setSubDistricts([]);
+            setCities([]);
+        }
+    }, [selectedState]);
+
+    useEffect(() => {
+        if (selectedState && selectedDistrict) {
+            fetchSubDistricts(selectedState, selectedDistrict);
+            setSelectedSubDistrict("");
+            setSelectedCity("");
+            setSubDistricts([]);
+            setCities([]);
+        }
+    }, [selectedDistrict]);
+
+    useEffect(() => {
+        if (selectedState && selectedDistrict && selectedSubDistrict) {
+            fetchCities(selectedState, selectedDistrict, selectedSubDistrict);
+            setSelectedCity("");
+            setCities([]);
+        }
+    }, [selectedSubDistrict]);
+
+    // Location auto-selection effect
+    useEffect(() => {
+        if (pendingLocation?.district && districts.length > 0) {
+            const matched = districts.find(d => d.toLowerCase() === pendingLocation.district.toLowerCase());
+            if (matched) {
+                setSelectedDistrict(matched);
+                setPendingLocation((prev: any) => ({ ...prev, district: null }));
+            }
+        }
+    }, [districts, pendingLocation]);
+
+    useEffect(() => {
+        if (pendingLocation?.subDistrict && subDistricts.length > 0) {
+            const matched = subDistricts.find(s => s.toLowerCase() === pendingLocation.subDistrict.toLowerCase());
+            if (matched) {
+                setSelectedSubDistrict(matched);
+                setPendingLocation((prev: any) => ({ ...prev, subDistrict: null }));
+            }
+        }
+    }, [subDistricts, pendingLocation]);
+
+    useEffect(() => {
+        if (pendingLocation?.city && cities.length > 0) {
+            const matched = cities.find(c => c.toLowerCase() === pendingLocation.city.toLowerCase());
+            if (matched) {
+                setSelectedCity(matched);
+                setPendingLocation(null);
+            }
+        }
+    }, [cities, pendingLocation]);
 
     const validateForm = (formData: FormData) => {
         const newErrors: any = {};
         if (!formData.get('name')) newErrors.name = "Full Name is required";
         if (!formData.get('email')) newErrors.email = "Email is required";
         if (!formData.get('companyName')) newErrors.companyName = "Company Name is required";
-        if (!formData.get('gst')) newErrors.gst = "GST Number is required";
-        if (!formData.get('pan')) newErrors.pan = "PAN Number is required";
+        if (!formData.get('gst')) newErrors.gst = "GST is required";
+        if (!formData.get('pan')) newErrors.pan = "PAN is required";
         if (!selectedState) newErrors.state = "State is required";
         if (!selectedDistrict) newErrors.district = "District is required";
         if (!selectedSubDistrict) newErrors.subDistrict = "Sub District is required";
+        if (!selectedCity) newErrors.city = "City is required";
         const phone = formData.get('phone') as string;
         if (!phone) {
             newErrors.phone = "Phone Number is required";
@@ -138,6 +290,7 @@ export default function RegisterPage() {
         formData.set('state', selectedState);
         formData.set('district', selectedDistrict);
         formData.set('subDistrict', selectedSubDistrict);
+        formData.set('city', selectedCity);
 
         try {
             const response = await fetch(`${API_BASE_URL}register`, {
@@ -215,7 +368,7 @@ export default function RegisterPage() {
                             </div>
                             <div>
                                 <h3 className="text-2xl font-black text-gray-900 tracking-tight">Success!</h3>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Registration Protocol Complete</p>
+                                <p className="text-xs font-bold text-gray-800 tracking-[0.2em] mt-2">Registration Protocol Complete</p>
                             </div>
                             <p className="text-sm font-medium text-gray-600">
                                 Moving you to secure login console...
@@ -224,18 +377,41 @@ export default function RegisterPage() {
                     ) : (
                         <form onSubmit={handleSubmit} className="p-8 space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                                <FormInput label="Name" name="name" placeholder="Full Name" required error={errors.name} />
-                                <FormInput label="Phone" name="phone" placeholder="Enter Phone" required error={errors.phone} />
+                                <FormInput label="Name" name="name" placeholder="Full Name" required error={errors.name} value={formData.name} onChange={handleInputChange} />
+                                <FormInput label="Phone" name="phone" placeholder="Enter Phone" required error={errors.phone} value={formData.phone} onChange={handleInputChange} />
 
-                                <FormInput label="Company Name" name="companyName" placeholder="Company Name" required error={errors.companyName} />
-                                <FormInput label="GST Number" name="gst" placeholder="GST Registration No" required error={errors.gst} />
-                                <FormInput label="Pan" name="pan" placeholder="Permanent Account No" required error={errors.pan} />
+                                <FormInput label="Company Name" name="companyName" placeholder="Company Name" required error={errors.companyName} value={formData.companyName} onChange={handleInputChange} />
+                                
+                                <div className="flex items-end gap-2">
+                                    <FormInput 
+                                        label="GST" 
+                                        name="gst" 
+                                        placeholder="GST" 
+                                        required 
+                                        error={errors.gst} 
+                                        className="flex-1"
+                                        value={formData.gst}
+                                        onChange={handleInputChange}
+                                    />
+                                    <button 
+                                        type="button" 
+                                        onClick={handleGstFetch}
+                                        disabled={isGstFetching}
+                                        className="mb-1.5 h-[42px] px-4 bg-[#1b5e20] text-white rounded-lg text-[10px] font-bold hover:bg-green-900 transition-all disabled:opacity-50 shadow-sm"
+                                    >
+                                        {isGstFetching ? '...' : 'FETCH'}
+                                    </button>
+                                </div>
+
+                                <FormInput label="Pan" name="pan" placeholder="PAN" required error={errors.pan} value={formData.pan} onChange={handleInputChange} />
+                                <FormInput label="Email" name="email" type="email" placeholder="Email" required error={errors.email} value={formData.email} onChange={handleInputChange} />
+
                                 <FormSelect
                                     label="State"
                                     name="state"
                                     value={selectedState}
-                                    onChange={(e: any) => { setSelectedState(e.target.value); setSelectedDistrict(""); setSelectedSubDistrict(""); }}
-                                    options={locations}
+                                    onChange={(e: any) => setSelectedState(e.target.value)}
+                                    options={states}
                                     placeholder="Select State"
                                     required
                                     error={errors.state}
@@ -254,24 +430,48 @@ export default function RegisterPage() {
                                     label="Sub District"
                                     name="subDistrict"
                                     value={selectedSubDistrict}
-                                    onChange={(e: any) => setSelectedSubDistrict(e.target.value)}
+                                    onChange={(e: any) => { setSelectedSubDistrict(e.target.value); setSelectedCity(""); }}
                                     options={subDistricts}
                                     placeholder="Select Sub District"
                                     required
                                     error={errors.subDistrict}
                                 />
-                                <FormInput label="Email" name="email" type="email" placeholder="Email" required error={errors.email} />
+                                <FormSelect
+                                    label="City"
+                                    name="city"
+                                    value={selectedCity}
+                                    onChange={(e: any) => setSelectedCity(e.target.value)}
+                                    options={cities.length > 0 ? cities : []}
+                                    placeholder="Select City"
+                                    required
+                                    error={errors.city}
+                                />
 
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-gray-700 uppercase ml-1">
-                                        Business Document
+                                <div className="md:col-span-2">
+                                    <FormInput 
+                                        label="Business Address" 
+                                        name="businessAddress" 
+                                        placeholder="Full address will be autofilled from GST" 
+                                        value={formData.businessAddress} 
+                                        onChange={handleInputChange} 
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <label className="text-[10px] font-bold text-gray-700 ml-1">
+                                        Business Documents (Upload multiple if needed)
                                     </label>
                                     <div className="relative">
                                         <input
                                             type="file"
-                                            name="businessDocument"
-                                            className="w-full border border-blue-100 py-2 px-4 rounded-lg text-[10px] text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-600 hover:file:bg-gray-200 transition-all shadow-sm"
+                                            name="businessDocuments"
+                                            multiple
+                                            accept=".pdf,image/*"
+                                            className="w-full border border-blue-100 py-3 px-4 rounded-xl text-[10px] text-gray-400 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-all shadow-sm"
                                         />
+                                        <p className="text-[9px] text-gray-400 mt-1.5 ml-1">
+                                            Supports multiple PDF and Image files
+                                        </p>
                                     </div>
                                 </div>
                             </div>

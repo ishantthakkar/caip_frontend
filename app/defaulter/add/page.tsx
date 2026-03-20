@@ -10,27 +10,80 @@ export default function AddDefaulterPage() {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [saving, setSaving] = useState(false);
-    const [locations, setLocations] = useState<any[]>([]);
+    const [states, setStates] = useState<string[]>([]);
+    const [districts, setDistricts] = useState<string[]>([]);
+    const [subDistricts, setSubDistricts] = useState<string[]>([]);
+    const [cities, setCities] = useState<string[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
     const [errors, setErrors] = useState<any>({});
 
     const [formData, setFormData] = useState({
-        defaulter_name: '', mobile_number: '', email_id: '', gst_number: '', pan_number: '', cin_number: '', aadhar_number: '', state: '', district: '', cities: '', financial_year: '2025-2026', default_amount: '', industry: '', date_of_default: '', reason_description: '', defaulter_address: '', court_complex_name: '', case_type: '', case_number: '', case_year: '', case_status: ''
+        defaulter_name: '', mobile_number: '', email_id: '', gst_number: '', pan_number: '', cin_number: '', aadhar_number: '', state: '', district: '', cities: '', city: '', financial_year: '2025-2026', default_amount: '', industry: '', date_of_default: '', reason_description: '', defaulter_address: '', court_complex_name: '', case_type: '', case_number: '', case_year: '', case_status: ''
     });
 
     useEffect(() => {
-        fetchLocations();
+        fetchStates();
     }, []);
 
-    const fetchLocations = async () => {
+    const fetchStates = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}locations`);
             const data = await res.json();
-            setLocations(data.states || []);
+            setStates(data.states.map((s: any) => s.state) || []);
         } catch (error) {
-            console.error("Error fetching locations:", error);
+            console.error("Error fetching states:", error);
         }
     };
+
+    const fetchDistricts = async (state: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}districts?state=${encodeURIComponent(state)}`);
+            const data = await res.json();
+            setDistricts(data.districts || []);
+        } catch (error) {
+            console.error("Error fetching districts:", error);
+        }
+    };
+
+    const fetchSubDistricts = async (state: string, district: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}sub-districts?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`);
+            const data = await res.json();
+            setSubDistricts(data.subDistricts || []);
+        } catch (error) {
+            console.error("Error fetching sub-districts:", error);
+        }
+    };
+
+    const fetchCities = async (state: string, district: string, subDistrict: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}cities?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}&subDistrict=${encodeURIComponent(subDistrict)}`);
+            const data = await res.json();
+            setCities(data.cities || []);
+        } catch (error) {
+            console.error("Error fetching cities:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (formData.state) {
+            fetchDistricts(formData.state);
+        }
+    }, [formData.state]);
+
+    useEffect(() => {
+        if (formData.state && formData.district) {
+            fetchSubDistricts(formData.state, formData.district);
+        }
+    }, [formData.district]);
+
+    useEffect(() => {
+        if (formData.state && formData.district && formData.cities) {
+            fetchCities(formData.state, formData.district, formData.cities);
+        } else {
+            setCities([]);
+        }
+    }, [formData.state, formData.district, formData.cities]);
 
     const validateGst = (gst: string) => /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gst);
     const validatePan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
@@ -38,6 +91,92 @@ export default function AddDefaulterPage() {
     const validateAadhar = (aadhar: string) => /^[0-9]{12}$/.test(aadhar);
     const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const validateCin = (cin: string) => cin.length === 21;
+
+    const [isGstFetching, setIsGstFetching] = useState(false);
+    const [pendingLocation, setPendingLocation] = useState<any>(null);
+
+    const handleGstFetch = async () => {
+        if (!formData.gst_number) {
+            alert("Please enter a GST number first");
+            return;
+        }
+
+        setIsGstFetching(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}verify-gst/${formData.gst_number}`);
+            const result = await response.json();
+
+            if (response.ok) {
+                const { data } = result;
+                
+                // Extract PAN from GST if possible
+                let panFromGst = "";
+                if (formData.gst_number.length >= 12) {
+                    panFromGst = formData.gst_number.substring(2, 12).toUpperCase();
+                }
+
+                setFormData(prev => ({
+                    ...prev,
+                    defaulter_name: data.lgnm || data.tradeNam || prev.defaulter_name,
+                    defaulter_address: data.pradr?.adr || prev.defaulter_address,
+                    pan_number: panFromGst || prev.pan_number,
+                }));
+
+                if (data.pradr?.addr?.stcd) {
+                    const gstState = data.pradr.addr.stcd;
+                    const matchedState = states.find(s => s.toLowerCase() === gstState.toLowerCase()) || gstState;
+                    
+                    setFormData(prev => ({ ...prev, state: matchedState }));
+                    
+                    if (data.pradr.addr.dst) {
+                        setPendingLocation({
+                            district: data.pradr.addr.dst,
+                            subDistrict: data.pradr.addr.st,
+                            city: data.pradr.addr.loc
+                        });
+                    }
+                }
+            } else {
+                alert(result.msg || "Invalid GST number");
+            }
+        } catch (error) {
+            console.error("GST Fetch error:", error);
+            alert("Error connecting to GST service");
+        } finally {
+            setIsGstFetching(false);
+        }
+    };
+
+    // Location auto-selection effect
+    useEffect(() => {
+        if (pendingLocation?.district && districts.length > 0) {
+            const matched = districts.find(d => d.toLowerCase() === pendingLocation.district.toLowerCase());
+            if (matched) {
+                setFormData(prev => ({ ...prev, district: matched }));
+                setPendingLocation((prev: any) => ({ ...prev, district: null }));
+            }
+        }
+    }, [districts, pendingLocation]);
+
+    useEffect(() => {
+        if (pendingLocation?.subDistrict && subDistricts.length > 0) {
+            const matched = subDistricts.find(s => s.toLowerCase() === pendingLocation.subDistrict.toLowerCase());
+            if (matched) {
+                setFormData(prev => ({ ...prev, cities: matched }));
+                setPendingLocation((prev: any) => ({ ...prev, subDistrict: null }));
+            }
+        }
+    }, [subDistricts, pendingLocation]);
+
+    useEffect(() => {
+        if (pendingLocation?.city && cities.length > 0) {
+            const matched = cities.find(c => c.toLowerCase() === pendingLocation.city.toLowerCase());
+            if (matched) {
+                setFormData(prev => ({ ...prev, city: matched }));
+                setPendingLocation(null);
+            }
+        }
+    }, [cities, pendingLocation]);
 
     const validateStep1 = () => {
         const newErrors: any = {};
@@ -48,6 +187,7 @@ export default function AddDefaulterPage() {
         if (!formData.state) newErrors.state = "Required";
         if (!formData.district) newErrors.district = "Required";
         if (!formData.cities) newErrors.cities = "Required";
+        if (!formData.city) newErrors.city = "Required";
         if (!formData.defaulter_address) newErrors.defaulter_address = "Required";
         if (!formData.financial_year) newErrors.financial_year = "Required";
         if (!formData.aadhar_number || !validateAadhar(formData.aadhar_number)) newErrors.aadhar_number = "Valid 12-digit Aadhar required";
@@ -77,8 +217,9 @@ export default function AddDefaulterPage() {
         setFormData(prev => ({
             ...prev,
             [name]: value,
-            ...(name === 'state' ? { district: '', cities: '' } : {}),
-            ...(name === 'district' ? { cities: '' } : {})
+            ...(name === 'state' ? { district: '', cities: '', city: '' } : {}),
+            ...(name === 'district' ? { cities: '', city: '' } : {}),
+            ...(name === 'cities' ? { city: '' } : {})
         }));
     };
 
@@ -108,8 +249,11 @@ export default function AddDefaulterPage() {
         }
     };
 
-    const districts = locations.find(s => s.state === formData.state)?.districts || [];
-    const subDistricts = districts.find((d: any) => d.district === formData.district)?.subDistricts || [];
+    // In AddDefaulterPage, the original code used 'cities' for sub-district selection.
+    // I'll keep the same field name 'cities' to avoid breaking the backend POST, 
+    // but I'll add a fourth level for the actual 'city' if needed. 
+    // The user explicitly asked for: state, district, sub-district and city field with dependency
+    // So I will update the formData and the UI to show all 4.
 
     return (
         <MemberPortalContainer title="Report New Defaulter">
@@ -148,7 +292,17 @@ export default function AddDefaulterPage() {
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-semibold text-gray-600">GST Number*</label>
-                                    <input type="text" name="gst_number" value={formData.gst_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.gst_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Gst Identification No" />
+                                    <div className="flex gap-2">
+                                        <input type="text" name="gst_number" value={formData.gst_number} onChange={handleInputChange} className={`flex-1 border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.gst_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Gst Identification No" />
+                                        <button 
+                                            type="button" 
+                                            onClick={handleGstFetch}
+                                            disabled={isGstFetching}
+                                            className="px-4 py-2 bg-[#1b5e20] text-white rounded-lg text-[10px] font-bold hover:bg-green-900 transition-all disabled:opacity-50 shadow-sm"
+                                        >
+                                            {isGstFetching ? '...' : 'FETCH'}
+                                        </button>
+                                    </div>
                                     {errors.gst_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.gst_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
@@ -170,7 +324,7 @@ export default function AddDefaulterPage() {
                                     <label className="text-xs font-semibold text-gray-600">State*</label>
                                     <select name="state" value={formData.state} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.state ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
                                         <option value="">Select State</option>
-                                        {locations.map(s => <option key={s.state} value={s.state}>{s.state}</option>)}
+                                        {states.map(s => <option key={s} value={s}>{s}</option>)}
                                     </select>
                                     {errors.state && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.state}</p>}
                                 </div>
@@ -178,17 +332,25 @@ export default function AddDefaulterPage() {
                                     <label className="text-xs font-semibold text-gray-600">District*</label>
                                     <select name="district" value={formData.district} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.district ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
                                         <option value="">Select District</option>
-                                        {districts.map((d: any) => <option key={d.district} value={d.district}>{d.district}</option>)}
+                                        {districts.map(d => <option key={d} value={d}>{d}</option>)}
                                     </select>
                                     {errors.district && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.district}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">City / Sub-District*</label>
+                                    <label className="text-xs font-semibold text-gray-600">Sub-District*</label>
                                     <select name="cities" value={formData.cities} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.cities ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
-                                        <option value="">Select Location</option>
-                                        {subDistricts.map((sd: any) => <option key={sd} value={sd}>{sd}</option>)}
+                                        <option value="">Select Sub-District</option>
+                                        {subDistricts.map(sd => <option key={sd} value={sd}>{sd}</option>)}
                                     </select>
                                     {errors.cities && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.cities}</p>}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">City / Village / Town*</label>
+                                    <select name="city" value={formData.city} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.city ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
+                                        <option value="">Select City</option>
+                                        {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                    {errors.city && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.city}</p>}
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-semibold text-gray-600">Aadhar Number*</label>

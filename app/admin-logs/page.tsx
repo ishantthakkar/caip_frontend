@@ -81,13 +81,12 @@ export default function AdminActivityLogsPage() {
     const paginatedLogs = filteredLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
-        <AdminPortalContainer title="System activity trace">
+        <AdminPortalContainer title="Activity Log">
             <div className="space-y-12 animate-in fade-in duration-700">
                 {/* Header Section */}
                 <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                     <div>
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tighter italic">Activity Log</h2>
-                        <p className="text-xs font-bold text-[#1b5e20] mt-1 tracking-wider opacity-70">CAIP</p>
+                        <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Activity Log</h2>
                     </div>
 
                     <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
@@ -133,80 +132,66 @@ export default function AdminActivityLogsPage() {
                 </div>
 
                 {/* Table Section */}
-                <div className="bg-white rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col min-h-[700px]">
-                    <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white">
-                        <div className="flex items-center gap-6">
-                            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-3xl shadow-inner">
-                                📜
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-black tracking-widest font-serif italic">Activity Log</h3>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2 px-6 py-3 bg-black/20 rounded-2xl border border-white/10">
-                            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                            <span className="text-[10px] font-black tracking-wider">{filteredLogs.length} Total events recorded</span>
-                        </div>
-                    </div>
+                <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 flex flex-col flex-1 overflow-hidden transition-all">
 
-                    <div className="overflow-x-auto p-4 custom-scrollbar">
-                        <table className="w-full text-left border-separate border-spacing-y-3">
-                            <thead>
-                                <tr className="text-[10px] font-black text-gray-400 tracking-wider">
-                                    <th className="px-8 py-4">Chronology</th>
-                                    <th className="px-8 py-4">Actor entity</th>
-                                    <th className="px-8 py-4">Event orbit</th>
-                                    <th className="px-8 py-4">Transaction details</th>
-                                    <th className="px-8 py-4 text-right">Terminal identity</th>
+                    <div className="overflow-x-auto flex-1">
+                        <table className="w-full text-left">
+                            <thead className="bg-[#1b5e20] text-white">
+                                <tr className="text-[10px] font-black text-white/90 border-b border-white/10 uppercase tracking-wider">
+                                    <th className="px-4 py-4 min-w-[140px]">Timestamp</th>
+                                    <th className="px-4 py-4 min-w-[120px]">Member</th>
+                                    <th className="px-4 py-4 min-w-[100px]">Member ID</th>
+                                    <th className="px-4 py-4 min-w-[150px]">Company Name</th>
+                                    <th className="px-4 py-4 min-w-[100px]">User Type</th>
+                                    <th className="px-4 py-4 min-w-[120px]">Activity Type</th>
+                                    <th className="px-4 py-4 min-w-[250px]">Details</th>
+                                    <th className="px-4 py-4 text-right">IP Address</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y-0 italic">
+                            <tbody className="divide-y divide-gray-100">
                                 {loading ? (
                                     Array.from({ length: 8 }).map((_, i) => (
                                         <tr key={i} className="animate-pulse">
-                                            <td colSpan={5} className="px-8 py-6 px-10"><div className="h-12 bg-gray-50 rounded-2xl w-full"></div></td>
+                                            <td colSpan={8} className="px-4 py-6"><div className="h-12 bg-gray-50 rounded-lg w-full"></div></td>
                                         </tr>
                                     ))
                                 ) : paginatedLogs.length > 0 ? (
                                     paginatedLogs.map((log) => (
-                                        <tr key={log._id} className="group hover:bg-gray-50/80 transition-all rounded-3xl cursor-default">
-                                            <td className="px-8 py-6 rounded-l-[1.5rem] bg-gray-50/50 group-hover:bg-white transition-colors">
+                                        <tr key={log._id} className="hover:bg-gray-50 transition-colors border-b border-gray-50 group">
+                                            <td className="px-4 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-black text-gray-900 tracking-tighter">
+                                                    <span className="text-[11px] font-bold text-gray-900">
                                                         {new Date(log.createdAt).toLocaleDateString('en-GB')}
                                                     </span>
-                                                    <span className="text-[10px] font-bold text-[#1b5e20] not-italic tracking-wider mt-0.5">
-                                                        {new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                    <span className="text-[10px] font-bold text-emerald-600 tracking-wider">
+                                                        {new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center text-[#1b5e20] text-sm font-black transition-transform group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[#1b5e20]/10">
-                                                        {log.userName?.[0] || 'A'}
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-sm font-black text-gray-800 block truncate max-w-[150px]">{log.userName}</span>
-                                                        <span className="text-[9px] font-black text-white px-2 py-0.5 rounded-md bg-gray-400 opacity-60 not-italic tracking-wider">{log.userRole || 'Admin'}</span>
-                                                    </div>
-                                                </div>
+                                            <td className="px-4 py-4">
+                                                <span className="text-[11px] font-bold text-gray-800">{log.userName || '-'}</span>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <span className={`inline-flex px-4 py-2 rounded-xl text-[10px] font-black tracking-wider border not-italic shadow-sm ${log.activityType?.toLowerCase().includes('login') ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                    log.activityType?.toLowerCase().includes('logout') ? 'bg-rose-50 text-rose-700 border-rose-100' :
-                                                        log.activityType?.toLowerCase().includes('update') || log.activityType?.toLowerCase().includes('status') ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                                                            'bg-[#1b5e20]/5 text-[#1b5e20] border-[#1b5e20]/10'
-                                                    }`}>
-                                                    {log.activityType}
+                                            <td className="px-4 py-4">
+                                                <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 uppercase tracking-tighter">
+                                                    {log.memberId || '-'}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-6 min-w-[300px]">
-                                                <p className="text-xs font-bold text-gray-500 line-clamp-2 leading-relaxed" title={log.details}>
+                                            <td className="px-4 py-4">
+                                                <span className="text-[11px] font-bold text-gray-700">{log.companyName || '-'}</span>
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <span className="text-[11px] font-black text-gray-500 uppercase tracking-tight">{log.userRole || 'Member'}</span>
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <span className="text-[11px] font-bold text-gray-900">{log.activityType || '-'}</span>
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <p className="text-[11px] font-medium text-gray-600 leading-relaxed" title={log.details}>
                                                     {log.details}
                                                 </p>
                                             </td>
-                                            <td className="px-8 py-6 text-right rounded-r-[1.5rem] bg-gray-50/50 group-hover:bg-white transition-colors">
-                                                <span className="text-[10px] font-black text-gray-400 font-mono tracking-wider bg-white px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm not-italic group-hover:text-[#1b5e20] transition-colors">
+                                            <td className="px-4 py-4 text-right">
+                                                <span className="text-[10px] font-mono font-bold text-gray-400">
                                                     {log.ipAddress}
                                                 </span>
                                             </td>
@@ -214,7 +199,7 @@ export default function AdminActivityLogsPage() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="px-8 py-64 text-center text-gray-400">
+                                        <td colSpan={8} className="px-8 py-64 text-center text-gray-400">
                                             <div className="text-7xl mb-8 opacity-10 animate-pulse">📡</div>
                                             <p className="text-sm font-black tracking-wider italic">No Record Found</p>
                                         </td>
@@ -226,31 +211,27 @@ export default function AdminActivityLogsPage() {
 
                     {/* Pagination Footer */}
                     {!loading && filteredLogs.length > 0 && (
-                        <div className="mt-auto p-10 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
-                            <span className="text-[11px] font-black text-gray-400 tracking-wider font-serif">
-                                Event trace <span className="text-[#1b5e20]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-[#1b5e20]">{Math.min(currentPage * itemsPerPage, filteredLogs.length)}</span> of <span className="text-[#1b5e20]">{filteredLogs.length}</span> recorded signals
+                        <div className="px-10 py-6 border-t border-gray-100 flex items-center justify-between bg-gray-50/50 mt-auto">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                                showing signals {Math.min(filteredLogs.length, (currentPage - 1) * itemsPerPage + 1)} OF {filteredLogs.length}
                             </span>
-
-                            <div className="flex gap-2">
+                            <div className="flex gap-3">
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
-                                    className="px-6 py-3 rounded-2xl bg-white border-2 border-gray-100 text-[10px] font-black tracking-wider hover:border-[#1b5e20] hover:text-[#1b5e20] disabled:opacity-30 transition-all shadow-sm active:scale-95"
+                                    className="px-6 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] uppercase tracking-widest text-gray-500 shadow-sm active:scale-95"
                                 >
                                     Previous
                                 </button>
 
-                                <div className="flex gap-2">
+                                <div className="flex items-center gap-1.5 ">
                                     {Array.from({ length: Math.min(totalPages, 5) }).map((_, idx) => {
                                         const pageNum = idx + 1;
                                         return (
                                             <button
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-12 h-12 rounded-2xl text-[11px] font-black transition-all shadow-lg ${currentPage === pageNum
-                                                    ? 'bg-[#1b5e20] text-white shadow-[#1b5e20]/20'
-                                                    : 'bg-white border-2 border-gray-100 text-gray-400 hover:border-[#1b5e20] hover:text-[#1b5e20]'
-                                                    }`}
+                                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all shadow-sm ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-lg shadow-emerald-900/20' : 'bg-white border border-gray-200 hover:bg-gray-100 text-gray-400 hover:text-[#1b5e20]'}`}
                                             >
                                                 {pageNum}
                                             </button>
@@ -261,9 +242,9 @@ export default function AdminActivityLogsPage() {
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                     disabled={currentPage === totalPages}
-                                    className="px-6 py-3 rounded-2xl bg-[#1b5e20] text-white text-[10px] font-black tracking-wider hover:bg-black disabled:opacity-30 transition-all shadow-xl shadow-[#1b5e20]/20 active:scale-95"
+                                    className="px-6 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] uppercase tracking-widest text-gray-500 shadow-sm active:scale-95"
                                 >
-                                    Next phase
+                                    Next
                                 </button>
                             </div>
                         </div>

@@ -99,8 +99,9 @@ export default function MemberDefaulterListPage() {
         setEditForm((prev: any) => ({
             ...prev,
             [name]: value,
-            ...(name === 'state' ? { district: '', cities: '' } : {}),
-            ...(name === 'district' ? { cities: '' } : {})
+            ...(name === 'state' ? { district: '', cities: '', city: '' } : {}),
+            ...(name === 'district' ? { cities: '', city: '' } : {}),
+            ...(name === 'cities' ? { city: '' } : {})
         }));
     };
 
@@ -164,6 +165,14 @@ export default function MemberDefaulterListPage() {
         return { label: 'Not Paid', color: 'bg-red-50 text-red-600' };
     };
 
+    const isWithin24Hours = (date: string) => {
+        if (!date) return false;
+        const recordDate = new Date(date).getTime();
+        const now = new Date().getTime();
+        const diffInHours = (now - recordDate) / (1000 * 60 * 60);
+        return diffInHours <= 24;
+    };
+
     const handlePaymentClick = (def: any) => {
         setSelectedDefaulter(def);
         setPaymentRows([{ amount: '', date: new Date().toISOString().split('T')[0] }]);
@@ -222,62 +231,12 @@ export default function MemberDefaulterListPage() {
         }
     };
 
-    const handleApproveReject = async (reportId: string, status: number) => {
-        const action = status === 1 ? 'approve' : 'reject';
-        if (!confirm(`Are you sure you want to ${action} this report?`)) return;
-
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE_URL}member/approve-sub-report`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ reportId, status })
-            });
-
-            if (res.ok) {
-                alert(`Report ${status === 1 ? 'approved' : 'rejected'} successfully!`);
-                fetchMyReports();
-            } else {
-                const data = await res.json();
-                alert(data.msg || "Error updating status");
-            }
-        } catch (error) {
-            console.error("Approval error:", error);
-        }
-    };
 
     const districtsList = locations.find(s => s.state === editForm.state)?.districts || [];
 
     const handleExportPDF = async () => {
         try {
             const doc = new jsPDF('landscape');
-
-            // Generate base64 of the logo
-            let base64Img: string | null = null;
-            try {
-                base64Img = await new Promise((resolve) => {
-                    const img = new Image();
-                    img.crossOrigin = "Anonymous";
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext('2d');
-                        if (ctx) {
-                            ctx.drawImage(img, 0, 0);
-                            resolve(canvas.toDataURL('image/png'));
-                        } else {
-                            resolve(null);
-                        }
-                    };
-                    img.onerror = () => resolve(null);
-                    img.src = '/images/caip_logo.png';
-                });
-            } catch (e) { }
-
 
             // Header Texts
             doc.setFontSize(18);
@@ -323,7 +282,8 @@ export default function MemberDefaulterListPage() {
                 def.cin_number || '-',
                 def.aadhar_number || '-',
                 def.state || '-',
-                def.cities || '-',
+                def.sub_district || def.cities || '-', // Backward compatibility
+                def.city || '-',
                 def.district || '-'
             ]);
 
@@ -340,21 +300,21 @@ export default function MemberDefaulterListPage() {
                     const pageHeight = doc.internal.pageSize.getHeight();
 
                     // BACKGROUND WATERMARKS
-                    doc.setGState(new (doc as any).GState({ opacity: 0.08 })); // Slightly lower opacity for text+image
-
-                    // 1. Image Watermark (Logo)
-                    if (base64Img) {
-                        doc.addImage(base64Img, 'PNG', (pageWidth - 150) / 2, (pageHeight - 150) / 2, 150, 150);
-                    }
-
-                    // 2. Text Watermark (Member Info below Logo)
-                    const watermarkText = `${memberName.toUpperCase()} | ID: ${memberId}`;
-                    doc.setFontSize(20); // Slightly smaller for better fit
+                    doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+                    doc.setFontSize(14);
                     doc.setTextColor(200, 0, 0);
-                    // Positioned exactly 8 units below the logo center area
-                    doc.text(watermarkText, pageWidth / 2, (pageHeight / 2) + 85, {
-                        align: 'center'
-                    });
+
+                    const watermarkText = `${memberName.toUpperCase()} | ID: ${memberId} `;
+                    const angle = 45;
+                    const stepX = 100;
+                    const stepY = 100;
+
+                    // Draw repeated watermark in a grid
+                    for (let x = -50; x < pageWidth + 100; x += stepX) {
+                        for (let y = -50; y < pageHeight + 100; y += stepY) {
+                            doc.text(watermarkText, x, y, { angle });
+                        }
+                    }
 
                     doc.setGState(new (doc as any).GState({ opacity: 1 }));
 
@@ -438,45 +398,46 @@ export default function MemberDefaulterListPage() {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Defaulter Name</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Reported On</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Outstanding</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Recovery Status</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Recovery Amount</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Actions</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider">#</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider">Defaulter Name</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider">Reported On</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider">Amount</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider">Outstanding</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider">Recovery Status</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider">Recovery Amount</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider">Payment</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 tracking-wider text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {paginatedData.map((def, i) => {
                                     const recovery = getRecoveryStatus(def);
+                                    const isPaid = Number(def.outstanding_amount === undefined ? def.default_amount : def.outstanding_amount) === 0;
                                     return (
-                                        <tr key={def._id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 text-sm text-gray-500">{(currentPage - 1) * itemsPerPage + i + 1}</td>
+                                        <tr key={def._id} className={`${isPaid ? 'text-green-600' : 'text-black'} border-b border-gray-100 hover:bg-gray-50 transition-all font-semibold`}>
+                                            <td className="px-6 py-4 text-sm opacity-60">{(currentPage - 1) * itemsPerPage + i + 1}</td>
                                             <td className="px-6 py-4">
-                                                <p className="text-sm font-semibold text-gray-900">{def.defaulter_name}</p>
-                                                <p className="text-[11px] text-gray-400">{def.gst_number || 'PAN: ' + def.pan_number}</p>
+                                                <p className="text-sm inherit">{def.defaulter_name}</p>
+                                                <p className="text-[10px] opacity-60 tracking-wider">{def.gst_number || 'PAN: ' + def.pan_number}</p>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{new Date(def.createdAt).toLocaleDateString('en-GB')}</td>
-                                            <td className="px-6 py-4 text-sm font-semibold text-gray-900">₹{Number(def.default_amount).toLocaleString('en-IN')}</td>
-                                            <td className="px-6 py-4 text-sm font-semibold">₹{Number(def.outstanding_amount || def.default_amount).toLocaleString('en-IN')}</td>
+                                            <td className="px-6 py-4 text-xs tracking-wider opacity-80">{new Date(def.createdAt).toLocaleDateString('en-GB')}</td>
+                                            <td className="px-6 py-4 text-sm">₹{Number(def.default_amount).toLocaleString('en-IN')}</td>
+                                            <td className="px-6 py-4 text-sm">₹{Number(def.outstanding_amount === undefined ? def.default_amount : def.outstanding_amount).toLocaleString('en-IN')}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${def.status === 1 ? 'bg-green-100 text-green-700' :
-                                                    def.status === 2 ? 'bg-red-100 text-red-700' :
-                                                        'bg-yellow-100 text-yellow-700'
+                                                <span className={`px-3 py-1 rounded-lg text-[9px] tracking-widest ${def.status === 1 ? 'bg-emerald-500 text-white' :
+                                                    def.status === 2 ? 'bg-rose-500 text-white' :
+                                                        'bg-amber-500 text-white'
                                                     }`}>
                                                     {def.status === 1 ? 'Approved' : def.status === 2 ? 'Rejected' : 'Pending'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${recovery.color}`}>
+                                                <span className={`px-3 py-1 rounded-lg text-[9px] font-black tracking-widest ${recovery.color === 'bg-green-100 text-green-700' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
                                                     {recovery.label}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-sm font-semibold text-blue-600">
+                                            <td className="px-6 py-4 text-sm font-black opacity-90">
                                                 ₹{((def.payments || []).reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0)).toLocaleString('en-IN')}
                                             </td>
                                             <td className="px-6 py-4">
@@ -484,25 +445,17 @@ export default function MemberDefaulterListPage() {
                                                     onClick={() => handlePaymentClick(def)}
                                                     disabled={def.status !== 1 || Number(def.outstanding_amount) === 0}
                                                     title={def.status !== 1 ? "Approval required before payment" : ""}
-                                                    className="bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-800 disabled:opacity-50 flex items-center gap-1"
+                                                    className="bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-green-800 disabled:opacity-50 flex items-center gap-1"
                                                 >
                                                     <span className="text-sm">+</span> Add Payment
                                                 </button>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-center gap-2">
-                                                    {!isSubMember && def.status === 0 && (
-                                                        <>
-                                                            <button onClick={() => handleApproveReject(def._id, 1)} title="Approve" className="bg-green-600 text-white p-1.5 rounded hover:bg-green-700 transition-all shadow-sm">
-                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                                                            </button>
-                                                            <button onClick={() => handleApproveReject(def._id, 2)} title="Reject" className="bg-red-600 text-white p-1.5 rounded hover:bg-red-700 transition-all shadow-sm">
-                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                                                            </button>
-                                                        </>
+                                                    {isWithin24Hours(def.updatedAt || def.createdAt) && (
+                                                        <button onClick={() => handleEditClick(def)} disabled={Number(def.outstanding_amount) === 0} className="bg-orange-400 text-white text-[10px] font-black px-3 py-1.5 rounded hover:bg-orange-500 transition-all shadow-sm disabled:opacity-30">Edit</button>
                                                     )}
-                                                    <button onClick={() => handleEditClick(def)} disabled={Number(def.outstanding_amount) === 0} className="bg-orange-400 text-white text-[10px] font-black uppercase px-3 py-1.5 rounded hover:bg-orange-500 transition-all shadow-sm disabled:opacity-30">Edit</button>
-                                                    <button onClick={() => handleViewClick(def)} className="bg-[#0051a8] text-white text-[10px] font-black uppercase px-3 py-1.5 rounded hover:bg-[#003d80] transition-all shadow-sm">View</button>
+                                                    <button onClick={() => handleViewClick(def)} className="bg-[#0051a8] text-white text-[10px] font-black px-3 py-1.5 rounded hover:bg-[#003d80] transition-all shadow-sm">View</button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -592,6 +545,7 @@ export default function MemberDefaulterListPage() {
                                     <InfoItem icon="📍" label="State" value={selectedDefaulter.state} />
                                     <InfoItem icon="🏢" label="District" value={selectedDefaulter.district} />
                                     <InfoItem icon="🗾" label="Sub District" value={selectedDefaulter.cities || '-'} />
+                                    <InfoItem icon="🏙️" label="City" value={selectedDefaulter.city || '-'} />
                                     <InfoItem icon="📅" label="Financial Year" value={selectedDefaulter.financial_year || '-'} />
                                     <InfoItem icon="📉" label="Outstanding" value={(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })} />
                                     <InfoItem icon="🏭" label="Industry" value={selectedDefaulter.industry || '-'} />
@@ -781,9 +735,13 @@ export default function MemberDefaulterListPage() {
                                     <div className="space-y-1">
                                         <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Sub District</label>
                                         <select name="cities" value={editForm.cities} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
-                                            <option value="">Select City</option>
+                                            <option value="">Select Sub-District</option>
                                             {(districtsList.find((d: any) => d.district === editForm.district)?.subDistricts || []).map((sd: any) => <option key={sd} value={sd}>{sd}</option>)}
                                         </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">City</label>
+                                        <input type="text" name="city" value={editForm.city || ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="col-span-full space-y-1">
                                         <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Full Address</label>

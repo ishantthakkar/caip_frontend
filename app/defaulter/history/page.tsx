@@ -132,6 +132,7 @@ export default function SearchHistoryPage() {
                                     <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">State</th>
                                     <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">District</th>
                                     <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">Sub District</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">City</th>
                                     <th className="px-3 py-3 text-[10px] font-bold uppercase text-center border-r border-gray-700 min-w-[80px]">Status</th>
                                     <th className="px-3 py-3 text-[10px] font-bold uppercase text-center min-w-[100px]">Action</th>
                                 </tr>
@@ -155,6 +156,7 @@ export default function SearchHistoryPage() {
                                         <td className="px-3 py-4 border-r border-gray-100">{log.filters?.state || '-'}</td>
                                         <td className="px-3 py-4 border-r border-gray-100">{log.filters?.district || '-'}</td>
                                         <td className="px-3 py-4 border-r border-gray-100">{log.filters?.subDistrict || '-'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100">{log.filters?.city || '-'}</td>
                                         <td className="px-3 py-4 text-center border-r border-gray-100">
                                             <span className="bg-green-50 text-green-600 px-2.5 py-1 rounded-full text-[9px] font-bold border border-green-100 uppercase inline-block">
                                                 Approved
@@ -263,6 +265,7 @@ export default function SearchHistoryPage() {
                                         <InfoItem icon="📍" label="State" value={selectedLog.filters?.state || '-'} />
                                         <InfoItem icon="🏢" label="District" value={selectedLog.filters?.district || '-'} />
                                         <InfoItem icon="🗾" label="Sub District" value={selectedLog.filters?.subDistrict || '-'} />
+                                        <InfoItem icon="🏙️" label="City" value={selectedLog.filters?.city || '-'} />
                                         <InfoItem icon="📅" label="Financial Year" value={selectedLog.filters?.financial_year || '-'} />
                                         <InfoItem icon="📉" label="Outstanding" value={Number(selectedLog.filters?.outstanding_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })} />
                                         <InfoItem icon="🏭" label="Industry" value={selectedLog.filters?.industry || '-'} />

@@ -108,7 +108,7 @@ export default function AdminLoginPage() {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center ml-1">
                                 <label className="text-xs font-bold text-gray-700">
-                                    Master Key <span className="text-red-500">*</span>
+                                    Password <span className="text-red-500">*</span>
                                 </label>
                             </div>
                             <div className="relative">
@@ -118,7 +118,7 @@ export default function AdminLoginPage() {
                                 <input
                                     type="password"
                                     name="password"
-                                    placeholder="Enter Master Key"
+                                    placeholder="Enter Password"
                                     required
                                     className="w-full border border-blue-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-100 py-3 pl-10 pr-10 rounded-lg outline-none transition-all text-sm text-gray-600 placeholder:text-gray-300 shadow-sm"
                                 />

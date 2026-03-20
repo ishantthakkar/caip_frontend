@@ -167,7 +167,7 @@ export default function AdminReportsPage() {
         <AdminPortalContainer title="Reports">
             <div className="space-y-8 flex-1 flex flex-col">
                 {/* Filters Toolbar */}
-                <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-xl flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+                <div className="bg-white p-6 rounded-[2rem] border border-gray-100 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
                     <div className="flex flex-col md:flex-row gap-6 w-full md:w-auto">
                         <div className="flex flex-col">
                             <label className="text-[10px] font-black text-gray-400 mb-2 ml-1 tracking-wider">Report Type</label>
@@ -232,42 +232,37 @@ export default function AdminReportsPage() {
                 </div>
 
                 {/* Report Data Table */}
-                <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 flex flex-col flex-1 overflow-hidden transition-all">
-                    <div className="bg-[#1b5e20] px-10 py-6 text-white flex justify-between items-center font-serif">
-                        <div>
-                            <h3 className="text-xl font-black tracking-widest">{reportType}</h3>
-                        </div>
-                    </div>
+                <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 flex flex-col flex-1 overflow-hidden transition-all">
 
                     <div className="overflow-x-auto flex-1">
                         {reportType === 'Member Report' ? (
                             <table className="w-full text-left">
                                 <thead className="bg-[#1b5e20] text-white">
-                                    <tr className="text-[10px] font-black tracking-[0.2em] text-white/90 border-b border-white/10">
-                                        <th className="px-6 py-6 min-w-[120px]">Member ID</th>
-                                        <th className="px-6 py-6 min-w-[180px]">Name</th>
-                                        <th className="px-6 py-6 min-w-[180px]">Email</th>
-                                        <th className="px-6 py-6 min-w-[120px]">Phone</th>
-                                        <th className="px-6 py-6 min-w-[120px]">State</th>
-                                        <th className="px-6 py-6 min-w-[120px]">District</th>
-                                        <th className="px-6 py-6 min-w-[120px]">Sub District</th>
-                                        <th className="px-6 py-6 min-w-[200px]">Organization Name</th>
-                                        <th className="px-6 py-6 min-w-[140px]">Membership Status</th>
-                                        <th className="px-6 py-6 min-w-[120px]">Membership Type</th>
-                                        <th className="px-6 py-6 min-w-[140px]">Membership Start Date</th>
-                                        <th className="px-6 py-6 min-w-[140px]">Membership Expiry Date</th>
-                                        <th className="px-6 py-6 min-w-[120px]">Payment Status</th>
-                                        <th className="px-6 py-6 min-w-[140px]">Payment Method</th>
-                                        <th className="px-6 py-6 min-w-[120px]">Defaulters Reported</th>
-                                        <th className="px-6 py-6 min-w-[120px] text-right">Search Performed</th>
+                                    <tr className="text-[10px] font-black tracking-[0.15em] text-white/90 border-b border-white/10">
+                                        <th className="px-6 py-4 min-w-[120px]">Member ID</th>
+                                        <th className="px-6 py-4 min-w-[180px]">Name</th>
+                                        <th className="px-6 py-4 min-w-[180px]">Email</th>
+                                        <th className="px-6 py-4 min-w-[120px]">Phone</th>
+                                        <th className="px-6 py-4 min-w-[120px]">State</th>
+                                        <th className="px-6 py-4 min-w-[120px]">District</th>
+                                        <th className="px-6 py-4 min-w-[120px]">Sub District</th>
+                                        <th className="px-6 py-4 min-w-[200px]">Organization</th>
+                                        <th className="px-6 py-4 min-w-[140px]">Status</th>
+                                        <th className="px-6 py-4 min-w-[120px]">Type</th>
+                                        <th className="px-6 py-4 min-w-[140px]">Joined On</th>
+                                        <th className="px-6 py-4 min-w-[140px]">Expiry</th>
+                                        <th className="px-6 py-4 min-w-[120px]">Payment</th>
+                                        <th className="px-6 py-4 min-w-[140px]">Method</th>
+                                        <th className="px-6 py-4 min-w-[120px] text-center">Reports</th>
+                                        <th className="px-6 py-4 min-w-[120px] text-right">Searches</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50 font-bold">
+                                <tbody className="divide-y divide-gray-50">
                                     {loading ? (
                                         <tr>
                                             <td colSpan={16} className="py-32 text-center">
                                                 <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
-                                                <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Aggregating Global Members...</p>
+                                                <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Loadning Records...</p>
                                             </td>
                                         </tr>
                                     ) : paginatedData.length === 0 ? (
@@ -279,62 +274,62 @@ export default function AdminReportsPage() {
                                         </tr>
                                     ) : (
                                         paginatedData.map((item, i) => (
-                                            <tr key={item._id || i} className="hover:bg-gray-50/80 transition-all group border-b border-gray-100">
-                                                <td className="px-6 py-6 font-mono text-xs font-black text-[#1b5e20]">
-                                                    {item.memberId || 'N/A'}
+                                            <tr key={item._id || i} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                                                <td className="px-6 py-4">
+                                                    <span className="text-xs font-bold text-[#1b5e20] bg-green-50 px-2 py-1 rounded border border-green-100">{item.memberId || 'N/A'}</span>
                                                 </td>
-                                                <td className="px-6 py-6 text-sm font-black text-gray-900 italic">
-                                                    {item.name}
+                                                <td className="px-6 py-4">
+                                                    <p className="text-sm font-bold text-gray-900">{item.name}</p>
                                                 </td>
-                                                <td className="px-6 py-6 lowercase text-xs font-black text-gray-500">
+                                                <td className="px-6 py-4 text-xs text-gray-500">
                                                     {item.email}
                                                 </td>
-                                                <td className="px-6 py-6 font-mono text-xs text-gray-700">
+                                                <td className="px-6 py-4 text-xs text-gray-600 font-medium">
                                                     {item.phone}
                                                 </td>
-                                                <td className="px-6 py-6 text-xs text-emerald-700 italic font-black">
+                                                <td className="px-6 py-4 text-xs font-bold text-emerald-700">
                                                     {item.state || 'N/A'}
                                                 </td>
-                                                <td className="px-6 py-6 text-xs text-gray-800 font-bold">
+                                                <td className="px-6 py-4 text-xs text-gray-700 font-medium">
                                                     {item.district || 'N/A'}
                                                 </td>
-                                                <td className="px-6 py-6 text-xs text-gray-600">
+                                                <td className="px-6 py-4 text-xs text-gray-500">
                                                     {item.subDistrict || 'N/A'}
                                                 </td>
-                                                <td className="px-6 py-6 text-sm font-black text-gray-900 italic">
+                                                <td className="px-6 py-4 text-sm font-medium text-gray-800">
                                                     {item.companyName || 'N/A'}
                                                 </td>
-                                                <td className="px-6 py-6">
-                                                    <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black tracking-widest border shadow-sm ${item.status === '0' || item.status === 0 ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                                                        item.status === '1' || item.status === 1 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                                                            'bg-rose-50 text-rose-600 border-rose-200'
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${item.status === '1' || item.status === 1 ? 'bg-green-600 text-white' :
+                                                        item.status === '2' || item.status === 2 ? 'bg-red-600 text-white' :
+                                                            'bg-amber-500 text-white'
                                                         }`}>
                                                         {item.status === '1' || item.status === 1 ? 'Active' : item.status === '2' || item.status === 2 ? 'Deactivated' : 'Pending'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-6 text-xs font-black text-gray-800">
+                                                <td className="px-6 py-4 text-xs font-bold text-gray-600 uppercase">
                                                     {item.businessType || 'Member'}
                                                 </td>
-                                                <td className="px-6 py-6 font-mono text-xs font-black text-gray-400">
-                                                    {new Date(item.createdAt).toLocaleDateString()}
+                                                <td className="px-6 py-4 text-xs text-gray-400 font-medium">
+                                                    {new Date(item.createdAt).toLocaleDateString('en-GB')}
                                                 </td>
-                                                <td className="px-6 py-6 font-mono text-xs font-black text-gray-400">
+                                                <td className="px-6 py-4 text-xs text-gray-400 font-medium">
                                                     {item.membershipExpiry || 'N/A'}
                                                 </td>
-                                                <td className="px-6 py-6">
-                                                    <span className="px-3 py-1 rounded bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-black tracking-widest">
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${item.paymentStatus === 'Failed' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}>
                                                         {item.paymentStatus || 'Success'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-6 text-xs font-black text-gray-500">
-                                                    {item.paymentMethod || 'Online Payment'}
+                                                <td className="px-6 py-4 text-xs text-gray-500 font-medium italic">
+                                                    {item.paymentMethod || 'Online'}
                                                 </td>
-                                                <td className="px-6 py-6 text-center">
+                                                <td className="px-6 py-4 text-center">
                                                     <span className="text-sm font-black text-rose-600 bg-rose-50 px-3 py-1 rounded-lg border border-rose-100">
                                                         {item.defaultersReported || 0}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-6 text-right">
+                                                <td className="px-6 py-4 text-right">
                                                     <span className="text-sm font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
                                                         {item.searchPerformed || 0}
                                                     </span>
@@ -347,14 +342,14 @@ export default function AdminReportsPage() {
                         ) : (
                             // Defaulter Report Table View
                             <table className="w-full text-left">
-                                <thead className="bg-[#1b5e20] text-white">
-                                    <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90 border-b border-white/10">
-                                        <th className="px-10 py-6">Date</th>
-                                        <th className="px-10 py-6">Defaulter Company Name</th>
-                                        <th className="px-10 py-6">Amount</th>
-                                        <th className="px-10 py-6">Outstanding</th>
-                                        <th className="px-10 py-6">Status</th>
-                                        <th className="px-10 py-6 text-right">Action</th>
+                                <thead className="bg-gray-50 border-b border-gray-200">
+                                    <tr className="text-[10px] font-black tracking-[0.15em] text-gray-400">
+                                        <th className="px-6 py-4">Date</th>
+                                        <th className="px-6 py-4">Defaulter Company</th>
+                                        <th className="px-6 py-4 text-right">Amount</th>
+                                        <th className="px-6 py-4 text-right">Outstanding</th>
+                                        <th className="px-6 py-4 text-center">Status</th>
+                                        <th className="px-6 py-4 text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50 font-black">
@@ -362,50 +357,53 @@ export default function AdminReportsPage() {
                                         <tr>
                                             <td colSpan={6} className="py-32 text-center">
                                                 <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
-                                                <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Decrypting Defaulter Ledgers...</p>
+                                                <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Loading Records...</p>
                                             </td>
                                         </tr>
                                     ) : paginatedData.length === 0 ? (
                                         <tr>
                                             <td colSpan={6} className="py-40 text-center text-gray-400">
                                                 <div className="text-6xl mb-6 opacity-20 animate-bounce">🛡️</div>
-                                                <p className="text-sm font-black tracking-wider">Clear Horizon: Zero matching infractions</p>
+                                                <p className="text-sm font-black tracking-wider">No Records Found</p>
                                             </td>
                                         </tr>
                                     ) : (
-                                        paginatedData.map((item, i) => (
-                                            <tr key={item._id || i} className="hover:bg-gray-50/80 transition-all group border-b border-gray-100">
-                                                <td className="px-10 py-6 text-sm text-gray-600">
-                                                    {new Date(item.createdAt).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-10 py-6 pb-4">
-                                                    <p className="text-sm font-black text-gray-900 mb-0.5">{item.defaulter_name}</p>
-                                                    <p className="text-[10px] text-gray-400 font-bold">GST: {item.gst_number || 'N/A'}</p>
-                                                </td>
-                                                <td className="px-10 py-6 text-sm font-black text-gray-900">
-                                                    ₹{Number(item.default_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="px-10 py-6 text-sm font-black text-gray-900">
-                                                    ₹{Number(item.outstanding_amount ?? item.default_amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="px-10 py-6">
-                                                    <span className={`px-4 py-1 rounded-full text-[9px] font-black tracking-widest ${item.status === 1 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                                        item.status === 2 ? 'bg-rose-50 text-rose-600 border border-rose-100' :
-                                                            'bg-amber-50 text-amber-600 border border-amber-100'
-                                                        }`}>
-                                                        {item.status === 1 ? 'Approved' : item.status === 2 ? 'Rejected' : 'Pending'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-10 py-6 text-right">
-                                                    <button
-                                                        onClick={() => setSelectedDefaulter(item)}
-                                                        className="px-4 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-md text-[10px] font-black transition-all border border-blue-100 shadow-sm active:scale-95"
-                                                    >
-                                                        View
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
+                                        paginatedData.map((item, i) => {
+                                            const isPaid = Number(item.outstanding_amount ?? item.default_amount) === 0;
+                                            return (
+                                                <tr key={item._id || i} className={`${isPaid ? 'text-green-600' : 'text-black'} hover:bg-gray-50 transition-all border-b border-gray-100 font-semibold`}>
+                                                    <td className="px-6 py-4 text-xs opacity-70">
+                                                        {new Date(item.createdAt).toLocaleDateString('en-GB')}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <p className="text-sm inherit">{item.defaulter_name}</p>
+                                                        <p className="text-[10px] opacity-60 font-medium tracking-wide">GST: {item.gst_number || 'N/A'}</p>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm font-black text-right">
+                                                        ₹{Number(item.default_amount || 0).toLocaleString('en-IN')}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm font-black text-right">
+                                                        ₹{Number(item.outstanding_amount ?? item.default_amount).toLocaleString('en-IN')}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${item.status === 1 ? 'bg-green-600 text-white' :
+                                                            item.status === 2 ? 'bg-red-600 text-white' :
+                                                                'bg-amber-500 text-white'
+                                                            }`}>
+                                                            {item.status === 1 ? 'Approved' : item.status === 2 ? 'Rejected' : 'Pending'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button
+                                                            onClick={() => setSelectedDefaulter(item)}
+                                                            className="px-4 py-1.5 bg-[#0051a8] text-white hover:bg-[#003d80] rounded text-[10px] font-black uppercase transition-all shadow-sm active:scale-95"
+                                                        >
+                                                            View
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
                                     )}
                                 </tbody>
                             </table>

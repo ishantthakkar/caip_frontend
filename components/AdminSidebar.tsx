@@ -45,6 +45,11 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
         },
         {
+            label: 'Defaulter List',
+            href: '/admin-defaulters',
+            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+        },
+        {
             label: 'Pending Requests',
             href: '/member-requests',
             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" /></svg>,
@@ -60,6 +65,16 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
             href: '/admin-logs',
             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
         },
+        {
+            label: 'Membership Plans',
+            href: '/admin-plans',
+            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /><path d="M12 11V7" /><line x1="8" y1="11" x2="16" y2="11" /></svg>
+        },
+        {
+            label: 'Payment Reconciliation',
+            href: '/admin-reconciliation',
+            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="4" width="20" height="16" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /><line x1="7" y1="15" x2="12" y2="15" /><line x1="17" y1="15" x2="17" y2="15" /></svg>
+        },
     ];
 
     return (
@@ -73,8 +88,8 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
                     </div>
                 )}
                 {isCollapsed && <img src="/images/caip_logo.png" alt="CAIP" className="h-10 w-auto object-contain" />}
-                
-                <button 
+
+                <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-900"
                 >

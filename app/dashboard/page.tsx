@@ -74,7 +74,6 @@ export default function DashboardPage() {
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect x="3" y="12" width="4" height="9" /><rect x="10" y="7" width="4" height="14" /><rect x="17" y="3" width="4" height="18" /></svg>
                                 Yearly Search Activity Trend ({new Date().getFullYear()})
                             </h3>
-                            <button className="opacity-40 hover:opacity-100 transition-all font-bold">LIVE METRICS</button>
                         </div>
                         <div className="p-10 flex-1 flex flex-col min-h-[400px]">
                             {/* Bar Chart Implementation */}

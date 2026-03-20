@@ -19,15 +19,36 @@ export default function SubMembersPage() {
     const router = useRouter();
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
-        if (!userData) {
+        
+        if (!token || !userData) {
             router.push('/login');
             return;
         }
+
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         fetchSubMembers(parsedUser._id);
+        
+        // Refresh profile to get latest subMemberLimit
+        fetchLatestProfile(token);
     }, []);
+
+    const fetchLatestProfile = async (token: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setUser(data.data);
+                localStorage.setItem('user', JSON.stringify(data.data));
+            }
+        } catch (error) {
+            console.error("Error refreshing profile:", error);
+        }
+    };
 
     const fetchSubMembers = async (parentId: string) => {
         try {
@@ -129,7 +150,7 @@ export default function SubMembersPage() {
 
                     <button
                         onClick={() => { setEditingMember(null); setFormData({ firstName: '', email: '', phone: '' }); setShowModal(true); }}
-                        disabled={subMembers.length >= 5}
+                        disabled={subMembers.length >= (user?.subMemberLimit || 0)}
                         className="flex items-center gap-2 px-6 py-3 bg-[#1b5e20] text-white rounded-lg font-bold text-sm shadow-sm hover:bg-green-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14" /></svg>
@@ -144,11 +165,16 @@ export default function SubMembersPage() {
                     </div>
                     <div className="flex-1">
                         <h4 className="text-sm font-bold text-gray-800">Account Limits</h4>
-                        <p className="text-sm text-gray-500 mt-1 max-w-2xl">Maximum 5 slots available. Only one sub-member can be active at any given time for system security. Sub-members can access the dashboard and perform searches.</p>
+                        <p className="text-sm text-gray-500 mt-1 max-w-2xl text-justify">
+                            Your current membership plan allows for up to <strong>{user?.subMemberLimit || 0} sub-member slots</strong>. 
+                            Only one sub-member can be active at any given time for system security. 
+                            Sub-members can access the dashboard and perform searches. 
+                            { (user?.subMemberLimit || 0) === 0 && <span className="text-red-500 font-bold ml-1 italic"> (Please purchase a membership to add staff)</span> }
+                        </p>
                     </div>
-                    <div className="md:ml-auto text-left md:text-right bg-gray-50 p-4 rounded-xl border border-gray-100 w-full md:w-auto">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Usage</p>
-                        <p className="text-2xl font-black text-[#1b5e20]">{subMembers.length} <span className="text-gray-300 text-lg">/ 5</span></p>
+                    <div className="md:ml-auto text-left md:text-right bg-gray-50 p-4 rounded-xl border border-gray-100 w-full md:w-auto min-w-[140px]">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Usage Status</p>
+                        <p className="text-2xl font-black text-[#1b5e20]">{subMembers.length} <span className="text-gray-300 text-lg">/ {user?.subMemberLimit || 0}</span></p>
                     </div>
                 </div>
 
