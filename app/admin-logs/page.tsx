@@ -93,7 +93,7 @@ export default function AdminActivityLogsPage() {
                         <select
                             value={activityFilter}
                             onChange={(e) => setActivityFilter(e.target.value)}
-                            className="w-full md:w-60 bg-white border-2 border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-black text-gray-800 outline-none focus:border-[#1b5e20] transition-all shadow-xl shadow-gray-100 italic"
+                            className="w-full md:w-60 bg-white border-2 border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-black text-gray-800 outline-none focus:border-agri-green-primary transition-all shadow-xl shadow-gray-100 italic"
                         >
                             <option value="all">All activities</option>
                             <option value="Defaulter Search">Defaulter search</option>
@@ -115,9 +115,9 @@ export default function AdminActivityLogsPage() {
                                 placeholder="Search by identity, event or terminal IP..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-white border-2 border-gray-100 rounded-[1.5rem] pl-14 pr-6 py-4 text-sm font-black text-gray-800 outline-none focus:border-[#1b5e20] transition-all shadow-xl shadow-gray-100 group-hover:shadow-2xl italic placeholder:text-gray-300 placeholder:not-italic placeholder:lowercase"
+                                className="w-full bg-white border-2 border-gray-100 rounded-[1.5rem] pl-14 pr-6 py-4 text-sm font-black text-gray-800 outline-none focus:border-agri-green-primary transition-all shadow-xl shadow-gray-100 group-hover:shadow-2xl italic placeholder:text-gray-300 placeholder:not-italic placeholder:lowercase"
                             />
-                            <div className="absolute left-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-focus-within:bg-[#1b5e20] group-focus-within:text-white transition-all">
+                            <div className="absolute left-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-focus-within:bg-agri-green-primary group-focus-within:text-white transition-all">
                                 🔎
                             </div>
                         </div>
@@ -136,7 +136,7 @@ export default function AdminActivityLogsPage() {
 
                     <div className="overflow-x-auto flex-1">
                         <table className="w-full text-left">
-                            <thead className="bg-[#1b5e20] text-white">
+                            <thead className="bg-agri-green-primary text-white">
                                 <tr className="text-[10px] font-black text-white/90 border-b border-white/10 uppercase tracking-wider">
                                     <th className="px-4 py-4 min-w-[140px]">Timestamp</th>
                                     <th className="px-4 py-4 min-w-[120px]">Member</th>
@@ -231,7 +231,7 @@ export default function AdminActivityLogsPage() {
                                             <button
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all shadow-sm ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-lg shadow-emerald-900/20' : 'bg-white border border-gray-200 hover:bg-gray-100 text-gray-400 hover:text-[#1b5e20]'}`}
+                                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all shadow-sm ${currentPage === pageNum ? 'bg-agri-green-primary text-white shadow-lg shadow-emerald-900/20' : 'bg-white border border-gray-200 hover:bg-gray-100 text-gray-400 hover:text-agri-green-primary'}`}
                                             >
                                                 {pageNum}
                                             </button>

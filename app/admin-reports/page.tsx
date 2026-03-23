@@ -174,7 +174,7 @@ export default function AdminReportsPage() {
                             <select
                                 value={reportType}
                                 onChange={(e) => setReportType(e.target.value)}
-                                className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] focus:ring-1 focus:ring-green-100 text-sm font-black text-gray-700 w-full md:w-56 transition-all"
+                                className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary focus:ring-1 focus:ring-green-100 text-sm font-black text-gray-700 w-full md:w-56 transition-all"
                             >
                                 <option value="Member Report">Member Report</option>
                                 <option value="Defaulter Report">Defaulter Report</option>
@@ -186,7 +186,7 @@ export default function AdminReportsPage() {
                             <select
                                 value={filterOption}
                                 onChange={(e) => setFilterOption(e.target.value)}
-                                className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] focus:ring-1 focus:ring-green-100 text-sm font-bold text-gray-700 w-full md:w-48 transition-all"
+                                className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary focus:ring-1 focus:ring-green-100 text-sm font-bold text-gray-700 w-full md:w-48 transition-all"
                             >
                                 {dateFilterOptions.map(opt => (
                                     <option key={opt} value={opt}>{opt}</option>
@@ -202,14 +202,14 @@ export default function AdminReportsPage() {
                                         type="date"
                                         value={customStart}
                                         onChange={(e) => setCustomStart(e.target.value)}
-                                        className="bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 outline-none focus:border-[#1b5e20] text-xs font-black text-gray-700 shadow-inner"
+                                        className="bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 outline-none focus:border-agri-green-primary text-xs font-black text-gray-700 shadow-inner"
                                     />
                                     <span className="text-gray-300 font-black">to</span>
                                     <input
                                         type="date"
                                         value={customEnd}
                                         onChange={(e) => setCustomEnd(e.target.value)}
-                                        className="bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 outline-none focus:border-[#1b5e20] text-xs font-black text-gray-700 shadow-inner"
+                                        className="bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 outline-none focus:border-agri-green-primary text-xs font-black text-gray-700 shadow-inner"
                                     />
                                 </div>
                             </div>
@@ -224,7 +224,7 @@ export default function AdminReportsPage() {
                                 placeholder="Search..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#1b5e20] focus:bg-white text-sm font-bold text-gray-700 w-full md:w-80 transition-all shadow-inner tracking-tight"
+                                className="bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-agri-green-primary focus:bg-white text-sm font-bold text-gray-700 w-full md:w-80 transition-all shadow-inner tracking-tight"
                             />
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-opacity">🔎</span>
                         </div>
@@ -237,7 +237,7 @@ export default function AdminReportsPage() {
                     <div className="overflow-x-auto flex-1">
                         {reportType === 'Member Report' ? (
                             <table className="w-full text-left">
-                                <thead className="bg-[#1b5e20] text-white">
+                                <thead className="bg-agri-green-primary text-white">
                                     <tr className="text-[10px] font-black tracking-[0.15em] text-white/90 border-b border-white/10">
                                         <th className="px-6 py-4 min-w-[120px]">Member ID</th>
                                         <th className="px-6 py-4 min-w-[180px]">Name</th>
@@ -261,7 +261,7 @@ export default function AdminReportsPage() {
                                     {loading ? (
                                         <tr>
                                             <td colSpan={16} className="py-32 text-center">
-                                                <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                                <div className="animate-spin h-10 w-10 border-4 border-agri-green-primary border-t-transparent rounded-full mx-auto mb-4"></div>
                                                 <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Loadning Records...</p>
                                             </td>
                                         </tr>
@@ -276,7 +276,7 @@ export default function AdminReportsPage() {
                                         paginatedData.map((item, i) => (
                                             <tr key={item._id || i} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
                                                 <td className="px-6 py-4">
-                                                    <span className="text-xs font-bold text-[#1b5e20] bg-green-50 px-2 py-1 rounded border border-green-100">{item.memberId || 'N/A'}</span>
+                                                    <span className="text-xs font-bold text-agri-green-primary bg-green-50 px-2 py-1 rounded border border-green-100">{item.memberId || 'N/A'}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <p className="text-sm font-bold text-gray-900">{item.name}</p>
@@ -356,7 +356,7 @@ export default function AdminReportsPage() {
                                     {loading ? (
                                         <tr>
                                             <td colSpan={6} className="py-32 text-center">
-                                                <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                                <div className="animate-spin h-10 w-10 border-4 border-agri-green-primary border-t-transparent rounded-full mx-auto mb-4"></div>
                                                 <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Loading Records...</p>
                                             </td>
                                         </tr>
@@ -433,7 +433,7 @@ export default function AdminReportsPage() {
                                                 <button
                                                     key={pageNum}
                                                     onClick={() => setCurrentPage(pageNum)}
-                                                    className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all shadow-sm ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-lg shadow-emerald-900/20' : 'bg-white border border-gray-200 hover:bg-gray-100 text-gray-400 hover:text-[#1b5e20]'}`}
+                                                    className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all shadow-sm ${currentPage === pageNum ? 'bg-agri-green-primary text-white shadow-lg shadow-emerald-900/20' : 'bg-white border border-gray-200 hover:bg-gray-100 text-gray-400 hover:text-agri-green-primary'}`}
                                                 >
                                                     {pageNum}
                                                 </button>

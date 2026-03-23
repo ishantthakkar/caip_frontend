@@ -149,7 +149,7 @@ export default function MemberRequestsPage() {
 
                     <div className="p-4 overflow-x-auto">
                         <table className="w-full text-left font-black">
-                            <thead className="bg-[#1b5e20] text-white">
+                            <thead className="bg-agri-green-primary text-white">
                                 <tr className="text-[10px] font-black tracking-[0.2em] text-white/90 border-b border-white/10">
                                     <th className="px-6 py-6 min-w-[120px]">Member ID</th>
                                     <th className="px-6 py-6 min-w-[150px]">Name</th>
@@ -170,7 +170,7 @@ export default function MemberRequestsPage() {
                                 {loading ? (
                                     <tr>
                                         <td colSpan={4} className="py-24 text-center">
-                                            <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                            <div className="animate-spin h-10 w-10 border-4 border-agri-green-primary border-t-transparent rounded-full mx-auto mb-4"></div>
                                             <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Synchronizing Vault Access...</p>
                                         </td>
                                     </tr>
@@ -184,7 +184,7 @@ export default function MemberRequestsPage() {
                                         <td className="px-6 py-6 text-[11px] font-black text-gray-900 tracking-tight">{user.name}</td>
                                         <td className="px-6 py-6 text-[10px] font-bold text-gray-400">{user.email}</td>
                                         <td className="px-6 py-6 text-[10px] font-bold text-gray-500 font-sans">{user.phone}</td>
-                                        <td className="px-6 py-6 text-[10px] font-black text-[#1b5e20] tracking-tight">{user.state || '-'}</td>
+                                        <td className="px-6 py-6 text-[10px] font-black text-agri-green-primary tracking-tight">{user.state || '-'}</td>
                                         <td className="px-6 py-6 text-[10px] font-bold text-gray-600">{user.district || '-'}</td>
                                         <td className="px-6 py-6 text-[10px] font-bold text-gray-400 italic">{user.subDistrict || '-'}</td>
                                         <td className="px-6 py-6 text-[10px] font-black text-gray-900">{user.companyName || '-'}</td>
@@ -224,7 +224,7 @@ export default function MemberRequestsPage() {
                                                         </button>
                                                         <button
                                                             onClick={() => handleAction(user._id, 'approved')}
-                                                            className="p-2.5 bg-[#1b5e20] text-white rounded-lg hover:bg-black transition-all shadow-lg"
+                                                            className="p-2.5 bg-agri-green-primary text-white rounded-lg hover:bg-black transition-all shadow-lg"
                                                             title="Approve"
                                                         >
                                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -266,7 +266,7 @@ export default function MemberRequestsPage() {
                                             <button
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-xl' : 'bg-white border border-gray-100 text-gray-400 hover:bg-gray-50'}`}
+                                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all ${currentPage === pageNum ? 'bg-agri-green-primary text-white shadow-xl' : 'bg-white border border-gray-100 text-gray-400 hover:bg-gray-50'}`}
                                             >
                                                 {pageNum}
                                             </button>
@@ -291,7 +291,7 @@ export default function MemberRequestsPage() {
             {showDocModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white font-serif">
+                        <div className="bg-agri-green-primary px-10 py-8 flex justify-between items-center text-white font-serif">
                             <div>
                                 <h3 className="text-xl font-black tracking-widest">Bussiness Documents</h3>
                             </div>
@@ -316,7 +316,7 @@ export default function MemberRequestsPage() {
                                                 <a
                                                     href={docUrl}
                                                     target="_blank"
-                                                    className="w-full text-center py-4 bg-white text-[#1b5e20] text-[9px] font-black tracking-wider rounded-2xl border border-green-100 shadow-sm hover:bg-[#1b5e20] hover:text-white transition-all shadow-emerald-900/5 group-hover:shadow-xl group-hover:shadow-emerald-900/10"
+                                                    className="w-full text-center py-4 bg-white text-agri-green-primary text-[9px] font-black tracking-wider rounded-2xl border border-green-100 shadow-sm hover:bg-agri-green-primary hover:text-white transition-all shadow-emerald-900/5 group-hover:shadow-xl group-hover:shadow-emerald-900/10"
                                                 >
                                                     Verify Asset
                                                 </a>

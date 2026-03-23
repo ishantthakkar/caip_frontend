@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
                 </div>
 
                 {/* Title Bar */}
-                <div className="bg-[#1b5e20] text-white px-8 py-3 rounded-xl mb-8 shadow-2xl border border-white/20">
+                <div className="bg-agri-green-primary text-white px-8 py-3 rounded-xl mb-8 shadow-2xl border border-white/20">
                     <h1 className="text-lg font-bold tracking-wide">Chamber for Agri Input Protection</h1>
                 </div>
 
@@ -83,7 +83,7 @@ export default function AdminLoginPage() {
                     )}
 
                     {/* Card Header */}
-                    <div className="bg-[#2e7d32] p-6 text-center">
+                    <div className="bg-agri-green-600 p-6 text-center">
                         <h2 className="text-xl font-bold text-white mb-1">Admin Login</h2>
                         <p className="text-white/80 text-[10px] font-medium tracking-tight">
                             Authorized personnel access for CAIP administration.
@@ -131,7 +131,7 @@ export default function AdminLoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full bg-[#1b5e20] hover:bg-[#2e7d32] text-white font-bold py-3.5 rounded-lg shadow-lg shadow-green-950/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`w-full bg-agri-green-primary hover:bg-agri-green-600 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-green-950/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
                             {loading ? (
                                 <>
@@ -145,7 +145,7 @@ export default function AdminLoginPage() {
                             <button
                                 type="button"
                                 onClick={() => router.push('/login')}
-                                className="text-[10px] font-bold text-[#1b5e20] hover:underline uppercase tracking-wider"
+                                className="text-[10px] font-bold text-agri-green-primary hover:underline uppercase tracking-wider"
                             >
                                 Go to Member Login
                             </button>
@@ -155,7 +155,7 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Footer Bar */}
-            <footer className="fixed bottom-0 left-0 right-0 bg-[#ffd600] py-4 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]">
+            <footer className="fixed bottom-0 left-0 right-0 bg-agri-gold-secondary py-4 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]">
                 <p className="text-xs font-bold text-gray-800 tracking-tight">
                     © 2026 Chamber for Agri Input Protection
                 </p>

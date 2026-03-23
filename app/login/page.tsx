@@ -20,10 +20,8 @@ function LoginContent() {
     const [otp, setOtp] = useState('');
 
     useEffect(() => {
-        // Check if we just redirected from a successful registration
         if (searchParams.get('message') === 'registered') {
             setSuccessMessage('Register successful! Admin will give you approval, then you can login.');
-            // Clear the message after 8 seconds
             const timer = setTimeout(() => setSuccessMessage(null), 8000);
             return () => clearTimeout(timer);
         }
@@ -94,149 +92,175 @@ function LoginContent() {
     };
 
     return (
-        <div className="min-h-screen relative flex flex-col items-center justify-center font-sans overflow-hidden">
-            {/* Background with blurred agriculture and network pattern */}
+        <div className="min-h-screen relative flex flex-col font-sans overflow-hidden">
+            {/* Background Image */}
             <div
-                className="absolute inset-0 bg-cover bg-center scale-110 blur-[2px]"
-                style={{
-                    backgroundImage: 'url("/images/login_bg_final.jpg")',
-                    opacity: 0.9
-                }}
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: 'url("/images/login_bg_final.jpg")' }}
             />
-            {/* Network Pattern Overlay */}
-            <div className="absolute inset-0 opacity-20 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-            <div className="absolute inset-0 bg-white/10 pointer-events-none" />
+            {/* Light Overlay to ensure contrast like the reference .bg-overlay */}
+            <div className="absolute inset-0 bg-white opacity-50" />
+            
+            {/* Carbon Fiber Texture Overlay */}
+            <div
+                className="absolute inset-0 bg-repeat opacity-20 pointer-events-none"
+                style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/carbon-fibre.png")' }}
+            />
 
-            {/* Main Content Container */}
-            <div className="relative z-10 w-full max-w-md flex flex-col items-center px-4 -mt-10">
-
-                {/* Logo */}
-                <div className="w-24 h-24 mb-6 drop-shadow-lg scale-100 hover:scale-105 transition-transform duration-500">
-                    <img src="/images/caip_logo.png" alt="CAIP Logo" className="w-full h-full object-contain" />
-                </div>
-
-                {/* Title Bar */}
-                <div className="bg-[#1b5e20] text-white px-8 py-3 rounded-xl mb-8 shadow-2xl border border-white/20">
-                    <h1 className="text-lg font-bold tracking-wide text-center">Chamber for Agri Input Protection</h1>
-                </div>
-
-                {/* Login Card */}
-                <div className="w-full bg-white rounded-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden relative">
-
-                    {error && (
-                        <div className="absolute top-0 left-0 right-0 z-50 p-3 bg-red-600 text-white text-[11px] font-bold text-center animate-in fade-in slide-in-from-top duration-300">
-                            {error}
-                        </div>
-                    )}
-
-                    {successMessage && (
-                        <div className="absolute top-0 left-0 right-0 z-50 p-3 bg-green-600 text-white text-[11px] font-bold text-center animate-in fade-in slide-in-from-top duration-300">
-                            {successMessage}
-                        </div>
-                    )}
-
-                    {/* Card Header */}
-                    <div className="bg-[#2e7d32] p-6 text-center">
-                        <h2 className="text-xl font-bold text-white mb-1">
-                            {step === 'enter_mobile' ? 'Member Login' : 'OTP Verification'}
-                        </h2>
-                        <p className="text-white/80 text-[10px] font-medium tracking-tight">
-                            {step === 'enter_mobile'
-                                ? 'Sign in with your mobile number to continue.'
-                                : `Verification code sent to +91 ${phone}`}
-                        </p>
-                    </div>
-
-                    {/* Card Body */}
-                    <div className="p-8">
-                        {step === 'enter_mobile' ? (
-                            <form onSubmit={handleSendOtp} className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-700 ml-1">
-                                        Mobile Number <span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs border-r pr-2 border-gray-100">+91</div>
-                                        <input
-                                            type="tel"
-                                            value={phone}
-                                            onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                            placeholder="Enter 10 digit mobile number"
-                                            required
-                                            className="w-full border border-blue-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-100 py-3 pl-12 pr-4 rounded-lg outline-none transition-all text-sm text-gray-600 placeholder:text-gray-300 shadow-sm font-bold tracking-widest"
-                                        />
-                                    </div>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={loading || phone.length !== 10}
-                                    className={`w-full bg-[#1b5e20] hover:bg-[#2e7d32] text-white font-bold py-3.5 rounded-lg shadow-lg shadow-green-950/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 ${loading || phone.length !== 10 ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                            Verifying...
-                                        </>
-                                    ) : 'Get OTP'}
-                                </button>
-
-                                <p className="text-center text-[11px] font-semibold text-gray-500 pt-2">
-                                    If you want to become a member, <Link href="/register" className="text-blue-500 hover:underline">Register here</Link>
-                                </p>
-                            </form>
-                        ) : (
-                            <form onSubmit={handleVerifyOtp} className="space-y-6">
-                                <div className="space-y-2 text-center">
-                                    <label className="text-xs font-bold text-gray-700">Enter 6-Digit OTP</label>
-                                    <div className="flex justify-center gap-2 mt-2">
-                                        <input
-                                            type="text"
-                                            maxLength={6}
-                                            value={otp}
-                                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                            placeholder="······"
-                                            required
-                                            className="w-full max-w-[200px] border border-blue-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-100 py-3 text-center rounded-lg outline-none transition-all text-2xl font-black text-gray-800 tracking-[0.5em] placeholder:text-gray-200 shadow-sm"
-                                        />
-                                    </div>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={loading || otp.length !== 6}
-                                    className={`w-full bg-[#1b5e20] hover:bg-[#2e7d32] text-white font-bold py-3.5 rounded-lg shadow-lg shadow-green-950/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 ${loading || otp.length !== 6 ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                            Verifying OTP...
-                                        </>
-                                    ) : 'Verify & Login'}
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setStep('enter_mobile')}
-                                    className="w-full text-xs font-bold text-blue-500 hover:text-blue-600 transition-colors py-2"
-                                >
-                                    Change Mobile Number
-                                </button>
-                            </form>
+            <div className="container mx-auto px-4 flex-1 flex flex-col pt-12 pb-10 relative z-10">
+                <div className="flex-1 flex flex-col items-center justify-center -mt-10">
+                    
+                    <div className="w-full max-w-md relative z-10">
+                        {/* Error & Success Toasts */}
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-50 text-red-600 border border-red-200 text-sm font-medium rounded-lg text-center shadow-sm">
+                                {error}
+                            </div>
                         )}
+
+                        {successMessage && (
+                            <div className="mb-4 p-3 bg-green-50 text-agri-green-primary border border-green-200 text-sm font-medium rounded-lg text-center shadow-sm">
+                                {successMessage}
+                            </div>
+                        )}
+
+                        {/* Top Header Section */}
+                        <div className="mb-6">
+                            <Link href="/" className="block text-center mb-4">
+                                <img src="/images/caip_logo.png" alt="CAIP Logo" className="mx-auto h-[70px] drop-shadow-sm" />
+                            </Link>
+                            
+                            <div className="bg-agri-green-primary text-center px-4 py-3.5 rounded-2xl shadow-sm">
+                                <h4 className="text-white m-0 font-bold text-lg tracking-wide">Chamber for Agri Input Protection</h4>
+                            </div>
+                        </div>
+
+                        {/* Form Card */}
+                        <div className="bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden mb-8">
+                            {/* Card Header */}
+                            <div className="bg-agri-green-primary p-5 text-center">
+                                <h5 className="text-white text-xl font-semibold mb-1">
+                                    {step === 'enter_mobile' ? 'Member Login' : 'OTP Verification'}
+                                </h5>
+                                <p className="text-white/80 text-sm m-0">
+                                    {step === 'enter_mobile' 
+                                        ? 'Sign in to continue to Chamber for Agri Input Protection.' 
+                                        : `Verification code sent to +91 ${phone}`}
+                                </p>
+                            </div>
+
+                            {/* Card Body */}
+                            <div className="p-6 md:p-8">
+                                {step === 'enter_mobile' ? (
+                                    <form onSubmit={handleSendOtp}>
+                                        <div className="mb-5">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Mobile Number <span className="text-red-500">*</span>
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center text-gray-400 font-semibold text-sm border-r border-gray-200 bg-gray-50 rounded-l-md">+91</div>
+                                                <input
+                                                    type="tel"
+                                                    value={phone}
+                                                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                                    placeholder="Enter Mobile Number"
+                                                    required
+                                                    autoFocus
+                                                    className="w-full pl-16 pr-4 py-2.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-agri-green-primary/20 focus:border-agri-green-primary transition-all text-gray-700"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-6 flex items-center">
+                                            <input 
+                                                type="checkbox" 
+                                                id="remember" 
+                                                className="w-4 h-4 text-agri-green-primary bg-gray-100 border-gray-300 rounded focus:ring-agri-green-primary focus:ring-2"
+                                            />
+                                            <label htmlFor="remember" className="ml-2 text-sm font-medium text-gray-600 cursor-pointer">
+                                                Remember me
+                                            </label>
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={loading || phone.length !== 10}
+                                            className="w-full bg-agri-green-primary text-white font-medium py-2.5 rounded-md hover:bg-agri-green-600 transition-colors disabled:opacity-70 flex justify-center items-center shadow-sm text-sm"
+                                        >
+                                            {loading ? (
+                                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                            ) : 'Sign In'}
+                                        </button>
+
+                                        <div className="mt-6 text-center">
+                                            <p className="text-sm text-gray-600 mb-0">
+                                                If you want to become a member,{' '}
+                                                <Link href="/register" className="font-medium text-blue-600 hover:underline">
+                                                    Register here
+                                                </Link>
+                                            </p>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    <form onSubmit={handleVerifyOtp}>
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2 text-center">
+                                                Enter 6-Digit OTP
+                                            </label>
+                                            <input
+                                                type="text"
+                                                maxLength={6}
+                                                value={otp}
+                                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                                placeholder="······"
+                                                required
+                                                autoFocus
+                                                className="w-full text-center tracking-[0.75em] py-3 text-2xl font-bold border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-agri-green-primary/20 focus:border-agri-green-primary transition-all text-gray-800"
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={loading || otp.length !== 6}
+                                            className="w-full bg-agri-green-primary text-white font-medium py-2.5 rounded-md hover:bg-agri-green-600 transition-colors disabled:opacity-70 flex justify-center items-center shadow-sm text-sm mb-4"
+                                        >
+                                            {loading ? (
+                                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                            ) : 'Verify & Login'}
+                                        </button>
+
+                                        <div className="text-center mt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setStep('enter_mobile')}
+                                                className="text-sm font-medium text-blue-600 hover:underline"
+                                            >
+                                                Change Mobile Number
+                                            </button>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bottom Footer block */}
+                <div className="w-full pt-4 mt-auto z-10">
+                    <div className="bg-agri-gold-secondary rounded-xl py-4 px-5 flex flex-col md:flex-row justify-between items-center text-center shadow-sm">
+                        <div className="mb-2 md:mb-0">
+                            <p className="m-0 font-bold text-gray-900 text-[13px]">
+                                © {new Date().getFullYear()} Chamber for Agri Input Protection
+                            </p>
+                        </div>
+                        <div>
+                            <p className="m-0 font-bold text-gray-900 text-[13px]">
+                                Crafted with <span className="text-red-600">❤️</span> by <a href="https://www.metizsoft.com/" target="_blank" rel="noreferrer" className="underline hover:text-black transition-colors">Metizsoft Solution Private Limited</a>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {/* Footer Bar */}
-            <footer className="fixed bottom-0 left-0 right-0 bg-[#ffd600] py-4 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]">
-                <p className="text-xs font-bold text-gray-800 tracking-tight">
-                    © 2026 Chamber for Agri Input Protection
-                </p>
-                <p className="text-xs font-bold text-gray-800 tracking-tight mt-2 md:mt-0">
-                    Crafted with ❤️ by <a href="#" className="text-blue-600 hover:underline">Metizsoft Solution Private Limited</a>
-                </p>
-            </footer>
         </div>
     );
 }
@@ -244,8 +268,8 @@ function LoginContent() {
 export default function LoginPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-[#2e7d32]">
-                <div className="animate-spin h-10 w-10 border-4 border-white border-t-transparent rounded-full"></div>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-spin h-10 w-10 border-4 border-agri-green-primary border-t-transparent rounded-full"></div>
             </div>
         }>
             <LoginContent />

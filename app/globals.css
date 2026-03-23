@@ -4,23 +4,54 @@
   --background: #f8fafc;
   --foreground: #1e293b;
   
-  /* Agriculture Theme Colors */
-  --agri-green-50: #f0fdf4;
-  --agri-green-100: #dcfce7;
-  --agri-green-200: #bbf7d0;
-  --agri-green-300: #86efac;
-  --agri-green-400: #4ade80;
-  --agri-green-500: #22c55e;
-  --agri-green-600: #16a34a;
-  --agri-green-700: #15803d;
-  --agri-green-800: #166534;
-  --agri-green-900: #14532d;
-  --agri-green-950: #052e16;
+  /* Primary Agriculture Theme Colors */
+  --agri-green-primary: #1f6306;
+  --agri-gold-secondary: #ffcd1e;
+  
+  /* Derived & Complementary Agriculture Palette */
+  --agri-green-50: #f1f8e9;
+  --agri-green-100: #dcedc8;
+  --agri-green-200: #c5e1a5;
+  --agri-green-300: #aed581;
+  --agri-green-400: #9ccc65;
+  --agri-green-500: #8bc34a; /* Leafy Green */
+  --agri-green-600: #7cb342;
+  --agri-green-700: #689f38;
+  --agri-green-800: #1f6306; /* Core Primary Green */
+  --agri-green-900: #1a5305;
+  --agri-green-950: #0e2e03;
+
+  --agri-gold-50: #fff9c4;
+  --agri-gold-100: #fff59d;
+  --agri-gold-200: #fff176;
+  --agri-gold-300: #ffee58;
+  --agri-gold-400: #ffeb3b;
+  --agri-gold-500: #ffcd1e; /* Core Secondary Gold */
+  --agri-gold-600: #fbc02d;
+  --agri-gold-700: #f9a825;
+  --agri-gold-800: #f57f17;
+  --agri-gold-900: #e65100;
+
+  /* Earthy Tones (Soil/Harvest) */
+  --agri-earth-100: #efebe9;
+  --agri-earth-300: #a1887f;
+  --agri-earth-500: #795548;
+  --agri-earth-700: #5d4037;
+  --agri-earth-900: #3e2723;
+
+  /* Sky/Water (Nature Elements) */
+  --agri-sky-100: #e1f5fe;
+  --agri-sky-500: #03a9f4;
+  --agri-sky-900: #01579b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  
+  --color-agri-green-primary: var(--agri-green-primary);
+  --color-agri-gold-secondary: var(--agri-gold-secondary);
+
   --color-agri-green-50: var(--agri-green-50);
   --color-agri-green-100: var(--agri-green-100);
   --color-agri-green-200: var(--agri-green-200);
@@ -32,6 +63,27 @@
   --color-agri-green-800: var(--agri-green-800);
   --color-agri-green-900: var(--agri-green-900);
   --color-agri-green-950: var(--agri-green-950);
+
+  --color-agri-gold-50: var(--agri-gold-50);
+  --color-agri-gold-100: var(--agri-gold-100);
+  --color-agri-gold-200: var(--agri-gold-200);
+  --color-agri-gold-300: var(--agri-gold-300);
+  --color-agri-gold-400: var(--agri-gold-400);
+  --color-agri-gold-500: var(--agri-gold-500);
+  --color-agri-gold-600: var(--agri-gold-600);
+  --color-agri-gold-700: var(--agri-gold-700);
+  --color-agri-gold-800: var(--agri-gold-800);
+  --color-agri-gold-900: var(--agri-gold-900);
+
+  --color-agri-earth-100: var(--agri-earth-100);
+  --color-agri-earth-300: var(--agri-earth-300);
+  --color-agri-earth-500: var(--agri-earth-500);
+  --color-agri-earth-700: var(--agri-earth-700);
+  --color-agri-earth-900: var(--agri-earth-900);
+
+  --color-agri-sky-100: var(--agri-sky-100);
+  --color-agri-sky-500: var(--agri-sky-500);
+  --color-agri-sky-900: var(--agri-sky-900);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -44,5 +96,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-montserrat), 'Inter', system-ui, -apple-system, sans-serif;
 }

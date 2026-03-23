@@ -23,7 +23,7 @@ export default function MemberPortalContainer({
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -61,7 +61,7 @@ export default function MemberPortalContainer({
     if (loading || !user) {
         return (
             <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
-                <div className="animate-spin h-12 w-12 border-4 border-[#1b5e20] border-t-transparent rounded-full font-black"></div>
+                <div className="animate-spin h-12 w-12 border-4 border-agri-green-primary border-t-transparent rounded-full font-black"></div>
             </div>
         );
     }
@@ -71,26 +71,20 @@ export default function MemberPortalContainer({
             <MemberSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <div className="px-6 pt-6">
-                    <MemberHeader user={user} title={title} isCollapsed={isCollapsed} />
+                <div className="px-6 pt-3 flex-shrink-0">
+                    <MemberHeader
+                        user={user}
+                        title={title}
+                        isCollapsed={isCollapsed}
+                        setIsCollapsed={setIsCollapsed}
+                    />
                 </div>
 
                 <main className={`flex-1 overflow-y-auto no-scrollbar bg-[#f8fafc] transition-all duration-300 ${showFullWidth ? 'w-full' : 'max-w-[1920px] mx-auto w-full'}`}>
-                    <div className="p-6 lg:p-10 pb-20">
+                    <div className="px-6 pt-3 lg:px-10 lg:pt-5 pb-20">
                         {children}
                     </div>
                 </main>
-
-                <footer className="h-10 bg-white border-t border-gray-100 flex items-center justify-between px-10 text-gray-400 text-[10px] font-bold relative z-40">
-                    <p>© 2026 Chamber for Agri Input Protection</p>
-                    <div className="flex items-center gap-6">
-                        <p className="text-gray-400 font-medium">Ver 2.0.4 - Industrial</p>
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                            <p className="text-green-600">Secure Live</p>
-                        </div>
-                    </div>
-                </footer>
             </div>
         </div>
     );

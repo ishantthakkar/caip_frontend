@@ -188,7 +188,7 @@ export default function AdminMembersPage() {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div className="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar">
                             <table className="w-full text-left border-collapse min-w-[1800px]">
-                                <thead className="bg-[#1b5e20] text-white sticky top-0 z-10">
+                                <thead className="bg-agri-green-primary text-white sticky top-0 z-10">
                                     <tr>
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Member ID</th>
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Defaulter</th>
@@ -209,7 +209,7 @@ export default function AdminMembersPage() {
                                     {loading ? (
                                         <tr>
                                             <td colSpan={13} className="py-24 text-center">
-                                                <div className="animate-spin h-8 w-8 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                                <div className="animate-spin h-8 w-8 border-4 border-agri-green-primary border-t-transparent rounded-full mx-auto mb-4"></div>
                                                 <p className="text-sm font-bold text-gray-400 animate-pulse tracking-widest uppercase">Loading records...</p>
                                             </td>
                                         </tr>
@@ -310,7 +310,7 @@ export default function AdminMembersPage() {
                                                 <button
                                                     key={pageNum}
                                                     onClick={() => setCurrentPage(pageNum)}
-                                                    className={`w-8 h-8 rounded-lg text-[10px] font-bold transition-all ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                                                    className={`w-8 h-8 rounded-lg text-[10px] font-bold transition-all ${currentPage === pageNum ? 'bg-agri-green-primary text-white shadow-md' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
                                                 >
                                                     {pageNum}
                                                 </button>
@@ -336,7 +336,7 @@ export default function AdminMembersPage() {
             {showModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-6xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white">
+                        <div className="bg-agri-green-primary px-10 py-8 flex justify-between items-center text-white">
                             <div>
                                 <h3 className="text-xl font-black tracking-tight tracking-widest">Member's defaulters</h3>
                             </div>
@@ -351,7 +351,7 @@ export default function AdminMembersPage() {
                         <div className="p-10 max-h-[60vh] overflow-y-auto custom-scrollbar">
                             {modalLoading ? (
                                 <div className="py-24 text-center">
-                                    <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                    <div className="animate-spin h-10 w-10 border-4 border-agri-green-primary border-t-transparent rounded-full mx-auto mb-4"></div>
                                     <p className="text-sm font-black text-gray-400 tracking-wider animate-pulse">Loading records...</p>
                                 </div>
                             ) : selectedUserDefaulters.length > 0 ? (
@@ -414,7 +414,7 @@ export default function AdminMembersPage() {
             {showSubModal && (
                 <div className="fixed inset-0 z-[210] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white">
+                        <div className="bg-agri-green-primary px-10 py-8 flex justify-between items-center text-white">
                             <div>
                                 <h3 className="text-xl font-black tracking-tight tracking-widest">Sub-member registry</h3>
                                 <p className="text-[10px] font-black text-white/60 tracking-wider mt-1">Found {selectedSubMembers.length} linked accounts for {selectedUser?.name}</p>
@@ -430,7 +430,7 @@ export default function AdminMembersPage() {
                         <div className="p-10 max-h-[60vh] overflow-y-auto custom-scrollbar">
                             {subModalLoading ? (
                                 <div className="py-24 text-center">
-                                    <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                    <div className="animate-spin h-10 w-10 border-4 border-agri-green-primary border-t-transparent rounded-full mx-auto mb-4"></div>
                                     <p className="text-sm font-black text-gray-400 tracking-wider animate-pulse">Retrieving entities...</p>
                                 </div>
                             ) : selectedSubMembers.length > 0 ? (
@@ -492,7 +492,7 @@ export default function AdminMembersPage() {
             {showDocModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white">
+                        <div className="bg-agri-green-primary px-10 py-8 flex justify-between items-center text-white">
                             <div>
                                 <h3 className="text-xl font-black tracking-tight tracking-widest">Compliance audit records</h3>
                                 <p className="text-[10px] font-black text-white/60 tracking-wider mt-1">Found {selectedUser?.businessDocuments?.length || 0} assets for {selectedUser?.name}</p>
@@ -518,7 +518,7 @@ export default function AdminMembersPage() {
                                                 <a
                                                     href={docUrl}
                                                     target="_blank"
-                                                    className="w-full text-center py-3 bg-white text-[#1b5e20] text-[9px] font-black tracking-[0.3em] rounded-2xl border border-green-100 shadow-sm hover:bg-[#1b5e20] hover:text-white transition-all shadow-emerald-900/5 group-hover:shadow-xl group-hover:shadow-emerald-900/10"
+                                                    className="w-full text-center py-3 bg-white text-agri-green-primary text-[9px] font-black tracking-[0.3em] rounded-2xl border border-green-100 shadow-sm hover:bg-agri-green-primary hover:text-white transition-all shadow-emerald-900/5 group-hover:shadow-xl group-hover:shadow-emerald-900/10"
                                                 >
                                                     Inspect Asset
                                                 </a>

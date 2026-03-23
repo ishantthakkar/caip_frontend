@@ -141,39 +141,40 @@ export default function CombinedReportsPage() {
     const paginatedData = activeData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
-        <MemberPortalContainer title="Reports">
-            <div className="space-y-6 animate-in fade-in duration-500">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <MemberPortalContainer title="Reports Dashboard">
+            <div className="space-y-6 animate-in fade-in duration-500 pb-10">
+                {/* Header & Filters Section */}
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-800">
-                            {reportType === 'My Defaulter Report' ? 'Defaulter Report' : 'Search Report'}
+                        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+                            {reportType === 'My Defaulter Report' ? 'Defaulter Reports' : 'Search Analytics'}
                         </h2>
-                        <p className="text-sm text-gray-500">
-                            {reportType === 'My Defaulter Report' ? 'Overview of defaulters you have reported' : 'History of defaulters you have searched for'}
+                        <p className="text-sm text-slate-500 mt-1">
+                            {reportType === 'My Defaulter Report' ? 'Analysis of defaulter records submitted by your organization' : 'Detailed history of searching activities and results'}
                         </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                        <div className="flex flex-col w-full sm:w-auto">
-                            <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Report Type</label>
+                    <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto p-4 bg-white rounded-lg border border-slate-100 shadow-sm">
+                        <div className="flex flex-col min-w-[200px]">
+                            <label className="text-xs font-semibold text-slate-500 mb-1.5 ml-1">Report Category</label>
                             <select
                                 value={reportType}
                                 onChange={(e) => setReportType(e.target.value)}
-                                className="w-full sm:w-56 bg-white border border-blue-200 rounded-lg py-2 px-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100 text-sm font-semibold text-gray-700 shadow-sm"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 px-4 outline-none focus:border-agri-green-primary text-sm font-semibold text-slate-700 transition-all cursor-pointer shadow-sm"
                             >
                                 <option value="My Defaulter Report">My Defaulter Report</option>
                                 <option value="Search Report">Search Report</option>
                             </select>
                         </div>
 
-                        <div className="h-10 w-px bg-gray-200 hidden sm:block mx-1"></div>
+                        <div className="h-10 w-px bg-slate-100 hidden lg:block mx-1"></div>
 
-                        <div className="flex flex-col w-full sm:w-auto">
-                            <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Date Range</label>
+                        <div className="flex flex-col min-w-[150px]">
+                            <label className="text-xs font-semibold text-slate-500 mb-1.5 ml-1">Timeline</label>
                             <select
                                 value={filterOption}
                                 onChange={(e) => setFilterOption(e.target.value)}
-                                className="w-full sm:w-40 bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 outline-none focus:border-green-600 focus:ring-1 focus:ring-green-100 text-sm font-semibold text-gray-700"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 px-4 outline-none focus:border-agri-green-primary text-sm font-semibold text-slate-700 transition-all cursor-pointer shadow-sm"
                             >
                                 {dateFilterOptions.map(opt => (
                                     <option key={opt} value={opt}>{opt}</option>
@@ -182,99 +183,109 @@ export default function CombinedReportsPage() {
                         </div>
 
                         {filterOption === 'Custom Range' && (
-                            <div className="flex flex-col w-full sm:w-auto">
-                                <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Custom Dates</label>
-                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <div className="flex flex-col min-w-[300px]">
+                                <label className="text-xs font-semibold text-slate-500 mb-1.5 ml-1">Select Dates</label>
+                                <div className="flex items-center gap-2">
                                     <input
                                         type="date"
                                         value={customStart}
                                         onChange={(e) => setCustomStart(e.target.value)}
-                                        className="bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 outline-none focus:border-green-600 text-sm font-semibold text-gray-700 h-[38px]"
+                                        className="flex-1 bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 outline-none focus:border-agri-green-primary text-xs font-bold text-slate-700 h-[42px] transition-all shadow-sm"
                                     />
-                                    <span className="text-gray-400 font-bold">to</span>
+                                    <span className="text-slate-300 font-black text-[10px]">TO</span>
                                     <input
                                         type="date"
                                         value={customEnd}
                                         onChange={(e) => setCustomEnd(e.target.value)}
-                                        className="bg-gray-50 border border-gray-200 rounded-lg py-2 px-3 outline-none focus:border-green-600 text-sm font-semibold text-gray-700 h-[38px]"
+                                        className="flex-1 bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 outline-none focus:border-agri-green-primary text-xs font-bold text-slate-700 h-[42px] transition-all shadow-sm"
                                     />
                                 </div>
                             </div>
                         )}
 
-                        <div className="h-10 w-px bg-gray-200 hidden sm:block mx-1"></div>
+                        <div className="h-10 w-px bg-slate-100 hidden lg:block mx-1"></div>
 
-                        <div className="flex flex-col w-full sm:w-auto">
-                            <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Search</label>
+                        <div className="flex flex-col flex-1 min-w-[200px]">
+                            <label className="text-xs font-semibold text-slate-500 mb-1.5 ml-1">Quick Search</label>
                             <div className="relative">
                                 <input
                                     type="text"
-                                    placeholder="Search..."
+                                    placeholder="Company, GST, PAN..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full sm:w-48 bg-gray-50 border border-gray-200 rounded-lg py-2 pl-9 pr-3 outline-none focus:border-green-600 focus:ring-1 focus:ring-green-100 text-sm font-semibold text-gray-700"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2.5 pl-10 pr-4 outline-none focus:border-agri-green-primary text-sm font-semibold text-slate-700 transition-all shadow-sm"
                                 />
-                                <svg className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                {/* Main Table Content */}
+                <div className="bg-white rounded-lg shadow-md border border-slate-100 overflow-hidden flex flex-col min-h-[500px]">
                     <div className="overflow-x-auto">
                         {reportType === 'My Defaulter Report' ? (
                             <table className="w-full text-left">
-                                <thead className="bg-[#1b5e20] text-white">
+                                <thead className="bg-agri-green-primary text-white">
                                     <tr>
-                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Date</th>
-                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Defaulter Company Name</th>
-                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Amount</th>
-                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Outstanding</th>
-                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-right">Action</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight">Report Date</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight">Defaulter Entity</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight">Total Amount</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight">Outstanding Balance</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight">Verification Status</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-slate-50">
                                     {loading ? (
                                         <tr>
-                                            <td colSpan={5} className="py-20 text-center text-sm font-bold text-gray-400">Loading records...</td>
+                                            <td colSpan={6} className="py-24 text-center">
+                                                <div className="inline-block w-8 h-8 border-4 border-slate-100 border-t-agri-green-primary rounded-full animate-spin"></div>
+                                                <p className="mt-4 text-xs font-bold text-slate-300 uppercase tracking-widest">Retrieving Records...</p>
+                                            </td>
                                         </tr>
                                     ) : paginatedData.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="py-20 text-center text-sm font-bold text-gray-400">No records found.</td>
+                                            <td colSpan={6} className="py-32 text-center">
+                                                <div className="text-4xl mb-4 opacity-20 filter grayscale">📊</div>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No matching report data identified</p>
+                                            </td>
                                         </tr>
                                     ) : (
                                         paginatedData.map((item, i) => (
-                                            <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-6 py-4 text-sm font-semibold text-gray-600">
-                                                    {new Date(item.createdAt).toLocaleDateString()}
+                                            <tr key={i} className="hover:bg-slate-50/80 transition-all group">
+                                                <td className="px-8 py-6 text-sm font-bold text-slate-600">
+                                                    {new Date(item.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-sm font-bold text-gray-900">{item.defaulter_name}</p>
-                                                    <p className="text-[10px] text-gray-400 font-bold">GST: {item.gst_number || 'N/A'}</p>
+                                                <td className="px-8 py-6">
+                                                    <p className="text-sm font-black text-slate-800 mb-1">{item.defaulter_name}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-black text-white bg-slate-400 px-1.5 py-0.5 rounded leading-none">{item.gst_number ? 'GST' : 'PAN'}</span>
+                                                        <span className="text-xs font-bold text-slate-400 font-mono tracking-tighter">{item.gst_number || item.pan_number || '---'}</span>
+                                                    </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm font-bold text-gray-900">
+                                                <td className="px-8 py-6 text-sm font-black text-slate-800 tabular-nums">
                                                     ₹{Number(item.default_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                 </td>
-                                                <td className="px-6 py-4 text-sm font-bold">
-                                                    ₹{Number(item.outstanding_amount || item.default_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                <td className="px-8 py-6 text-sm font-black text-rose-600 tabular-nums">
+                                                    ₹{Number(item.outstanding_amount ?? item.default_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${item.status === 1 ? 'bg-green-100 text-green-700' :
-                                                        item.status === 2 ? 'bg-red-100 text-red-700' :
-                                                            'bg-yellow-100 text-yellow-700'
+                                                <td className="px-8 py-6">
+                                                    <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest border transition-colors ${item.status === 1 ? 'bg-green-50 text-green-700 border-green-100' :
+                                                        item.status === 2 ? 'bg-rose-50 text-rose-700 border-rose-100' :
+                                                            'bg-amber-50 text-amber-700 border-amber-100'
                                                         }`}>
                                                         {item.status === 1 ? 'Approved' : item.status === 2 ? 'Rejected' : 'Pending'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
+                                                <td className="px-8 py-6 text-right">
                                                     <button
                                                         onClick={() => setSelectedReport(item)}
-                                                        className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors"
+                                                        className="w-10 h-10 inline-flex items-center justify-center bg-slate-50 border border-slate-200 text-slate-400 hover:text-agri-green-primary hover:border-agri-green-primary hover:shadow-sm rounded-lg transition-all group-hover:scale-110"
                                                     >
-                                                        View
+                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>
                                                     </button>
                                                 </td>
                                             </tr>
@@ -284,57 +295,54 @@ export default function CombinedReportsPage() {
                             </table>
                         ) : (
                             <table className="w-full text-left">
-                                <thead className="bg-[#1b5e20] text-white">
+                                <thead className="bg-agri-green-primary text-white">
                                     <tr>
-                                        <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest border-r border-green-800">Search Date</th>
-                                        <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest border-r border-green-800 text-center">GST</th>
-                                        <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest border-r border-green-800 text-center">PAN</th>
-                                        <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest border-r border-green-800 text-center">CIN</th>
-                                        <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest border-r border-green-800 text-center">Name</th>
-                                        <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest border-r border-green-800 text-center">Defaulter Found</th>
-                                        <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest border-r border-green-800 text-center">Default Amount</th>
-                                        <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-center">Report Count</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight">Search Inquiry Date</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight">Tax Identifiers</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight text-center">Entity Name</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight text-center">Risk Discovery</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight text-center">Exposure Volume</th>
+                                        <th className="px-8 py-5 text-[14px] font-bold tracking-tight text-center">Record Hits</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-slate-50">
                                     {loading ? (
                                         <tr>
-                                            <td colSpan={8} className="py-20 text-center text-sm font-bold text-gray-400 uppercase tracking-widest">Loading history...</td>
+                                            <td colSpan={6} className="py-24 text-center">
+                                                <div className="inline-block w-8 h-8 border-4 border-slate-100 border-t-agri-green-primary rounded-full animate-spin"></div>
+                                            </td>
                                         </tr>
                                     ) : paginatedData.length === 0 ? (
                                         <tr>
-                                            <td colSpan={8} className="py-20 text-center text-sm font-bold text-gray-400 uppercase tracking-widest">No search records found.</td>
+                                            <td colSpan={6} className="py-32 text-center text-xs font-bold text-slate-400 uppercase tracking-widest">No past search activities located</td>
                                         </tr>
                                     ) : (
                                         paginatedData.map((item, i) => {
                                             const f = item.filters || {};
                                             return (
-                                                <tr key={i} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
-                                                    <td className="px-4 py-4 text-[11px] font-bold text-gray-600 border-r border-gray-100">
-                                                        {new Date(item.createdAt).toISOString().split('T')[0]}
+                                                <tr key={i} className="hover:bg-slate-50 transition-colors group">
+                                                    <td className="px-8 py-6 text-sm font-semibold text-slate-700">
+                                                        {new Date(item.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                     </td>
-                                                    <td className="px-4 py-4 text-[11px] font-semibold text-gray-600 border-r border-gray-100 text-center uppercase">
-                                                        {f.gst || f.gst_number || '-'}
+                                                    <td className="px-8 py-6">
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-xs font-bold text-slate-500 font-mono tracking-tighter">GST: {f.gst || f.gst_number || '---'}</p>
+                                                            <p className="text-xs font-bold text-slate-400 font-mono tracking-tighter">PAN: {f.pan || f.pan_number || '---'}</p>
+                                                        </div>
                                                     </td>
-                                                    <td className="px-4 py-4 text-[11px] font-semibold text-gray-600 border-r border-gray-100 text-center uppercase">
-                                                        {f.pan || f.pan_number || '-'}
+                                                    <td className="px-8 py-6 text-sm font-black text-slate-800 text-center">
+                                                        {f.name || f.defaulter_name || '---'}
                                                     </td>
-                                                    <td className="px-4 py-4 text-[11px] font-semibold text-gray-600 border-r border-gray-100 text-center uppercase">
-                                                        {f.cin || f.cin_number || '-'}
-                                                    </td>
-                                                    <td className="px-4 py-4 text-[11px] font-bold text-gray-700 border-r border-gray-100 text-center">
-                                                        {f.name || f.defaulter_name || '-'}
-                                                    </td>
-                                                    <td className="px-4 py-4 text-center border-r border-gray-100">
-                                                        <span className={`text-[10px] font-black uppercase transition-all ${item.resultCount > 0 ? 'text-green-600' : 'text-gray-400'}`}>
-                                                            {item.resultCount > 0 ? 'Yes' : 'No'}
+                                                    <td className="px-8 py-6 text-center">
+                                                        <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest border ${item.resultCount > 0 ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                                                            {item.resultCount > 0 ? 'Risk Found' : 'Clean Profile'}
                                                         </span>
                                                     </td>
-                                                    <td className="px-4 py-4 text-[11px] font-black text-gray-800 border-r border-gray-100 text-center">
-                                                        ₹{item.resultCount > 0 ? (Number(f.default_amount || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0'}
+                                                    <td className="px-8 py-6 text-sm font-black text-slate-800 text-center tabular-nums">
+                                                        ₹{item.resultCount > 0 ? (Number(f.default_amount || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
                                                     </td>
-                                                    <td className="px-4 py-4 text-[11px] font-bold text-gray-600 text-center">
-                                                        {item.resultCount || '-'}
+                                                    <td className="px-8 py-6 text-sm font-black text-agri-green-primary text-center">
+                                                        {item.resultCount || 0}
                                                     </td>
                                                 </tr>
                                             );
@@ -344,39 +352,42 @@ export default function CombinedReportsPage() {
                             </table>
                         )}
                     </div>
-                    {/* Pagination Controls */}
+
+                    {/* Pagination Suite */}
                     {!loading && activeData.length > 0 && (
-                        <div className="p-4 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500 bg-gray-50 mt-auto">
-                            <span>Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, activeData.length)} of {activeData.length} entries</span>
-                            <div className="flex gap-1">
+                        <div className="p-6 bg-slate-50/80 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Recording {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, activeData.length)} of {activeData.length} records</span>
+                            <div className="flex gap-2">
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
-                                    className="px-3 py-1 rounded-md border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
+                                    className="px-5 py-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 font-bold text-xs disabled:opacity-50 transition-all active:scale-[0.98]"
                                 >
                                     Prev
                                 </button>
-                                {Array.from({ length: totalPages }).map((_, idx) => {
-                                    const pageNum = idx + 1;
-                                    if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
-                                        return (
-                                            <button
-                                                key={pageNum}
-                                                onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-8 py-1 rounded-md text-sm font-bold transition-colors ${currentPage === pageNum ? 'bg-green-600 text-white' : 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-700'}`}
-                                            >
-                                                {pageNum}
-                                            </button>
-                                        );
-                                    } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                                        return <span key={pageNum} className="px-1 text-gray-400">...</span>;
-                                    }
-                                    return null;
-                                })}
+                                <div className="flex gap-1">
+                                    {Array.from({ length: totalPages }).map((_, idx) => {
+                                        const pageNum = idx + 1;
+                                        if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                                            return (
+                                                <button
+                                                    key={pageNum}
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                    className={`w-9 h-9 rounded-lg text-xs font-black transition-all ${currentPage === pageNum ? 'bg-agri-green-primary text-white shadow-lg shadow-green-900/20' : 'bg-white border border-slate-200 text-slate-500 hover:border-agri-green-primary hover:text-agri-green-primary'}`}
+                                                >
+                                                    {pageNum}
+                                                </button>
+                                            );
+                                        } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                                            return <span key={pageNum} className="flex items-end pb-1 text-slate-300 px-1 font-black">...</span>;
+                                        }
+                                        return null;
+                                    })}
+                                </div>
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                     disabled={currentPage === totalPages}
-                                    className="px-3 py-1 rounded-md border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
+                                    className="px-5 py-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 font-bold text-xs disabled:opacity-50 transition-all active:scale-[0.98]"
                                 >
                                     Next
                                 </button>
@@ -386,104 +397,107 @@ export default function CombinedReportsPage() {
                 </div>
             </div>
 
+            {/* Profile Detail Modal */}
             {selectedReport && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                            <div>
-                                <h3 className="font-bold text-lg text-gray-900">Defaulter Details</h3>
-                                <p className="text-xs text-gray-500">Reported on {new Date(selectedReport.createdAt).toLocaleDateString()}</p>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedReport(null)}></div>
+                    <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-400">
+                        {/* Header */}
+                        <div className="px-8 py-6 bg-agri-green-primary flex items-center justify-between text-white shadow-lg">
+                            <div className="flex items-center gap-5">
+                                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-2xl border border-white/20">📜</div>
+                                <div>
+                                    <h3 className="text-xl font-bold tracking-tight mb-0.5">Defaulter Analytics Profile</h3>
+                                    <p className="text-xs text-white/60 font-medium">Recorded on {new Date(selectedReport.createdAt).toLocaleDateString()}</p>
+                                </div>
                             </div>
                             <button
                                 onClick={() => setSelectedReport(null)}
-                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                                className="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all border border-white/10 active:scale-90"
                             >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6 6 18M6 6l12 12"/></svg>
                             </button>
                         </div>
 
-                        <div className="p-6 overflow-y-auto space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400">Defaulter Company Name</p>
-                                    <p className="text-sm font-semibold text-gray-900">{selectedReport.defaulter_name || 'N/A'}</p>
+                        <div className="p-10 overflow-y-auto space-y-10 bg-slate-50/30">
+                            {/* Identity Section */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-12">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                        <div className="w-4 h-1 bg-agri-green-primary rounded-full"></div> Entity Name
+                                    </label>
+                                    <p className="text-sm font-black text-slate-800 leading-tight">{selectedReport.defaulter_name || '---'}</p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400">Date of Default</p>
-                                    <p className="text-sm font-semibold text-gray-900">{selectedReport.date_of_default ? new Date(selectedReport.date_of_default).toLocaleDateString() : 'N/A'}</p>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                        <div className="w-4 h-1 bg-agri-green-primary rounded-full"></div> Mobile Contact
+                                    </label>
+                                    <p className="text-sm font-bold text-slate-700">{selectedReport.mobile_number || '---'}</p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400">Mobile Number</p>
-                                    <p className="text-sm font-semibold text-gray-900">{selectedReport.mobile_number || 'N/A'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400">Email</p>
-                                    <p className="text-sm font-semibold text-gray-900">{selectedReport.email_id || 'N/A'}</p>
-                                </div>
-                            </div>
-
-                            <div className="border-t border-gray-100 pt-4">
-                                <h4 className="text-xs font-bold text-gray-800 mb-3">Identifiers</h4>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div>
-                                        <p className="text-[10px] font-bold uppercase text-gray-400">GST</p>
-                                        <p className="text-sm font-semibold text-gray-900">{selectedReport.gst_number || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold uppercase text-gray-400">PAN</p>
-                                        <p className="text-sm font-semibold text-gray-900">{selectedReport.pan_number || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold uppercase text-gray-400">CIN</p>
-                                        <p className="text-sm font-semibold text-gray-900">{selectedReport.cin_number || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold uppercase text-gray-400">Aadhar</p>
-                                        <p className="text-sm font-semibold text-gray-900">{selectedReport.aadhar_number || 'N/A'}</p>
-                                    </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                        <div className="w-4 h-1 bg-agri-green-primary rounded-full"></div> Occurrence Date
+                                    </label>
+                                    <p className="text-sm font-bold text-slate-700">{selectedReport.date_of_default ? new Date(selectedReport.date_of_default).toLocaleDateString('en-GB') : '---'}</p>
                                 </div>
                             </div>
 
-                            <div className="border-t border-gray-100 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400">State</p>
-                                    <p className="text-sm font-semibold text-gray-900">{selectedReport.state || 'N/A'}</p>
+                            <div className="h-px bg-slate-200/50"></div>
+
+                            {/* Identifiers Card */}
+                            <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-sm grid grid-cols-2 lg:grid-cols-4 gap-8">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">GST Identifier</p>
+                                    <p className="text-sm font-black text-slate-700 font-mono tracking-tighter mt-1">{selectedReport.gst_number || 'N/A'}</p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400">District</p>
-                                    <p className="text-sm font-semibold text-gray-900">{selectedReport.district || 'N/A'}</p>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Permanent Tax No.</p>
+                                    <p className="text-sm font-black text-slate-700 font-mono tracking-tighter mt-1">{selectedReport.pan_number || 'N/A'}</p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400">Sub-District</p>
-                                    <p className="text-sm font-semibold text-gray-900">{selectedReport.cities || 'N/A'}</p>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Corporate ID</p>
+                                    <p className="text-sm font-black text-slate-700 font-mono tracking-tighter mt-1">{selectedReport.cin_number || 'N/A'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aadhar Unique ID</p>
+                                    <p className="text-sm font-black text-slate-700 font-mono tracking-tighter mt-1">{selectedReport.aadhar_number || 'N/A'}</p>
                                 </div>
                             </div>
 
-                            <div className="border-t border-gray-100 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400">Industry</p>
-                                    <p className="text-sm font-semibold text-gray-900">{selectedReport.industry || 'N/A'}</p>
+                            {/* Financial Summary */}
+                            <div className="bg-rose-600 rounded-xl p-8 text-white flex flex-col md:flex-row gap-8 shadow-xl shadow-rose-900/20">
+                                <div className="flex-1">
+                                    <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-2">Original Default Amount</p>
+                                    <p className="text-3xl font-black tabular-nums">₹{Number(selectedReport.default_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400">Financial Year</p>
-                                    <p className="text-sm font-semibold text-gray-900">{selectedReport.financial_year || 'N/A'}</p>
+                                <div className="w-px bg-white/10 hidden md:block"></div>
+                                <div className="flex-1">
+                                    <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-2">Net Outstanding Exposure</p>
+                                    <p className="text-3xl font-black tabular-nums">₹{Number(selectedReport.outstanding_amount ?? selectedReport.default_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
                                 </div>
                             </div>
 
-                            <div className="border-t border-gray-100 pt-4 flex gap-6 bg-red-50 p-4 rounded-xl border border-red-100">
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-red-400">Defaulter Amount</p>
-                                    <p className="text-lg font-black text-red-600">
-                                        ₹{Number(selectedReport.default_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                    </p>
+                            {/* Jurisdiction Details */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">Involved Judiciary/Region</label>
+                                    <p className="text-sm font-black text-slate-800">{selectedReport.state || 'N/A'}, {selectedReport.district || 'NA'}</p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase text-red-500">Outstanding Amount</p>
-                                    <p className="text-lg font-black text-red-700">
-                                        ₹{Number(selectedReport.outstanding_amount ?? selectedReport.default_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                    </p>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">Delinquency Reason</label>
+                                    <p className="text-sm font-semibold text-slate-600 bg-white p-4 rounded-lg border border-slate-100 italic leading-relaxed">"{selectedReport.reason_description || 'Compliance failure during trade cycle'}"</p>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-10 py-6 bg-slate-50 border-t border-slate-200/50 flex justify-end">
+                            <button 
+                                onClick={() => setSelectedReport(null)} 
+                                className="bg-slate-800 text-white px-10 py-3.5 rounded-lg font-bold text-xs hover:bg-black active:scale-[0.98] transition-all shadow-xl shadow-slate-900/10"
+                            >
+                                Close Audit View
+                            </button>
                         </div>
                     </div>
                 </div>

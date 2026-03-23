@@ -84,7 +84,7 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
                 {!isCollapsed && (
                     <div className="flex items-center gap-3">
                         <img src="/images/caip_logo.png" alt="CAIP Logo" className="h-10 w-auto object-contain" />
-                        <span className="text-xl font-bold text-[#1b5e20] tracking-tighter uppercase font-sans italic">CAIP</span>
+                        <span className="text-xl font-bold text-agri-green-primary tracking-tighter uppercase font-sans italic">CAIP</span>
                     </div>
                 )}
                 {isCollapsed && <img src="/images/caip_logo.png" alt="CAIP" className="h-10 w-auto object-contain" />}
@@ -108,21 +108,21 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
                                 key={idx}
                                 href={item.href}
                                 title={isCollapsed ? item.label : ''}
-                                className={`flex items-center gap-4 px-4 py-3 rounded-xl text-base font-bold transition-all ${isActive ? 'text-[#1b5e20] bg-green-50/80 shadow-sm shadow-green-900/5' : 'text-black hover:text-[#1b5e20] hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
+                                className={`flex items-center gap-4 px-4 py-3 rounded-xl text-base font-bold transition-all ${isActive ? 'text-agri-green-primary bg-green-50/80 shadow-sm shadow-green-900/5' : 'text-black hover:text-agri-green-primary hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
                             >
-                                <span className={isActive ? 'text-[#1b5e20]' : 'text-black'}>{item.icon}</span>
+                                <span className={isActive ? 'text-agri-green-primary' : 'text-black'}>{item.icon}</span>
                                 {!isCollapsed && (
                                     <div className="flex items-center justify-between flex-1">
                                         <span className="text-sm tracking-tight">{item.label}</span>
                                         {item.badge !== undefined && item.badge > 0 && (
-                                            <span className="px-2 py-0.5 bg-[#1b5e20] text-white text-[10px] font-bold rounded-full min-w-[20px] text-center">
+                                            <span className="px-2 py-0.5 bg-agri-green-primary text-white text-[10px] font-bold rounded-full min-w-[20px] text-center">
                                                 {item.badge}
                                             </span>
                                         )}
                                     </div>
                                 )}
                                 {isCollapsed && item.badge !== undefined && item.badge > 0 && (
-                                    <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-[#1b5e20] text-white text-[8px] font-bold rounded-full">
+                                    <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-agri-green-primary text-white text-[8px] font-bold rounded-full">
                                         {item.badge}
                                     </span>
                                 )}
