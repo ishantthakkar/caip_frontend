@@ -130,7 +130,7 @@ export default function AdminReconciliationPage() {
                                     placeholder="Search by Transaction ID, Member Name, or Company..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-gray-800 outline-none focus:border-agri-green-primary focus:bg-white transition-all italic"
+                                    className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-gray-800 outline-none focus:border-[#1b5e20] focus:bg-white transition-all italic"
                                 />
                                 <span className="absolute left-5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">🔍</span>
                             </div>
@@ -142,7 +142,7 @@ export default function AdminReconciliationPage() {
                                 <select
                                     value={selectedRange}
                                     onChange={(e) => handleRangeChange(e.target.value)}
-                                    className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold text-gray-800 outline-none focus:border-agri-green-primary focus:bg-white transition-all appearance-none cursor-pointer italic"
+                                    className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold text-gray-800 outline-none focus:border-[#1b5e20] focus:bg-white transition-all appearance-none cursor-pointer italic"
                                 >
                                     <option value="all">All</option>
                                     <option value="today">Today</option>
@@ -165,7 +165,7 @@ export default function AdminReconciliationPage() {
                                         type="date"
                                         value={dateRange.start}
                                         onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                                        className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-6 py-3.5 text-xs font-bold text-gray-800 outline-none focus:border-agri-green-primary focus:bg-white transition-all uppercase tracking-tighter"
+                                        className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-6 py-3.5 text-xs font-bold text-gray-800 outline-none focus:border-[#1b5e20] focus:bg-white transition-all uppercase tracking-tighter"
                                     />
                                 </div>
                                 <div className="space-y-2 flex-1">
@@ -174,7 +174,7 @@ export default function AdminReconciliationPage() {
                                         type="date"
                                         value={dateRange.end}
                                         onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                                        className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-6 py-3.5 text-xs font-bold text-gray-800 outline-none focus:border-agri-green-primary focus:bg-white transition-all uppercase tracking-tighter"
+                                        className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl px-6 py-3.5 text-xs font-bold text-gray-800 outline-none focus:border-[#1b5e20] focus:bg-white transition-all uppercase tracking-tighter"
                                     />
                                 </div>
                             </div>
@@ -200,7 +200,7 @@ export default function AdminReconciliationPage() {
                 <div className="bg-white rounded-[3rem] shadow-2xl shadow-gray-200/50 border border-gray-50 overflow-hidden flex flex-col">
                     <div className="overflow-x-auto overflow-y-hidden custom-scrollbar">
                         <table className="w-full text-left">
-                            <thead className="bg-agri-green-primary text-white">
+                            <thead className="bg-[#1b5e20] text-white">
                                 <tr className="text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/10">
                                     <th className="px-8 py-6">Transaction Date</th>
                                     <th className="px-8 py-6">Member ID</th>
@@ -233,7 +233,7 @@ export default function AdminReconciliationPage() {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <span className="text-xs font-black text-agri-green-primary bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 uppercase tracking-tighter">
+                                                <span className="text-xs font-black text-[#1b5e20] bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 uppercase tracking-tighter">
                                                     {tx.user_id?.memberId || 'N/A'}
                                                 </span>
                                             </td>
@@ -298,7 +298,7 @@ export default function AdminReconciliationPage() {
                                 <button
                                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="px-6 py-2 rounded-xl bg-agri-green-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-agri-green-900 disabled:opacity-30 transition-all shadow-md active:scale-95"
+                                    className="px-6 py-2 rounded-xl bg-[#1b5e20] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#144317] disabled:opacity-30 transition-all shadow-md active:scale-95"
                                 >
                                     Next
                                 </button>

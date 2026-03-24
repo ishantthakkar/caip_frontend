@@ -9,10 +9,9 @@ interface MemberHeaderProps {
     user: any;
     title?: string;
     isCollapsed?: boolean;
-    setIsCollapsed: (value: boolean) => void;
 }
 
-export default function MemberHeader({ user, title = "Dashboard", isCollapsed = false, setIsCollapsed }: MemberHeaderProps) {
+export default function MemberHeader({ user, title = "Dashboard", isCollapsed = false }: MemberHeaderProps) {
     const pathname = usePathname();
     const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -24,6 +23,16 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
         if (smData) setSubMember(JSON.parse(smData));
     }, []);
 
+    const getHeaderIcon = () => {
+        if (pathname === '/dashboard') return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>;
+        if (pathname.includes('/defaulter/search')) return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+        if (pathname.includes('/defaulter/history')) return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>;
+        if (pathname.includes('/defaulter/add')) return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" /></svg>;
+        if (pathname.includes('/sub-members')) return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
+        if (pathname.includes('/logs')) return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>;
+    };
+    
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -53,67 +62,53 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
     };
 
     return (
-        <header className="h-14 flex items-center justify-between px-6 shadow-md relative z-50 rounded-full bg-agri-gold-secondary mx-2 mt-1">
-            <div className="flex items-center gap-6">
-                {/* Navbar Left: Hamburger(only if collapsed) + Home + Title */}
+        <header className="h-14 bg-[#ffd600] flex items-center justify-between px-8 shadow-md rounded-full relative z-50">
+            <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
-                    {isCollapsed && (
-                        <button
-                            onClick={() => setIsCollapsed(false)}
-                            className="text-black hover:bg-black/10 p-2 rounded-lg transition-all animate-in zoom-in-75 duration-300"
-                            title="Open Sidebar"
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
-                            </svg>
-                        </button>
-                    )}
-                    <Link href="/dashboard" className={`text-black hover:opacity-75 transition-opacity ${!isCollapsed ? 'ml-2' : ''}`} title="Home">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-                    </Link>
+                    {getHeaderIcon()}
+                    <h1 className="text-xl text-black tracking-tight font-serif">{title}</h1>
                 </div>
-                <h1 className="text-xl font-bold text-black tracking-tight">{title}</h1>
             </div>
 
             <div className="flex items-center gap-6">
                 {/* Notification Bell */}
-                <div className="relative group cursor-pointer p-2 hover:bg-black/10 rounded-full transition-colors">
+                <div className="relative cursor-pointer hover:scale-110 transition-transform">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                     </svg>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] text-white border-2 border-[#ffd600] font-serif">
+                        1
+                    </div>
                 </div>
 
                 {/* Profile Section with Dropdown */}
                 <div className="relative" ref={dropdownRef}>
                     <div
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="flex items-center gap-3 cursor-pointer group py-1.5 px-3 hover:bg-black/10 rounded-full transition-all"
+                        className="flex items-center gap-2 cursor-pointer group py-1 px-1 pr-6 rounded-full transition-all"
                     >
-                        <div className="w-9 h-9 rounded-full bg-white shadow-sm overflow-hidden flex items-center justify-center border border-gray-100">
-                            <span className="text-gray-400 text-lg">👤</span>
+                        <div className="w-10 h-10 rounded-full bg-white border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
+                            <span className="text-gray-400 text-xl">👤</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-black whitespace-nowrap">
-                                {subMember ? subMember.firstName : (user?.name || 'Member')}
+                        <div className="flex flex-col">
+                            <span className="text-xs text-black whitespace-nowrap font-serif">
+                                {subMember ? `Sub-Member: ${subMember.firstName}` : (user?.name || 'Member')}
                             </span>
-                            <svg className={`w-3 h-3 text-black transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                                <path d="m6 9 6 6 6-6" />
-                            </svg>
                         </div>
                     </div>
 
                     {isDropdownOpen && (
                         <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-3 animate-in fade-in slide-in-from-top-2 duration-200 z-[100]">
-                            <div className="px-6 py-4 border-b border-gray-50 mb-2">
-                                <p className="text-[10px] font-bold text-gray-400">Signed in as</p>
-                                <p className="text-sm font-bold text-gray-800 truncate">{user?.email || (subMember ? subMember.phone : user?.phone)}</p>
+                            <div className="px-6 py-2 border-b border-gray-50 mb-2">
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-serif">CAIP</p>
                             </div>
+
                             {!subMember && (
                                 <Link
                                     href="/profile"
                                     onClick={() => setIsDropdownOpen(false)}
-                                    className="flex items-center gap-4 px-6 py-3 text-sm font-bold text-gray-700 hover:text-agri-green-primary hover:bg-gray-50 transition-all"
+                                    className="flex items-center gap-4 px-6 py-3 text-sm text-gray-700 hover:text-[#1b5e20] hover:bg-green-50/50 transition-all font-serif"
                                 >
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                                     My Profile
@@ -122,7 +117,7 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
 
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-4 px-6 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-all text-left"
+                                className="w-full flex items-center gap-4 px-6 py-3 text-sm text-red-600 hover:bg-red-50 transition-all font-serif"
                             >
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
                                 Sign Out

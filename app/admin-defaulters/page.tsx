@@ -174,7 +174,7 @@ export default function AdminDefaulterListPage() {
                                     placeholder="Search....."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-gray-800 outline-none focus:border-agri-green-primary focus:bg-white transition-all italic"
+                                    className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-gray-800 outline-none focus:border-[#1b5e20] focus:bg-white transition-all italic"
                                 />
                                 <span className="absolute left-5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">🔍</span>
                             </div>
@@ -193,7 +193,7 @@ export default function AdminDefaulterListPage() {
                             <select
                                 value={filters.state}
                                 onChange={(e) => setFilters(p => ({ ...p, state: e.target.value, district: '', subDistrict: '', city: '' }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-agri-green-primary transition-all"
+                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all"
                             >
                                 <option value="">All States</option>
                                 {states.map(s => <option key={s} value={s}>{s}</option>)}
@@ -205,7 +205,7 @@ export default function AdminDefaulterListPage() {
                                 value={filters.district}
                                 disabled={!filters.state}
                                 onChange={(e) => setFilters(p => ({ ...p, district: e.target.value, subDistrict: '', city: '' }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-agri-green-primary transition-all disabled:opacity-40"
+                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all disabled:opacity-40"
                             >
                                 <option value="">All Districts</option>
                                 {districts.map(d => <option key={d} value={d}>{d}</option>)}
@@ -217,7 +217,7 @@ export default function AdminDefaulterListPage() {
                                 value={filters.subDistrict}
                                 disabled={!filters.district}
                                 onChange={(e) => setFilters(p => ({ ...p, subDistrict: e.target.value, city: '' }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-agri-green-primary transition-all disabled:opacity-40"
+                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all disabled:opacity-40"
                             >
                                 <option value="">All Sub-Districts</option>
                                 {subDistricts.map(sd => <option key={sd} value={sd}>{sd}</option>)}
@@ -229,7 +229,7 @@ export default function AdminDefaulterListPage() {
                                 value={filters.city}
                                 disabled={!filters.subDistrict}
                                 onChange={(e) => setFilters(p => ({ ...p, city: e.target.value }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-agri-green-primary transition-all disabled:opacity-40"
+                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all disabled:opacity-40"
                             >
                                 <option value="">All Cities</option>
                                 {cities.map(c => <option key={c} value={c}>{c}</option>)}
@@ -240,7 +240,7 @@ export default function AdminDefaulterListPage() {
                             <select
                                 value={filters.financialYear}
                                 onChange={(e) => setFilters(p => ({ ...p, financialYear: e.target.value }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-agri-green-primary transition-all"
+                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all"
                             >
                                 <option value="">All Years</option>
                                 {Array.from({ length: 6 }).map((_, i) => {
@@ -257,7 +257,7 @@ export default function AdminDefaulterListPage() {
                 <div className="bg-white rounded-[3rem] shadow-2xl shadow-gray-200/50 border border-gray-50 overflow-hidden flex flex-col">
                     <div className="overflow-x-auto overflow-y-hidden custom-scrollbar">
                         <table className="w-full text-left">
-                            <thead className="bg-agri-green-primary text-white">
+                            <thead className="bg-[#1b5e20] text-white">
                                 <tr className="text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/10">
                                     <th className="px-8 py-6">Sr.</th>
                                     <th className="px-8 py-6">Defaulter Name</th>
@@ -290,7 +290,7 @@ export default function AdminDefaulterListPage() {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-agri-green-primary uppercase tracking-widest">{def.user_id?.companyName || 'Unknown'}</span>
+                                                    <span className="text-[10px] font-black text-[#1b5e20] uppercase tracking-widest">{def.user_id?.companyName || 'Unknown'}</span>
                                                     <span className="text-[9px] font-bold text-gray-400">ID: {def.user_id?.memberId || 'N/A'}</span>
                                                 </div>
                                             </td>
@@ -320,7 +320,7 @@ export default function AdminDefaulterListPage() {
                                             <td className="px-8 py-6 text-center">
                                                 <button
                                                     onClick={() => handleViewClick(def)}
-                                                    className="bg-agri-green-primary text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-agri-green-900 transition-all shadow-md active:scale-95 whitespace-nowrap"
+                                                    className="bg-[#1b5e20] text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#144317] transition-all shadow-md active:scale-95 whitespace-nowrap"
                                                 >
                                                     View Details
                                                 </button>
@@ -356,7 +356,7 @@ export default function AdminDefaulterListPage() {
                                 <button
                                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="px-6 py-2 rounded-xl bg-agri-green-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-agri-green-900 disabled:opacity-30 transition-all shadow-md active:scale-95"
+                                    className="px-6 py-2 rounded-xl bg-[#1b5e20] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#144317] disabled:opacity-30 transition-all shadow-md active:scale-95"
                                 >
                                     Next
                                 </button>
@@ -372,7 +372,7 @@ export default function AdminDefaulterListPage() {
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDetails(false)}></div>
                     <div className="relative bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-300">
                         {/* Header */}
-                        <div className="px-10 py-8 bg-agri-green-primary flex items-center justify-between text-white border-b border-white/10">
+                        <div className="px-10 py-8 bg-[#1b5e20] flex items-center justify-between text-white border-b border-white/10">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl">👤</div>
                                 <div>
@@ -390,7 +390,7 @@ export default function AdminDefaulterListPage() {
 
                                 {/* Section 1: Business Profile */}
                                 <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50">
-                                    <h5 className="text-[10px] font-black text-agri-green-primary uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                                    <h5 className="text-[10px] font-black text-[#1b5e20] uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                                         <span className="w-5 h-5 rounded bg-green-50 flex items-center justify-center">💼</span> Business Profile
                                     </h5>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
@@ -408,7 +408,7 @@ export default function AdminDefaulterListPage() {
                                 {/* Section 2: Statutory & Reporting */}
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                     <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50">
-                                        <h5 className="text-[10px] font-black text-agri-green-primary uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                                        <h5 className="text-[10px] font-black text-[#1b5e20] uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                                             <span className="w-5 h-5 rounded bg-green-50 flex items-center justify-center">📜</span> Statutory Info
                                         </h5>
                                         <div className="space-y-6">
@@ -429,7 +429,7 @@ export default function AdminDefaulterListPage() {
                                                 <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-sm">👔</div>
                                                 <div>
                                                     <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Reported By</p>
-                                                    <span className="text-xs font-black text-agri-green-primary tracking-tighter block">{selectedDefaulter.user_id?.companyName}</span>
+                                                    <span className="text-xs font-black text-[#1b5e20] tracking-tighter block">{selectedDefaulter.user_id?.companyName}</span>
                                                     <span className="text-[9px] font-bold text-gray-400 italic">Code: {selectedDefaulter.user_id?.memberId}</span>
                                                 </div>
                                             </div>
@@ -448,7 +448,7 @@ export default function AdminDefaulterListPage() {
                                 </div>
 
                                 {/* Section 3: Financial Default Details */}
-                                <div className="bg-agri-green-primary/[0.02] p-8 rounded-[2.5rem] border-2 border-dashed border-agri-green-primary/10">
+                                <div className="bg-[#1b5e20]/[0.02] p-8 rounded-[2.5rem] border-2 border-dashed border-[#1b5e20]/10">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                         <div className="text-center md:text-left">
                                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Original Default</p>
@@ -463,7 +463,7 @@ export default function AdminDefaulterListPage() {
                                             <h4 className="text-2xl font-black text-gray-900 tracking-tighter uppercase italic">{selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}</h4>
                                         </div>
                                     </div>
-                                    <div className="mt-8 pt-6 border-t border-agri-green-primary/10">
+                                    <div className="mt-8 pt-6 border-t border-[#1b5e20]/10">
                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Reason for Default</p>
                                         <div className="p-6 bg-white border border-gray-100 rounded-2xl italic text-sm text-gray-600 font-medium leading-relaxed">
                                             " {selectedDefaulter.reason_description} "
@@ -473,7 +473,7 @@ export default function AdminDefaulterListPage() {
 
                                 {/* Section 4: Evidence & Documents */}
                                 <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50">
-                                    <h5 className="text-[10px] font-black text-agri-green-primary uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                                    <h5 className="text-[10px] font-black text-[#1b5e20] uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                                         <span className="w-5 h-5 rounded bg-green-50 flex items-center justify-center">📄</span> Attached Evidence
                                     </h5>
                                     {selectedDefaulter.attachment_documents && selectedDefaulter.attachment_documents.length > 0 ? (
@@ -481,12 +481,12 @@ export default function AdminDefaulterListPage() {
                                             {selectedDefaulter.attachment_documents.map((doc: string, idx: number) => {
                                                 const isPdf = doc.toLowerCase().endsWith('.pdf');
                                                 return (
-                                                    <a key={idx} href={`${ASSETS_BASE_URL}uploads/${doc}`} target="_blank" className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-agri-green-primary hover:bg-white transition-all group">
+                                                    <a key={idx} href={`${ASSETS_BASE_URL}uploads/${doc}`} target="_blank" className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-[#1b5e20] hover:bg-white transition-all group">
                                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
                                                             {isPdf ? '📄' : '🖼️'}
                                                         </div>
                                                         <div className="flex flex-col min-w-0">
-                                                            <span className="text-xs font-black text-gray-900 group-hover:text-agri-green-primary transition-colors truncate uppercase">DOC_{idx + 1}</span>
+                                                            <span className="text-xs font-black text-gray-900 group-hover:text-[#1b5e20] transition-colors truncate uppercase">DOC_{idx + 1}</span>
                                                             <span className="text-[9px] font-bold text-gray-400 uppercase">View Attachment →</span>
                                                         </div>
                                                     </a>

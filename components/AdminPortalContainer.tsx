@@ -76,7 +76,7 @@ export default function AdminPortalContainer({
     if (loading) {
         return (
             <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
-                <div className="animate-spin h-12 w-12 border-4 border-agri-green-primary border-t-transparent rounded-full font-black"></div>
+                <div className="animate-spin h-12 w-12 border-4 border-[#1b5e20] border-t-transparent rounded-full font-black"></div>
             </div>
         );
     }

@@ -258,111 +258,108 @@ export default function AddDefaulterPage() {
     return (
         <MemberPortalContainer title="Report New Defaulter">
             <div className="max-w-4xl mx-auto animate-in fade-in duration-500 pb-10">
-                <div className="flex items-center justify-between mb-6">
-                    <button onClick={() => router.push('/defaulter/list')} className="inline-flex items-center gap-2 text-slate-500 hover:text-agri-green-primary transition-all group bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm text-xs font-bold">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                        Back to List
-                    </button>
-                    <div className="flex gap-2 bg-white p-1 rounded-xl border border-gray-100 shadow-sm">
-                        {[1, 2, 3].map(s => (
-                            <div key={s} className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${step === s ? 'bg-agri-green-primary text-white shadow-md' : 'text-gray-300'}`}>
-                                STEP {s}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden min-h-[500px] flex flex-col">
-                    <div className="bg-agri-green-primary px-8 py-6 flex items-center justify-between">
+                <Link href="/defaulter/list" className="inline-flex items-center gap-2 text-gray-500 hover:text-green-600 transition-all mb-4 group bg-white px-4 py-2 rounded-lg border border-gray-100 shadow-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <span className="text-xs font-black uppercase tracking-widest">Back to List</span>
+                </Link>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
+                    <div className="bg-gray-50 px-8 py-6 flex items-center justify-between border-b border-gray-200">
                         <div>
-                            <h2 className="text-xl font-bold text-white tracking-tight">
-                                {step === 1 ? 'Defaulter Information' : step === 2 ? 'Financial Details' : 'Legal & Supporting Documents'}
+                            <h2 className="text-lg font-bold text-gray-800">
+                                {step === 1 ? 'Step 1: Defaulter Information' : step === 2 ? 'Step 2: Financial Details' : 'Step 3: Legal & Supporting Documents'}
                             </h2>
-                            <p className="text-xs text-white/60 font-medium mt-1">Please provide accurate details to report the defaulter</p>
+                            <p className="text-xs text-gray-500 font-medium mt-1">Progress: {step} of 3</p>
                         </div>
-                        <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-white text-xl">
-                            {step === 1 ? '👤' : step === 2 ? '💰' : '📄'}
+                        <div className="flex gap-1">
+                            {[1, 2, 3].map(s => (
+                                <div key={s} className={`w-8 h-1.5 rounded-full ${step >= s ? 'bg-green-600' : 'bg-gray-200'}`}></div>
+                            ))}
                         </div>
                     </div>
 
                     <form className="p-8 flex-1 flex flex-col justify-between">
                         {step === 1 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1.5 col-span-full md:col-span-1">
-                                    <label className="text-[11px] font-black text-gray-400">Company / Business Name*</label>
-                                    <input type="text" name="defaulter_name" value={formData.defaulter_name} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm transition-all ${errors.defaulter_name ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="Enter name" />
+                                    <label className="text-xs font-semibold text-gray-600">Company / Business Name*</label>
+                                    <input type="text" name="defaulter_name" value={formData.defaulter_name} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.defaulter_name ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter name" />
                                     {errors.defaulter_name && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.defaulter_name}</p>}
                                 </div>
                                 <div className="space-y-1.5 col-span-full md:col-span-1">
-                                    <label className="text-[11px] font-black text-gray-400">Contact Number*</label>
-                                    <input type="text" name="mobile_number" value={formData.mobile_number} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm transition-all ${errors.mobile_number ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="10-digit mobile" />
+                                    <label className="text-xs font-semibold text-gray-600">Contact Number*</label>
+                                    <input type="text" name="mobile_number" value={formData.mobile_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.mobile_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="10-digit mobile" />
                                     {errors.mobile_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.mobile_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">GST Number*</label>
+                                    <label className="text-xs font-semibold text-gray-600">GST Number*</label>
                                     <div className="flex gap-2">
-                                        <input type="text" name="gst_number" value={formData.gst_number} onChange={handleInputChange} className={`flex-1 border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm transition-all ${errors.gst_number ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="GST No" />
-                                        <button type="button" onClick={handleGstFetch} disabled={isGstFetching} className="px-5 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-black hover:bg-black transition-all disabled:opacity-50 shadow-md">
+                                        <input type="text" name="gst_number" value={formData.gst_number} onChange={handleInputChange} className={`flex-1 border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.gst_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Gst Identification No" />
+                                        <button 
+                                            type="button" 
+                                            onClick={handleGstFetch}
+                                            disabled={isGstFetching}
+                                            className="px-4 py-2 bg-[#1b5e20] text-white rounded-lg text-[10px] font-bold hover:bg-green-900 transition-all disabled:opacity-50 shadow-sm"
+                                        >
                                             {isGstFetching ? '...' : 'FETCH'}
                                         </button>
                                     </div>
                                     {errors.gst_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.gst_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Email Address*</label>
-                                    <input type="email" name="email_id" value={formData.email_id} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm transition-all ${errors.email_id ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="Email ID" />
+                                    <label className="text-xs font-semibold text-gray-600">Email Address*</label>
+                                    <input type="email" name="email_id" value={formData.email_id} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.email_id ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Email ID" />
                                     {errors.email_id && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.email_id}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">PAN Number*</label>
-                                    <input type="text" name="pan_number" value={formData.pan_number} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm transition-all ${errors.pan_number ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="PAN No" />
+                                    <label className="text-xs font-semibold text-gray-600">PAN Number*</label>
+                                    <input type="text" name="pan_number" value={formData.pan_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.pan_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Permanent Account No" />
                                     {errors.pan_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.pan_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">CIN Number*</label>
-                                    <input type="text" name="cin_number" value={formData.cin_number} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm transition-all ${errors.cin_number ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="CIN No" maxLength={21} />
+                                    <label className="text-xs font-semibold text-gray-600">CIN Number*</label>
+                                    <input type="text" name="cin_number" value={formData.cin_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.cin_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="21-character CIN No" maxLength={21} />
                                     {errors.cin_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.cin_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">State*</label>
-                                    <select name="state" value={formData.state} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm bg-white transition-all ${errors.state ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`}>
+                                    <label className="text-xs font-semibold text-gray-600">State*</label>
+                                    <select name="state" value={formData.state} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.state ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
                                         <option value="">Select State</option>
                                         {states.map(s => <option key={s} value={s}>{s}</option>)}
                                     </select>
                                     {errors.state && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.state}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">District*</label>
-                                    <select name="district" value={formData.district} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm bg-white transition-all ${errors.district ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`}>
+                                    <label className="text-xs font-semibold text-gray-600">District*</label>
+                                    <select name="district" value={formData.district} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.district ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
                                         <option value="">Select District</option>
                                         {districts.map(d => <option key={d} value={d}>{d}</option>)}
                                     </select>
                                     {errors.district && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.district}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Sub-District*</label>
-                                    <select name="cities" value={formData.cities} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm bg-white transition-all ${errors.cities ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`}>
+                                    <label className="text-xs font-semibold text-gray-600">Sub-District*</label>
+                                    <select name="cities" value={formData.cities} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.cities ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
                                         <option value="">Select Sub-District</option>
                                         {subDistricts.map(sd => <option key={sd} value={sd}>{sd}</option>)}
                                     </select>
                                     {errors.cities && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.cities}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">City / Village / Town*</label>
-                                    <select name="city" value={formData.city} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm bg-white transition-all ${errors.city ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`}>
+                                    <label className="text-xs font-semibold text-gray-600">City / Village / Town*</label>
+                                    <select name="city" value={formData.city} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.city ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
                                         <option value="">Select City</option>
                                         {cities.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                     {errors.city && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.city}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Aadhar Number*</label>
-                                    <input type="text" name="aadhar_number" value={formData.aadhar_number} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm transition-all ${errors.aadhar_number ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="12-digit Aadhar No" maxLength={12} />
+                                    <label className="text-xs font-semibold text-gray-600">Aadhar Number*</label>
+                                    <input type="text" name="aadhar_number" value={formData.aadhar_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.aadhar_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="12-digit Aadhar No" maxLength={12} />
                                     {errors.aadhar_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.aadhar_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Industry Sector</label>
-                                    <select name="industry" value={formData.industry} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm bg-white transition-all border-gray-100 bg-gray-50/30`}>
+                                    <label className="text-xs font-semibold text-gray-600">Industry Sector</label>
+                                    <select name="industry" value={formData.industry} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white border-gray-200`}>
                                         <option value="">Select Industry</option>
                                         <option value="Agriculture">Agriculture</option>
                                         <option value="Agrochemicals & Fertilizers">Agrochemicals & Fertilizers</option>
@@ -372,8 +369,8 @@ export default function AddDefaulterPage() {
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Financial Year*</label>
-                                    <select name="financial_year" value={formData.financial_year} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm bg-white transition-all ${errors.financial_year ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`}>
+                                    <label className="text-xs font-semibold text-gray-600">Financial Year</label>
+                                    <select name="financial_year" value={formData.financial_year} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white font-bold border-gray-200`}>
                                         <option value="">Select Financial Year</option>
                                         {Array.from({ length: 15 }).map((_, i) => {
                                             const year = 2025 - i;
@@ -381,11 +378,10 @@ export default function AddDefaulterPage() {
                                             return <option key={label} value={label}>{label}</option>
                                         })}
                                     </select>
-                                    {errors.financial_year && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.financial_year}</p>}
                                 </div>
                                 <div className="col-span-full space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Full Address*</label>
-                                    <textarea name="defaulter_address" value={formData.defaulter_address} onChange={handleInputChange} rows={3} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm transition-all ${errors.defaulter_address ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="Enter complete office/home address" />
+                                    <label className="text-xs font-semibold text-gray-600">Full Address*</label>
+                                    <textarea name="defaulter_address" value={formData.defaulter_address} onChange={handleInputChange} rows={2} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.defaulter_address ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter complete office/home address" />
                                     {errors.defaulter_address && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.defaulter_address}</p>}
                                 </div>
                             </div>
@@ -394,18 +390,18 @@ export default function AddDefaulterPage() {
                         {step === 2 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-right-4 duration-300">
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Date of Default*</label>
-                                    <input type="date" name="date_of_default" value={formData.date_of_default} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm transition-all ${errors.date_of_default ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} />
+                                    <label className="text-xs font-semibold text-gray-600">Date of Default*</label>
+                                    <input type="date" name="date_of_default" value={formData.date_of_default} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-red-600 text-sm ${errors.date_of_default ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} />
                                     {errors.date_of_default && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.date_of_default}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Initial Default Amount (₹)*</label>
-                                    <input type="number" name="default_amount" value={formData.default_amount} onChange={handleInputChange} className={`w-full border rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm font-bold transition-all ${errors.default_amount ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="0.00" />
+                                    <label className="text-xs font-semibold text-gray-600">Initial Default Amount (₹)*</label>
+                                    <input type="number" name="default_amount" value={formData.default_amount} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm font-semibold ${errors.default_amount ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="0.00" />
                                     {errors.default_amount && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.default_amount}</p>}
                                 </div>
                                 <div className="col-span-full space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Describe the Case / Reason*</label>
-                                    <textarea name="reason_description" value={formData.reason_description} onChange={handleInputChange} rows={6} className={`w-full border rounded-xl py-4 px-4 outline-none focus:border-agri-green-primary text-sm leading-relaxed transition-all ${errors.reason_description ? 'border-red-500 bg-red-50' : 'border-gray-100 bg-gray-50/30'}`} placeholder="Briefly explain the nature of default..." />
+                                    <label className="text-xs font-semibold text-gray-600">Describe the Case / Reason*</label>
+                                    <textarea name="reason_description" value={formData.reason_description} onChange={handleInputChange} rows={6} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm leading-relaxed ${errors.reason_description ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Briefly explain the nature of default..." />
                                     {errors.reason_description && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.reason_description}</p>}
                                 </div>
                             </div>
@@ -414,36 +410,21 @@ export default function AddDefaulterPage() {
                         {step === 3 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-right-4 duration-300">
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Court Name (If filed)</label>
-                                    <input type="text" name="court_complex_name" value={formData.court_complex_name} onChange={handleInputChange} className="w-full border border-gray-100 bg-gray-50/30 rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm" placeholder="e.g. District Court" />
+                                    <label className="text-xs font-semibold text-gray-600">Court Name (If filed)</label>
+                                    <input type="text" name="court_complex_name" value={formData.court_complex_name} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="e.g. District Court" />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Case / Suite Number</label>
-                                    <input type="text" name="case_number" value={formData.case_number} onChange={handleInputChange} className="w-full border border-gray-100 bg-gray-50/30 rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm" placeholder="Case ID" />
+                                    <label className="text-xs font-semibold text-gray-600">Case / Suite Number</label>
+                                    <input type="text" name="case_number" value={formData.case_number} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="Case ID" />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Supporting Documents (Max 3)</label>
-                                    <div className="relative">
-                                        <input type="file" multiple onChange={(e) => setSelectedFiles(e.target.files)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                        <div className="w-full border-2 border-dashed border-gray-200 rounded-xl py-8 px-4 text-center bg-gray-50/30 group-hover:bg-white transition-all">
-                                            <div className="text-2xl mb-2 text-gray-300">📤</div>
-                                            <p className="text-xs font-bold text-gray-400">Click or drag files to upload</p>
-                                            <p className="text-[9px] text-gray-400 mt-1">PDF, JPG, or PNG (Max 5MB each)</p>
-                                        </div>
-                                    </div>
-                                    {selectedFiles && (
-                                        <div className="mt-2 flex flex-wrap gap-2">
-                                            {Array.from(selectedFiles).map((file, i) => (
-                                                <span key={i} className="px-3 py-1 bg-agri-green-50 text-agri-green-primary text-[10px] font-bold rounded-lg border border-agri-green-100">
-                                                    {file.name}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )}
+                                    <label className="text-xs font-semibold text-gray-600">Supporting Documents (Max 3)</label>
+                                    <input type="file" multiple onChange={(e) => setSelectedFiles(e.target.files)} className="w-full border border-dashed border-gray-300 rounded-lg py-6 px-4 text-xs font-bold text-gray-400 bg-gray-50 hover:bg-white transition-all text-center" />
+                                    <p className="text-[10px] text-gray-400 text-center">PDF, JPG, or PNG (Max 5MB each)</p>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-black text-gray-400">Current Legal Status</label>
-                                    <select name="case_status" value={formData.case_status} onChange={handleInputChange} className="w-full border border-gray-100 bg-gray-50/30 rounded-xl py-3 px-4 outline-none focus:border-agri-green-primary text-sm bg-white">
+                                    <label className="text-xs font-semibold text-gray-600">Current Legal Status</label>
+                                    <select name="case_status" value={formData.case_status} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white">
                                         <option value="">Select Status</option>
                                         <option value="Notice Issued">Notice Issued</option>
                                         <option value="Under Review">Under Review</option>
@@ -454,26 +435,19 @@ export default function AddDefaulterPage() {
                             </div>
                         )}
 
-                        <div className="pt-10 flex flex-col sm:flex-row items-center gap-4">
+                        <div className="pt-8 flex flex-col sm:flex-row items-center gap-4">
                             {step > 1 && (
-                                <button type="button" onClick={() => setStep(s => s - 1)} className="w-full sm:w-auto px-10 py-3.5 border border-gray-200 text-gray-500 font-black rounded-xl hover:bg-gray-50 transition-all text-xs tracking-tight">
-                                    BACK
+                                <button type="button" onClick={() => setStep(s => s - 1)} className="w-full sm:w-auto px-8 py-2.5 border border-gray-200 text-gray-500 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                                    Back
                                 </button>
                             )}
                             {step < 3 ? (
-                                <button type="button" onClick={handleNextStep} className="w-full sm:w-auto flex-1 bg-agri-green-primary text-white font-black py-4 rounded-xl shadow-lg hover:bg-black transition-all text-xs tracking-tight">
-                                    CONTINUE TO NEXT STEP
+                                <button type="button" onClick={handleNextStep} className="w-full sm:w-auto flex-1 bg-green-600 text-white font-bold py-2.5 rounded-lg shadow-sm hover:bg-green-700 transition-colors text-sm">
+                                    Continue
                                 </button>
                             ) : (
-                                <button type="button" onClick={() => handleSubmit()} disabled={saving} className="w-full flex-1 bg-agri-green-primary text-white font-black py-4 rounded-xl shadow-xl hover:bg-black transition-all text-xs tracking-tight flex items-center justify-center gap-3">
-                                    {saving ? (
-                                        <>
-                                            <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                                            SUBMITTING...
-                                        </>
-                                    ) : (
-                                        <>REPORT DEFAULTER NOW</>
-                                    )}
+                                <button type="button" onClick={() => handleSubmit()} disabled={saving} className="w-full flex-1 bg-green-600 text-white font-bold py-2.5 rounded-lg shadow-lg hover:bg-green-700 transition-colors text-sm flex items-center justify-center gap-2">
+                                    {saving ? "Submitting..." : "Report Defaulter"}
                                 </button>
                             )}
                         </div>

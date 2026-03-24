@@ -14,7 +14,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const IndiaMap = dynamic(() => import('@/components/IndiaMap'), {
     ssr: false,
     loading: () => <div className="min-h-[400px] bg-sky-50 flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-agri-green-primary border-t-transparent rounded-full font-black"></div>
+        <div className="animate-spin h-8 w-8 border-4 border-[#1b5e20] border-t-transparent rounded-full font-black"></div>
     </div>
 });
 
@@ -49,58 +49,35 @@ export default function DashboardPage() {
 
     if (!stats || !stats.summary) return (
         <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center flex-col gap-4">
-            <div className="animate-spin h-12 w-12 border-4 border-agri-green-primary border-t-transparent rounded-full font-black"></div>
-            <p className="text-sm font-bold text-gray-500 animate-pulse text-center px-4">Synchronizing Member Ecosystem Analytics...</p>
+            <div className="animate-spin h-12 w-12 border-4 border-[#1b5e20] border-t-transparent rounded-full font-black"></div>
+            <p className="text-sm font-bold text-gray-500 animate-pulse">Synchronizing Analytics...</p>
         </div>
     );
 
     return (
-        <MemberPortalContainer title="Dashboard Overview">
-            <div className="space-y-10 animate-in fade-in duration-500">
-
-                {/* Dashboard Header Section */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-agri-green-50 rounded-lg flex items-center justify-center border border-agri-green-100">
-                            <img src="/images/caip_logo.png" alt="CAIP" className="w-8 h-8 object-contain" />
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-gray-800 leading-none mb-1">Welcome to CAIP Dashboard</h2>
-                            <p className="text-xs font-medium text-gray-500">Chamber for Agri Input Protection - Monitoring & Analytics</p>
-                        </div>
+        <MemberPortalContainer title="Dashboard">
+            <div className="space-y-8 animate-in fade-in duration-500">
+                {/* Identifier Subheader */}
+                <div className="text-center py-6 border-b border-gray-100 flex items-center justify-center gap-4">
+                    <div className="w-10 h-10 hover:scale-110 transition-transform duration-300">
+                        <img src="/images/caip_logo.png" alt="CAIP Logo" className="w-full h-full object-contain" />
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-xs font-bold text-gray-400">Last Updated</p>
-                            <p className="text-xs font-bold text-gray-700">{new Date().toLocaleDateString('en-GB')}</p>
-                        </div>
-                        <div className="h-8 w-px bg-gray-100 mx-2"></div>
-                        <button
-                            onClick={() => fetchDashboardStats(localStorage.getItem('token') || '')}
-                            className="bg-agri-green-primary text-white p-2.5 rounded-lg hover:bg-agri-green-700 transition-colors shadow-sm"
-                            title="Refresh Data"
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
-                        </button>
-                    </div>
+                    <h2 className="text-lg font-bold text-gray-600 tracking-tight">CAIP - Chamber for Agri Input Protection</h2>
                 </div>
 
-                {/* Redesigned Analytics Flex Layout */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-
-                    {/* Yearly Trend Chart - Left Span 2 */}
-                    <div className="xl:col-span-2 bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="bg-agri-green-primary px-6 py-4 flex items-center justify-between">
-                            <h3 className="text-[16px] font-bold text-white tracking-tight flex items-center gap-3">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="12" width="4" height="9" /><rect x="10" y="7" width="4" height="14" /><rect x="17" y="3" width="4" height="18" /></svg>
-                                Defaulter Search Trend ({new Date().getFullYear()})
+                {/* Row 1: Trend & Stats */}
+                <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                    {/* Trend Chart (2/3 width) */}
+                    <div className="xl:col-span-3 bg-white rounded-[2rem] shadow-xl border border-gray-100/50 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center justify-between text-white">
+                            <h3 className="text-lg font-bold tracking-tight flex items-center gap-3">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect x="3" y="12" width="4" height="9" /><rect x="10" y="7" width="4" height="14" /><rect x="17" y="3" width="4" height="18" /></svg>
+                                Yearly Search Activity Trend ({new Date().getFullYear()})
                             </h3>
-                            <button className="text-white/60 hover:text-white transition-colors">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
-                            </button>
                         </div>
-                        <div className="p-8 flex-1 flex flex-col min-h-[350px]">
-                            <div className="flex-1 flex items-end gap-2 md:gap-4 relative border-b border-gray-100 pb-2">
+                        <div className="p-10 flex-1 flex flex-col min-h-[400px]">
+                            {/* Bar Chart Implementation */}
+                            <div className="flex-1 flex items-end gap-3 md:gap-6 relative border-b border-gray-100 pb-2">
                                 {(() => {
                                     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                     const trendData = stats.searchTrend || [];
@@ -109,115 +86,217 @@ export default function DashboardPage() {
                                         const entry = trendData.find((d: any) => d.month === monthNum);
                                         return { label: m, count: entry ? entry.count : 0 };
                                     });
-                                    const maxCount = Math.max(...fullData.map(d => d.count), 1);
 
-                                    return fullData.map((data, i) => {
-                                        const height = (data.count / maxCount) * 100;
-                                        return (
-                                            <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
-                                                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-all bg-gray-800 text-white text-xs font-bold py-1 px-2 rounded pointer-events-none z-20 whitespace-nowrap">
-                                                    {data.count} Searches
-                                                </div>
-                                                <div
-                                                    style={{ height: `${Math.max(height, 5)}%` }}
-                                                    className={`w-full max-w-[32px] ${height > 0 ? 'bg-agri-gold-secondary' : 'bg-gray-50'} rounded-t-md transition-all duration-500 ease-out group-hover:brightness-110 shadow-sm`}
-                                                ></div>
-                                                <span className="mt-2 text-xs font-bold text-gray-400 group-hover:text-gray-700">
-                                                    {data.label}
-                                                </span>
+                                    const maxCount = Math.max(...fullData.map(d => d.count), 500);
+
+                                    return (
+                                        <>
+                                            {/* Grid Lines with Y-Axis Labels */}
+                                            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none -left-12">
+                                                {[0, 1, 2, 3, 4].map((i) => (
+                                                    <div key={i} className="flex items-center gap-3 w-[calc(100%+48px)]">
+                                                        <span className="text-[10px] font-bold text-gray-400 w-9 text-right tabular-nums">
+                                                            {Math.round(maxCount - (i * (maxCount / 4)))}
+                                                        </span>
+                                                        <div className="flex-1 border-t border-gray-100 flex-grow"></div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        );
-                                    });
+
+                                            {fullData.map((data, i) => {
+                                                const height = (data.count / maxCount) * 100;
+                                                return (
+                                                    <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end z-10">
+                                                        {/* Tooltip */}
+                                                        <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all bg-gray-900 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg pointer-events-none z-20 whitespace-nowrap shadow-xl">
+                                                            {data.count} Searches in {data.label}
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                                        </div>
+
+                                                        {/* Bar */}
+                                                        <div
+                                                            style={{ height: `${height}%` }}
+                                                            className="w-full max-w-[40px] bg-gradient-to-t from-[#1b5e20] to-[#4caf50] rounded-t-lg transition-all duration-700 ease-out group-hover:to-[#ffd600] group-hover:scale-x-110 shadow-lg relative overflow-hidden"
+                                                        >
+                                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                        </div>
+
+                                                        {/* Label */}
+                                                        <span className="absolute -bottom-8 text-[11px] font-black text-gray-400 uppercase tracking-tighter transition-colors group-hover:text-[#1b5e20]">
+                                                            {data.label}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </>
+                                    );
                                 })()}
                             </div>
                         </div>
                     </div>
 
-                    {/* Stats Grid - Right Span 1 (Vertical List) */}
-                    <div className="xl:col-span-1 flex flex-col gap-4">
+                    {/* Summary Cards */}
+                    <div className="space-y-6">
                         {[
-                            {
-                                title: 'Total Defaulters Reported',
-                                val: stats?.summary?.totalReported || 0,
-                                icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                            },
-                            {
-                                title: 'Total Default Amount',
-                                val: `₹ ${(stats?.summary?.totalAmount || 0).toLocaleString()}`,
-                                icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6 12h.01M18 12h.01" /></svg>
-                            },
-                            {
-                                title: 'Total Amount Recovered',
-                                val: `₹ ${(stats?.summary?.totalRecovered || 0).toLocaleString()}`,
-                                icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 10h18M7 15h1m4 0h1m4 0h1M7 11V3l5-1 5 1v8M3 10V3a1 1 0 0 1 1-1h16a1 1 0 0 1 1-1h16v7" /></svg>
-                            }
+                            { title: 'Total Defaulters Reported', val: stats?.summary?.totalReported || 0, color: '#1b5e20' },
+                            { title: 'Total Default Amount', val: `₹ ${(stats?.summary?.totalAmount || 0).toLocaleString()}`, color: '#1b5e20' },
+                            { title: 'Total Amount Recovered', val: `₹ ${(stats?.summary?.totalRecovered || 0).toLocaleString()}`, color: '#1b5e20' }
                         ].map((s, i) => (
-                            <div key={i} className="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden flex flex-col min-h-[160px]">
-                                <div className="bg-agri-green-primary py-4 px-6 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-white opacity-90">{s.icon}</span>
-                                        <p className="text-[16px] font-bold text-white tracking-tight leading-none">{s.title}</p>
-                                    </div>
-                                    <button className="text-white/40 hover:text-white transition-colors">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
-                                    </button>
+                            <div key={i} className="bg-white rounded-[1.5rem] shadow-lg border border-gray-100 overflow-hidden group">
+                                <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
+                                    <h4 className="text-sm font-bold tracking-tight flex items-center gap-3">
+                                        {i === 0 ? '👥' : i === 1 ? '💵' : '✅'}
+                                        {s.title}
+                                    </h4>
+                                    <button className="opacity-40 hover:opacity-100 transition-all translate-x-1">•••</button>
                                 </div>
-                                <div className="p-8 flex-1 flex items-center">
-                                    <h3 className="text-3xl font-black text-slate-800 tabular-nums tracking-tight">{s.val}</h3>
+                                <div className="p-8">
+                                    <p className="text-3xl font-black text-gray-900 tracking-tighter">{s.val}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* Second Analytics Section (Pie Chart) */}
-                <div className="grid grid-cols-1 gap-8">
-                    {/* Industry Distribution Chart */}
-                    <div className="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="bg-agri-green-primary px-6 py-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>
-                                <h3 className="text-[16px] font-bold text-white tracking-tight">Industry Distribution</h3>
-                            </div>
-                            <button className="text-white/60 hover:text-white transition-colors">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
-                            </button>
+                {/* Row 2: Activities, Reported, Industries */}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center gap-4 text-white">
+                            <span className="text-xl">⌚</span>
+                            <h3 className="text-base font-bold tracking-wider">Recent Activities</h3>
                         </div>
-                        <div className="p-8 flex-1 flex flex-col items-center justify-center min-h-[300px]">
+                        <div className="overflow-x-auto flex-1">
+                            <table className="w-full text-center border-collapse">
+                                <thead className="bg-[#1b5e20] text-gray-300">
+                                    <tr className="divide-x divide-white/5 border-t border-white/10 uppercase">
+                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">#</th>
+                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">Activity Type</th>
+                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50 text-sm font-medium text-gray-600">
+                                    {(stats?.recentActivities || []).length > 0 ? (stats.recentActivities.slice(0, 5).map((act: any, i: number) => (
+                                        <tr key={i} className="hover:bg-gray-50 divide-x divide-gray-50">
+                                            <td className="px-6 py-4 font-bold">{i + 1}</td>
+                                            <td className="px-6 py-4 font-bold text-gray-900">{act.activityType}</td>
+                                            <td className="px-6 py-4 text-gray-400">{new Date(act.createdAt).toLocaleString('en-GB')}</td>
+                                        </tr>
+                                    ))) : (
+                                        <tr>
+                                            <td colSpan={3} className="px-6 py-10 text-gray-400 italic">No recent activity detected.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center gap-4 text-white">
+                            <span className="text-xl">📁</span>
+                            <h3 className="text-base font-bold tracking-wider">My Reported Defaulters</h3>
+                        </div>
+                        <div className="overflow-x-auto flex-1">
+                            <table className="w-full text-center border-collapse">
+                                <thead className="bg-[#1b5e20] text-gray-300 uppercase">
+                                    <tr className="divide-x divide-white/5 border-t border-white/10">
+                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">#</th>
+                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">Defaulter Name</th>
+                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50 text-sm font-medium text-gray-600">
+                                    {(stats?.myReports || []).map((def: any, i: number) => (
+                                        <tr key={i} className="hover:bg-gray-50 divide-x divide-gray-50">
+                                            <td className="px-6 py-4 font-bold">{i + 1}</td>
+                                            <td className="px-6 py-4 font-bold text-gray-900">{def.defaulter_name}</td>
+                                            <td className="px-6 py-4 font-bold text-[#1b5e20]">₹ {(def.default_amount || 0).toLocaleString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center justify-between text-white">
+                            <div className="flex items-center gap-4">
+                                <span className="text-xl">🏢</span>
+                                <h3 className="text-base font-bold tracking-wider">Defaulter Industry Types({new Date().getFullYear()})</h3>
+                            </div>
+                            <button className="opacity-40 hover:opacity-100 transition-all font-bold">•••</button>
+                        </div>
+                        <div className="p-10 flex-1 flex flex-col items-center justify-center">
                             {(() => {
                                 const industryData = stats.industryDist || [];
                                 const total = industryData.reduce((acc: number, curr: any) => acc + curr.value, 0);
 
                                 if (total === 0) {
-                                    return <div className="text-xs font-bold text-gray-300 tracking-tight">No Data Available</div>;
+                                    return (
+                                        <div className="text-center py-10">
+                                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-gray-200">
+                                                <span className="text-2xl opacity-20">📊</span>
+                                            </div>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No Sector Data</p>
+                                        </div>
+                                    );
                                 }
 
                                 const chartData = {
-                                    labels: industryData.map((s: any) => s.name),
-                                    datasets: [{
-                                        data: industryData.map((s: any) => s.value),
-                                        backgroundColor: ['#1f6306', '#388e3c', '#4caf50', '#8bc34a', '#aed581', '#c5e1a5'],
-                                        borderWidth: 1,
-                                        borderColor: '#ffffff',
-                                    }],
+                                    labels: industryData.map((s: any) => s.name.toLowerCase().replace(/[^a-z0-9]/g, '')),
+                                    datasets: [
+                                        {
+                                            data: industryData.map((s: any) => s.value),
+                                            backgroundColor: ['#ff5274', '#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#00bcd4'],
+                                            borderWidth: 2,
+                                            borderColor: '#ffffff',
+                                        },
+                                    ],
                                 };
 
                                 const chartOptions = {
                                     plugins: {
                                         legend: {
                                             display: true,
-                                            position: 'right' as const,
-                                            labels: { boxWidth: 12, padding: 20, font: { size: 12, weight: 'bold' } }
+                                            position: 'top' as const,
+                                            labels: {
+                                                boxWidth: 40,
+                                                boxHeight: 12,
+                                                padding: 20,
+                                                font: {
+                                                    family: "'Outfit', sans-serif",
+                                                    size: 13,
+                                                },
+                                                color: '#666',
+                                                generateLabels: (chart: any) => {
+                                                    const datasets = chart.data.datasets;
+                                                    return chart.data.labels.map((label: string, i: number) => ({
+                                                        text: label,
+                                                        fillStyle: datasets[0].backgroundColor[i],
+                                                        strokeStyle: datasets[0].backgroundColor[i],
+                                                        lineWidth: 0,
+                                                        hidden: false,
+                                                        index: i
+                                                    }));
+                                                }
+                                            }
                                         },
-                                        tooltip: { enabled: true, backgroundColor: '#1f2937', padding: 10, cornerRadius: 4 }
+                                        tooltip: {
+                                            enabled: true,
+                                            backgroundColor: 'rgba(0,0,0,0.8)',
+                                            padding: 12,
+                                            titleFont: { family: "'Outfit', sans-serif", size: 13 },
+                                            bodyFont: { family: "'Outfit', sans-serif", size: 14, weight: 'bold' as const },
+                                            cornerRadius: 8,
+                                        }
                                     },
                                     maintainAspectRatio: false,
-                                    cutout: '70%',
+                                    cutout: '0%', // This makes it a pie chart instead of a doughnut
                                 };
 
                                 return (
-                                    <div className="w-full max-w-4xl h-[240px] relative">
-                                        <Pie data={chartData} options={chartOptions as any} />
+                                    <div className="w-full h-[280px] relative">
+                                        <Pie data={chartData} options={chartOptions} />
                                     </div>
                                 );
                             })()}
@@ -225,147 +304,74 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Table Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Recent Activities */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                            <h3 className="text-xs font-bold text-gray-700 flex items-center gap-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-                                Recent Activities
-                            </h3>
-                            <button className="text-agri-green-primary text-xs font-bold hover:underline">View All</button>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50/50 border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-400">Type</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-400 text-right">Date & Time</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {(stats?.recentActivities || []).length > 0 ? (stats.recentActivities.slice(0, 5).map((act: any, i: number) => (
-                                        <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-4 text-xs font-bold text-gray-700">{act.activityType}</td>
-                                            <td className="px-6 py-4 text-xs text-gray-500 text-right">{new Date(act.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
-                                        </tr>
-                                    ))) : (
-                                        <tr><td colSpan={2} className="px-6 py-10 text-center text-xs text-gray-300 font-bold">No activities found</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* Reported Defaulters */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                            <h3 className="text-xs font-bold text-gray-700 flex items-center gap-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-                                My Reported Defaulters
-                            </h3>
-                            <button className="text-agri-green-primary text-xs font-bold hover:underline">Manage</button>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50/50 border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-400">Defaulter Name</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-400 text-right">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {(stats?.myReports || []).length > 0 ? (stats.myReports.slice(0, 5).map((def: any, i: number) => (
-                                        <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-4 text-xs font-bold text-gray-700">{def.defaulter_name}</td>
-                                            <td className="px-6 py-4 text-xs font-bold text-agri-green-primary text-right">₹ {(def.default_amount || 0).toLocaleString()}</td>
-                                        </tr>
-                                    ))) : (
-                                        <tr><td colSpan={2} className="px-6 py-10 text-center text-xs text-gray-300 font-bold">No reports found</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                {/* State Wise Insights */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-50">
-                        <h3 className="text-xs font-bold text-gray-700 flex items-center gap-2">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-agri-green-primary"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                            State-wise Defaulter Distribution
-                        </h3>
+                {/* Row 3: Geographic Insights */}
+                <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden">
+                    <div className="bg-[#1b5e20] px-8 py-5 flex items-center gap-4 text-white">
+                        <span className="text-xl">🗺️</span>
+                        <h3 className="text-base font-bold tracking-wider">State-wise Defaulter Insights</h3>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-2">
-                        <div className="h-[400px] bg-gray-50/50 relative overflow-hidden">
+                        <div className="min-h-[400px] relative overflow-hidden">
                             <IndiaMap stateInsights={stats?.stateInsights || []} />
                         </div>
-                        <div className="border-l border-gray-100 h-[400px] overflow-y-auto no-scrollbar">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 sticky top-0 z-10 border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-400">State</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-400 text-center">Count</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-400 text-right">Total Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {(stats?.stateInsights || []).length > 0 ? (stats.stateInsights.map((row: any, i: number) => (
-                                        <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-4 text-xs font-bold text-gray-700">{row.state}</td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="text-xs font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">{row.count}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-xs font-bold text-red-600 text-right">₹ {(row.amount || 0).toLocaleString()}</td>
+                        <div className="border-l border-gray-50 flex flex-col">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-center border-collapse">
+                                    <thead className="bg-[#1b5e20] text-gray-300 uppercase">
+                                        <tr className="divide-x divide-white/5 border-t border-white/10">
+                                            <th className="px-6 py-4 text-xs font-bold tracking-widest">State</th>
+                                            <th className="px-6 py-4 text-xs font-bold tracking-widest">Total Defaulters</th>
+                                            <th className="px-6 py-4 text-xs font-bold tracking-widest">Total Default Amount</th>
                                         </tr>
-                                    ))) : (
-                                        <tr><td colSpan={3} className="px-6 py-20 text-center text-xs text-gray-300 font-bold">Data processing...</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50 text-sm font-medium text-gray-600">
+                                        {(stats?.stateInsights || []).map((row: any, i: number) => (
+                                            <tr key={i} className="hover:bg-gray-50 divide-x divide-gray-50">
+                                                <td className="px-6 py-5 font-bold text-gray-900 tracking-tight">{row.state}</td>
+                                                <td className="px-6 py-5 font-black text-[#1b5e20]">{row.count}</td>
+                                                <td className="px-6 py-5 font-black text-red-600">₹ {(row.amount || 0).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Search History */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-                        <h3 className="text-xs font-bold text-gray-700 flex items-center gap-2">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-agri-green-primary"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></svg>
-                            Search History
-                        </h3>
+                {/* Row 4: Search History */}
+                <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden">
+                    <div className="bg-[#1b5e20] px-8 py-5 flex items-center gap-4 text-white">
+                        <span className="text-xl">🔎</span>
+                        <h3 className="text-base font-bold tracking-wider">Defaulter Search History</h3>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50/50 border-b border-gray-100">
-                                <tr>
-                                    <th className="px-6 py-3 text-xs font-bold text-gray-400">#</th>
-                                    <th className="px-6 py-3 text-xs font-bold text-gray-400">Target Name</th>
-                                    <th className="px-6 py-3 text-xs font-bold text-gray-400">GST/PAN</th>
-                                    <th className="px-6 py-3 text-xs font-bold text-gray-400 text-center">Results</th>
-                                    <th className="px-6 py-3 text-xs font-bold text-gray-400 text-right">Timestamp</th>
+                        <table className="w-full text-center border-collapse">
+                            <thead className="bg-[#1b5e20] text-gray-300 uppercase">
+                                <tr className="divide-x divide-white/5 border-t border-white/10">
+                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">#</th>
+                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">Target Name</th>
+                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">GST Identifier</th>
+                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">PAN Identification</th>
+                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">Records Identified</th>
+                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">Timestamp</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {(stats?.searchHistory || []).length > 0 ? (stats.searchHistory.map((log: any, i: number) => (
-                                    <tr key={i} className="hover:bg-gray-50/50 transition-colors text-xs font-medium text-gray-700">
-                                        <td className="px-6 py-4 text-gray-400">{i + 1}</td>
-                                        <td className="px-6 py-4 font-bold">{log.filters?.name || '---'}</td>
-                                        <td className="px-6 py-4 font-mono text-xs">{log.filters?.gst || log.filters?.pan || '---'}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            {log.resultCount > 0 ? (
-                                                <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-bold">{log.resultCount} Results</span>
-                                            ) : (
-                                                <span className="text-gray-400 bg-gray-100 px-2 py-0.5 rounded text-xs font-bold">No Results</span>
-                                            )}
+                            <tbody className="divide-y divide-gray-50 text-sm font-medium text-gray-600">
+                                {(stats?.searchHistory || []).map((log: any, i: number) => (
+                                    <tr key={i} className="hover:bg-gray-50 divide-x divide-gray-50">
+                                        <td className="px-6 py-5 font-bold text-gray-900">{i + 1}</td>
+                                        <td className="px-6 py-5 font-bold text-gray-700">{log.filters?.name || '---'}</td>
+                                        <td className="px-6 py-5 font-mono">{log.filters?.gst || '---'}</td>
+                                        <td className="px-6 py-5 font-mono">{log.filters?.pan || '---'}</td>
+                                        <td className="px-6 py-5">
+                                            <span className={`px-4 py-1.5 rounded-lg font-bold ${log.resultCount > 0 ? 'bg-green-50 text-[#1b5e20]' : 'bg-red-50 text-red-600'}`}>
+                                                {log.resultCount} Records
+                                            </span>
                                         </td>
-                                        <td className="px-6 py-4 text-right text-gray-500">{new Date(log.createdAt).toLocaleString()}</td>
+                                        <td className="px-6 py-5 text-gray-400">{new Date(log.createdAt).toLocaleString()}</td>
                                     </tr>
-                                ))) : (
-                                    <tr><td colSpan={5} className="px-6 py-20 text-center text-xs text-gray-300 font-bold">No search history found</td></tr>
-                                )}
+                                ))}
                             </tbody>
                         </table>
                     </div>

@@ -15,7 +15,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const IndiaMap = dynamic(() => import('@/components/IndiaMap'), {
     ssr: false,
     loading: () => <div className="min-h-[400px] bg-sky-50 flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-agri-green-primary border-t-transparent rounded-full font-black"></div>
+        <div className="animate-spin h-8 w-8 border-4 border-[#1b5e20] border-t-transparent rounded-full font-black"></div>
     </div>
 });
 
@@ -131,7 +131,7 @@ export default function AdminDashboardPage() {
     if (!stats || !stats.summary) {
         return (
             <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center flex-col gap-4">
-                <div className="animate-spin h-12 w-12 border-4 border-agri-green-primary border-t-transparent rounded-full font-black"></div>
+                <div className="animate-spin h-12 w-12 border-4 border-[#1b5e20] border-t-transparent rounded-full font-black"></div>
                 <p className="text-sm font-bold text-gray-500 animate-pulse uppercase tracking-[0.2em]">Initializing Administrative Nexus...</p>
             </div>
         );
@@ -202,7 +202,7 @@ export default function AdminDashboardPage() {
 
                 {/* Bar Graph: Search Trend */}
                 <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
-                    <div className="bg-agri-green-primary px-10 py-6 text-white flex justify-between items-center">
+                    <div className="bg-[#1b5e20] px-10 py-6 text-white flex justify-between items-center">
                         <h3 className="text-lg font-black tracking-tight flex items-center gap-4">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="12" width="4" height="9"></rect><rect x="10" y="7" width="4" height="14"></rect><rect x="17" y="3" width="4" height="18"></rect></svg> Global Search Trend ({new Date().getFullYear()})
                         </h3>
@@ -239,9 +239,9 @@ export default function AdminDashboardPage() {
                                                 </div>
                                                 <div
                                                     style={{ height: `${(data.count / maxCount) * 100}%` }}
-                                                    className="w-full max-w-[45px] bg-gradient-to-t from-agri-green-950 to-agri-green-primary rounded-t-xl transition-all duration-700 ease-out group-hover:from-agri-green-primary group-hover:to-agri-gold-secondary group-hover:scale-x-110 shadow-lg"
+                                                    className="w-full max-w-[45px] bg-gradient-to-t from-[#0a1f0a] to-[#1b5e20] rounded-t-xl transition-all duration-700 ease-out group-hover:from-[#1b5e20] group-hover:to-[#ffd600] group-hover:scale-x-110 shadow-lg"
                                                 ></div>
-                                                <span className="absolute -bottom-8 text-[11px] font-black text-black tracking-tighter group-hover:text-agri-green-primary">{data.label}</span>
+                                                <span className="absolute -bottom-8 text-[11px] font-black text-black tracking-tighter group-hover:text-[#1b5e20]">{data.label}</span>
                                             </div>
                                         ))}
                                     </>
@@ -255,14 +255,14 @@ export default function AdminDashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     {/* Latest Reported Defaulters Table */}
                     <div className="lg:col-span-2 bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="bg-agri-green-primary px-10 py-6 text-white">
+                        <div className="bg-[#1b5e20] px-10 py-6 text-white">
                             <h3 className="text-lg font-black tracking-tight flex items-center gap-4">
                                 <span>⚠️</span> Latest Reported Defaulters
                             </h3>
                         </div>
                         <div className="p-8 overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-agri-green-primary text-gray-300 uppercase">
+                                <thead className="bg-[#1b5e20] text-gray-300 uppercase">
                                     <tr className="divide-x divide-white/5 border-t border-white/10">
                                         <th className="px-6 py-4 text-xs font-bold tracking-widest">#</th>
                                         <th className="px-6 py-4 text-xs font-bold tracking-widest">Defaulter Company</th>
@@ -293,7 +293,7 @@ export default function AdminDashboardPage() {
 
                     {/* Defaulter Industry Types Chart */}
                     <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="bg-agri-green-primary px-10 py-6 text-white">
+                        <div className="bg-[#1b5e20] px-10 py-6 text-white">
                             <h3 className="text-lg font-black tracking-tight flex items-center gap-4">
                                 <span>🥗</span> Defaulter Industry Types
                             </h3>
@@ -367,7 +367,7 @@ export default function AdminDashboardPage() {
 
                 {/* Middle Row: State-wise Insights (Map + Table) */}
                 <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col">
-                    <div className="bg-agri-green-primary px-10 py-6 text-white flex justify-between items-center">
+                    <div className="bg-[#1b5e20] px-10 py-6 text-white flex justify-between items-center">
                         <h3 className="text-lg font-black tracking-tight flex items-center gap-4">
                             <span>📍</span> State-Wise Defaulter Insights
                         </h3>
@@ -379,7 +379,7 @@ export default function AdminDashboardPage() {
                         </div>
                         <div className="p-8 overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-agri-green-primary text-gray-300">
+                                <thead className="bg-[#1b5e20] text-gray-300">
                                     <tr className="divide-x divide-white/5 border-t border-white/10">
                                         <th className="px-6 py-4 text-xs font-bold tracking-widest">State</th>
                                         <th className="px-6 py-4 text-xs font-bold tracking-widest text-center">Entries</th>
@@ -404,14 +404,14 @@ export default function AdminDashboardPage() {
 
                 {/* Bottom Row: Transaction History */}
                 <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
-                    <div className="bg-agri-green-primary px-10 py-6 text-white">
+                    <div className="bg-[#1b5e20] px-10 py-6 text-white">
                         <h3 className="text-lg font-black tracking-tight flex items-center gap-4">
                             <span>📄</span> Transaction History
                         </h3>
                     </div>
                     <div className="p-8 overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-agri-green-primary text-gray-300">
+                            <thead className="bg-[#1b5e20] text-gray-300">
                                 <tr className="divide-x divide-white/5 border-t border-white/10">
                                     <th className="px-6 py-4 text-xs font-bold tracking-widest">#</th>
                                     <th className="px-6 py-4 text-xs font-bold tracking-widest">TX ID</th>
@@ -443,13 +443,13 @@ export default function AdminDashboardPage() {
 
                 {/* Master Member Registry Table */}
                 {/* <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
-                    <div className="bg-agri-green-primary px-10 py-8 flex flex-col md:flex-row justify-between md:items-center gap-6 text-white">
+                    <div className="bg-[#1b5e20] px-10 py-8 flex flex-col md:flex-row justify-between md:items-center gap-6 text-white">
                         <div className="flex flex-col">
                             <h3 className="text-xl font-black tracking-tight">Master Member Registry</h3>
                             <div className="flex items-center gap-4 mt-1 font-bold">
                                 <p className="text-xs text-white/60 tracking-wider">Full compliance management</p>
                                 <div className="w-1 h-1 rounded-full bg-white/40"></div>
-                                <Link href="/admin-members" className="text-xs text-agri-gold-secondary hover:text-white transition-colors tracking-wider underline decoration-2 underline-offset-4">View all registry</Link>
+                                <Link href="/admin-members" className="text-xs text-[#ffd600] hover:text-white transition-colors tracking-wider underline decoration-2 underline-offset-4">View all registry</Link>
                             </div>
                         </div>
                         <div className="flex gap-4">
@@ -491,7 +491,7 @@ export default function AdminDashboardPage() {
                                     <tr key={user._id} className="hover:bg-gray-50 transition-all group">
                                         <td className="px-10 py-6">
                                             <div className="flex items-center gap-5">
-                                                <div className="w-12 h-12 rounded-2xl bg-[#f0f9f0] flex items-center justify-center text-agri-green-primary font-black text-lg border border-agri-green-primary/10 group-hover:bg-agri-green-primary group-hover:text-white transition-all">
+                                                <div className="w-12 h-12 rounded-2xl bg-[#f0f9f0] flex items-center justify-center text-[#1b5e20] font-black text-lg border border-[#1b5e20]/10 group-hover:bg-[#1b5e20] group-hover:text-white transition-all">
                                                     {user.name?.[0]}
                                                 </div>
                                                 <div>
@@ -505,19 +505,19 @@ export default function AdminDashboardPage() {
                                             <p className="text-[10px] text-black font-black mt-1 tracking-wider">{user.subDistrict || 'Global'}</p>
                                         </td>
                                         <td className="px-10 py-6 text-center">
-                                            <span className="text-sm font-black text-agri-green-primary bg-green-50 px-4 py-2 rounded-xl border border-green-100">
+                                            <span className="text-sm font-black text-[#1b5e20] bg-green-50 px-4 py-2 rounded-xl border border-green-100">
                                                 {user.reportCount || 0} Reports
                                             </span>
                                         </td>
                                         <td className="px-10 py-6 text-right">
                                             <div className="flex justify-end gap-3 items-center">
                                                 {user.status === '0' ? (
-                                                    <button onClick={() => handleAction(user._id, 'approved')} className="px-6 py-2 bg-agri-green-primary text-white text-[10px] font-black rounded-xl hover:bg-black transition-all shadow-lg active:scale-95">Verify entity</button>
+                                                    <button onClick={() => handleAction(user._id, 'approved')} className="px-6 py-2 bg-[#1b5e20] text-white text-[10px] font-black rounded-xl hover:bg-black transition-all shadow-lg active:scale-95">Verify entity</button>
                                                 ) : (
                                                     <>
                                                         <button
                                                             onClick={() => fetchUserDefaulters(user)}
-                                                            className="px-6 py-2 bg-agri-green-primary text-white text-[10px] font-black rounded-xl hover:bg-black transition-all shadow-lg active:scale-95"
+                                                            className="px-6 py-2 bg-[#1b5e20] text-white text-[10px] font-black rounded-xl hover:bg-black transition-all shadow-lg active:scale-95"
                                                         >
                                                             Inspect ledger
                                                         </button>
@@ -538,7 +538,7 @@ export default function AdminDashboardPage() {
             {showModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-6xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="bg-agri-green-primary px-10 py-8 flex justify-between items-center text-white">
+                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white">
                             <div>
                                 <h3 className="text-xl font-black tracking-tight">Defaulter Master Ledger</h3>
                                 <p className="text-[10px] font-black text-white/60 tracking-wider mt-1">Authorized access: {selectedUser?.name}</p>
@@ -554,12 +554,12 @@ export default function AdminDashboardPage() {
                         <div className="p-10 max-h-[60vh] overflow-y-auto custom-scrollbar">
                             {modalLoading ? (
                                 <div className="py-24 text-center">
-                                    <div className="animate-spin h-10 w-10 border-4 border-agri-green-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                                    <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
                                     <p className="text-sm font-black text-black tracking-wider animate-pulse">Decrypting records...</p>
                                 </div>
                             ) : selectedUserDefaulters.length > 0 ? (
                                 <table className="w-full text-left border-separate border-spacing-y-4">
-                                    <thead className="bg-agri-green-primary text-gray-300 uppercase">
+                                    <thead className="bg-[#1b5e20] text-gray-300 uppercase">
                                         <tr className="divide-x divide-white/5 border-t border-white/10">
                                             <th className="px-6 py-2 text-xs font-bold tracking-widest uppercase">Entity</th>
                                             <th className="px-6 py-2 text-xs font-bold tracking-widest uppercase">Registration</th>

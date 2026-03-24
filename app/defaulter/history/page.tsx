@@ -9,8 +9,8 @@ const InfoItem = ({ icon, label, value }: { icon: any, label: string, value: any
     <div className="flex items-start gap-4">
         <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm flex-shrink-0 mt-1">{icon}</div>
         <div className="min-w-0">
-            <p className="text-[11px] font-black text-gray-400 flex items-center gap-1">
-                {label}: <span className="text-gray-700 font-medium ml-1">{value}</span>
+            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                {label}: <span className="text-gray-700 font-medium ml-1 normal-case">{value}</span>
             </p>
         </div>
     </div>
@@ -71,36 +71,35 @@ export default function SearchHistoryPage() {
     };
 
     if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-agri-green-primary border-t-transparent rounded-full"></div>
+        <div className="animate-spin h-8 w-8 border-4 border-green-600 border-t-transparent rounded-full"></div>
     </div>;
 
     return (
         <MemberPortalContainer title="Search History">
             <div className="space-y-6 animate-in fade-in duration-500">
                 <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-xl font-bold text-gray-800 tracking-tight">Search History Analytics</h2>
-                    <button onClick={() => router.back()} className="bg-slate-800 text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold hover:bg-black transition-all">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                        Back
+                    <h2 className="text-xl font-bold text-gray-800">Search History</h2>
+                    <button onClick={() => router.back()} className="bg-black text-white px-4 py-1.5 rounded flex items-center gap-2 text-xs font-bold hover:bg-gray-800">
+                        <span className="text-lg">⬅</span> Back
                     </button>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded shadow-sm border border-gray-200 overflow-hidden">
                     {/* Header Controls */}
-                    <div className="p-4 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
+                    <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-gray-400">Show</span>
+                            <span className="text-xs font-bold text-gray-500">Show</span>
                             <select 
                                 value={itemsPerPage} 
                                 onChange={(e) => {
                                     setItemsPerPage(Number(e.target.value));
                                     setCurrentPage(1);
                                 }}
-                                className="border border-gray-200 rounded-lg px-2 py-1 text-xs outline-none focus:border-agri-green-primary font-bold bg-white"
+                                className="border border-gray-200 rounded px-2 py-1 text-xs outline-none focus:border-green-600 font-bold"
                             >
                                 {[10, 25, 50, 100].map(v => <option key={v} value={v}>{v}</option>)}
                             </select>
-                            <span className="text-xs font-bold text-gray-400">entries</span>
+                            <span className="text-xs font-bold text-gray-500">entries</span>
                         </div>
                         <div className="relative w-full sm:w-64">
                             <input 
@@ -111,55 +110,55 @@ export default function SearchHistoryPage() {
                                     setSearchQuery(e.target.value);
                                     setCurrentPage(1);
                                 }}
-                                className="w-full border border-gray-100 rounded-lg pl-9 pr-4 py-2 text-xs outline-none focus:border-agri-green-primary font-medium"
+                                className="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-xs outline-none focus:border-green-600 font-medium"
                             />
-                            <svg className="absolute left-3 top-2.5 text-gray-300" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <svg className="absolute left-3 top-2.5 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                         </div>
                     </div>
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
-                            <thead className="bg-agri-green-primary text-white">
+                            <thead className="bg-[#0a2f0a] text-white">
                                 <tr>
-                                    <th className="px-3 py-4 text-[11px] font-bold text-center border-r border-white/10 w-10">#</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold text-center border-r border-white/10 min-w-[90px]">Date</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold text-center border-r border-white/10 min-w-[80px]">Time</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold border-r border-white/10 min-w-[120px]">Reported By</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold border-r border-white/10 min-w-[180px]">Defaulter Company Name</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold border-r border-white/10 min-w-[140px]">GST Number</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold border-r border-white/10 min-w-[120px]">PAN Number</th>
-                                    <th className="px-4 py-4 text-[11px] font-bold border-r border-white/10 min-w-[150px]">CIN Number</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold border-r border-white/10 min-w-[140px]">Aadhar Number</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold border-r border-white/10 min-w-[100px]">State</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold border-r border-white/10 min-w-[100px]">District</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold border-r border-white/10 min-w-[100px]">Sub District</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold border-r border-white/10 min-w-[100px]">City</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold text-center border-r border-white/10 min-w-[80px]">Status</th>
-                                    <th className="px-3 py-4 text-[11px] font-bold text-center min-w-[100px]">Action</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center border-r border-gray-700 w-10">#</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center border-r border-gray-700 min-w-[90px]">Date</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center border-r border-gray-700 min-w-[80px]">Time</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[120px]">Reported By</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[180px]">Defaulter Company Name</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[140px]">GST Number</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[120px]">PAN Number</th>
+                                    <th className="px-4 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[150px]">CIN Number</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[140px]">Aadhar Number</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">State</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">District</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">Sub District</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">City</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center border-r border-gray-700 min-w-[80px]">Status</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center min-w-[100px]">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-gray-200">
                                 {currentItems.map((log, i) => (
-                                    <tr key={i} className="hover:bg-gray-50 bg-white transition-colors text-[11px] font-medium text-gray-600">
-                                        <td className="px-3 py-4 text-center border-r border-gray-50 text-gray-400 tabular-nums">{indexOfFirstItem + i + 1}</td>
-                                        <td className="px-3 py-4 text-center border-r border-gray-50 whitespace-nowrap tabular-nums">
+                                    <tr key={i} className="hover:bg-gray-50 bg-white transition-colors text-[11px] font-medium text-gray-700">
+                                        <td className="px-3 py-4 text-center border-r border-gray-100">{indexOfFirstItem + i + 1}</td>
+                                        <td className="px-3 py-4 text-center border-r border-gray-100 whitespace-nowrap">
                                             {new Date(log.createdAt).toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}
                                         </td>
-                                        <td className="px-3 py-4 text-center border-r border-gray-50 whitespace-nowrap tabular-nums">
+                                        <td className="px-3 py-4 text-center border-r border-gray-100 whitespace-nowrap">
                                             {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                                         </td>
-                                        <td className="px-3 py-4 border-r border-gray-50">{log.user_id?.name || 'Local Member'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-50 font-bold text-slate-800">{log.filters?.name || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-50 font-mono">{log.filters?.gst || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-50 font-mono">{log.filters?.pan || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-50 font-mono">{log.filters?.cin || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-50 font-mono">{log.filters?.aadhar || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-50">{log.filters?.state || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-50">{log.filters?.district || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-50">{log.filters?.subDistrict || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-50">{log.filters?.city || '-'}</td>
-                                        <td className="px-3 py-4 text-center border-r border-gray-50">
-                                            <span className="bg-agri-green-50 text-agri-green-primary px-2.5 py-1 rounded-full text-[10px] font-bold border border-agri-green-100 inline-block">
+                                        <td className="px-3 py-4 border-r border-gray-100">{log.user_id?.name || 'Local Member'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.name || '-'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.gst || '-'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.pan || '-'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.cin || '-'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.aadhar || '-'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100">{log.filters?.state || '-'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100">{log.filters?.district || '-'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100">{log.filters?.subDistrict || '-'}</td>
+                                        <td className="px-3 py-4 border-r border-gray-100">{log.filters?.city || '-'}</td>
+                                        <td className="px-3 py-4 text-center border-r border-gray-100">
+                                            <span className="bg-green-50 text-green-600 px-2.5 py-1 rounded-full text-[9px] font-bold border border-green-100 uppercase inline-block">
                                                 Approved
                                             </span>
                                         </td>
@@ -169,10 +168,9 @@ export default function SearchHistoryPage() {
                                                     setSelectedLog(log);
                                                     setShowDetails(true);
                                                 }}
-                                                className="bg-blue-50 text-blue-600 p-1.5 rounded-lg text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-1 mx-auto"
-                                                title="View details"
+                                                className="bg-[#46c1e1] text-white px-4 py-1.5 rounded text-[10px] font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1 mx-auto"
                                             >
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                <span>👁 VIEW</span>
                                             </button>
                                         </td>
                                     </tr>
@@ -182,25 +180,22 @@ export default function SearchHistoryPage() {
                     </div>
 
                     {filteredHistory.length === 0 && (
-                        <div className="p-20 text-center bg-white flex flex-col items-center gap-3">
-                             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z"/></svg>
-                            </div>
-                            <p className="text-slate-400 text-sm font-bold">No matching history records found.</p>
+                        <div className="p-20 text-center bg-white">
+                            <p className="text-gray-400 text-sm font-semibold italic">No search entries found matching your criteria.</p>
                         </div>
                     )}
 
                     {/* Footer Controls */}
                     {filteredHistory.length > 0 && (
-                        <div className="px-6 py-4 border-t border-gray-50 bg-white flex flex-col sm:flex-row justify-between items-center gap-4">
-                            <p className="text-xs font-bold text-gray-400">
+                        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <p className="text-xs font-bold text-gray-500">
                                 Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredHistory.length)} of {filteredHistory.length} entries
                             </p>
                             <div className="flex items-center gap-1">
                                 <button 
                                     disabled={currentPage === 1}
                                     onClick={() => handlePageChange(currentPage - 1)}
-                                    className="p-2 border border-gray-100 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                                    className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-all"
                                 >
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m15 18-6-6 6-6"/></svg>
                                 </button>
@@ -214,13 +209,13 @@ export default function SearchHistoryPage() {
                                                 <button
                                                     key={page}
                                                     onClick={() => handlePageChange(page)}
-                                                    className={`w-8 h-8 text-xs font-bold rounded-lg transition-all ${currentPage === page ? 'bg-agri-green-primary text-white shadow-md' : 'text-gray-400 hover:bg-slate-50 border border-transparent hover:border-gray-100'}`}
+                                                    className={`w-8 h-8 text-xs font-bold rounded-lg transition-all ${currentPage === page ? 'bg-green-600 text-white shadow-md' : 'text-gray-500 hover:bg-white border border-transparent hover:border-gray-200'}`}
                                                 >
                                                     {page}
                                                 </button>
                                             );
                                         } else if (page === currentPage - 2 || page === currentPage + 2) {
-                                            return <span key={page} className="text-gray-300 text-[10px]">...</span>;
+                                            return <span key={page} className="text-gray-400 text-[10px]">...</span>;
                                         }
                                         return null;
                                     })}
@@ -229,7 +224,7 @@ export default function SearchHistoryPage() {
                                 <button 
                                     disabled={currentPage === totalPages}
                                     onClick={() => handlePageChange(currentPage + 1)}
-                                    className="p-2 border border-gray-100 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                                    className="p-2 border border-gray-200 rounded-lg hover:bg-white disabled:opacity-30 disabled:hover:bg-transparent transition-all"
                                 >
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m9 18 6-6-6-6"/></svg>
                                 </button>
@@ -241,15 +236,15 @@ export default function SearchHistoryPage() {
                 {showDetails && selectedLog && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDetails(false)}></div>
-                        <div className="relative bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-300">
+                        <div className="relative bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-300">
                             {/* Header */}
-                            <div className="px-8 py-5 bg-agri-green-primary flex items-center justify-between text-white border-b border-white/10">
+                            <div className="px-8 py-5 bg-[#0a1f0a] flex items-center justify-between text-white">
                                 <div className="flex items-center gap-3">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                                    <h3 className="text-lg font-bold tracking-tight">Search Result Historical Snapshot</h3>
+                                    <span className="text-xl">👥</span>
+                                    <h3 className="text-lg font-bold tracking-tight">Defaulter Details</h3>
                                 </div>
-                                <button onClick={() => setShowDetails(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                <button onClick={() => setShowDetails(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                                 </button>
                             </div>
 
@@ -288,19 +283,96 @@ export default function SearchHistoryPage() {
                                     <div className="flex items-center gap-4">
                                         <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm">✅</div>
                                         <div>
-                                            <p className="text-[11px] font-black text-gray-400">Status</p>
-                                            <span className="px-3 py-1 bg-green-500 text-white rounded-full text-[10px] font-bold mt-1 inline-block">
+                                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Status</p>
+                                            <span className="px-3 py-1 bg-green-500 text-white rounded-full text-[10px] font-bold uppercase mt-1 inline-block">
                                                 Approved
                                             </span>
                                         </div>
                                     </div>
                                 </div>
+
+                                <hr className="border-gray-100" />
+
+                                {/* Section 3: Legal Info */}
+                                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+                                    <InfoItem icon="🏛️" label="Court Complex Name" value={selectedLog.filters?.court_complex_name || '-'} />
+                                    <InfoItem icon="🔢" label="Case Number" value={selectedLog.filters?.case_number || '-'} />
+                                    <InfoItem icon="⚖️" label="Case Type" value={selectedLog.filters?.case_type || '-'} />
+                                    <InfoItem icon="📅" label="Case Year" value={selectedLog.filters?.case_year || '-'} />
+                                    <InfoItem icon="💼" label="Case Status" value={selectedLog.filters?.case_status || '-'} />
+                                </div>
+
+                                <hr className="border-gray-100" />
+
+                                {/* Section 4: Documents */}
+                                <div className="p-8">
+                                    <h4 className="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest flex items-center gap-2">
+                                        <span>📄</span> Documents
+                                    </h4>
+                                    {selectedLog.filters?.attachment_documents && selectedLog.filters.attachment_documents.length > 0 ? (
+                                        <div className="flex flex-wrap gap-3">
+                                            {selectedLog.filters.attachment_documents.map((doc: string, idx: number) => {
+                                                const isPdf = doc.toLowerCase().endsWith('.pdf');
+                                                return (
+                                                    <a key={idx} href={`${ASSETS_BASE_URL}uploads/${doc}`} target="_blank" className="bg-gray-50 border border-gray-100 px-4 py-2 rounded-lg text-xs font-bold text-green-700 hover:bg-green-50 transition-all flex items-center gap-3 group">
+                                                        <div className={`w-8 h-8 rounded-md flex items-center justify-center ${isPdf ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'}`}>
+                                                            {isPdf ? (
+                                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" /></svg>
+                                                            ) : (
+                                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+                                                            )}
+                                                        </div>
+                                                        <span className="group-hover:translate-x-0.5 transition-transform">Document {idx + 1}</span>
+                                                    </a>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-gray-400 italic">No documents attached.</p>
+                                    )}
+                                </div>
+
+                                <hr className="border-gray-100" />
+
+                                {/* Section 5: Payment Records */}
+                                <div className="p-8 bg-gray-50/50">
+                                    <h4 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-3">
+                                        <span className="w-10 h-10 bg-[#0a1f0a] text-white rounded-xl flex items-center justify-center text-sm">💰</span>
+                                        Payment Records
+                                    </h4>
+                                    {selectedLog.filters?.payments && selectedLog.filters.payments.length > 0 ? (
+                                        <div className="bg-white rounded-[1.5rem] border border-gray-100 shadow-xl overflow-hidden">
+                                            <table className="w-full text-center">
+                                                <thead>
+                                                    <tr className="bg-[#0a1f0a] text-white">
+                                                        <th className="px-6 py-5 text-xs font-black uppercase border-r border-white/10">#</th>
+                                                        <th className="px-6 py-5 text-base font-bold border-r border-white/10">Payment Date</th>
+                                                        <th className="px-6 py-5 text-base font-bold">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {selectedLog.filters.payments.map((p: any, idx: number) => (
+                                                        <tr key={idx} className="hover:bg-gray-50/80 transition-all">
+                                                            <td className="px-6 py-5 text-sm font-bold text-gray-400 border-r border-gray-50">{idx + 1}</td>
+                                                            <td className="px-6 py-5 text-sm font-semibold text-gray-600 border-r border-gray-50">{new Date(p.date).toISOString().split('T')[0]}</td>
+                                                            <td className="px-6 py-5 text-sm font-black text-gray-800">{Number(p.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-white rounded-[1.5rem] border border-gray-100 shadow-xl overflow-hidden text-center p-10">
+                                            <p className="text-xs text-gray-400 italic">No payments recorded for this entry.</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Footer */}
-                            <div className="px-8 py-5 bg-slate-50 border-t border-slate-100 flex justify-end">
-                                <button onClick={() => setShowDetails(false)} className="bg-slate-800 text-white px-8 py-2.5 rounded-lg font-bold text-xs hover:bg-black transition-all shadow-md">
-                                    Close Preview
+                            <div className="px-8 py-5 bg-gray-50 border-t flex justify-end">
+                                <button onClick={() => setShowDetails(false)} className="bg-gray-400 text-white px-8 py-2 rounded-lg font-bold hover:bg-gray-500 transition-all shadow-md">
+                                    Close
                                 </button>
                             </div>
                         </div>

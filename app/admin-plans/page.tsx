@@ -161,7 +161,7 @@ const MembershipPlansPage = () => {
                                 placeholder="Search plans..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-white border border-gray-200 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:border-agri-green-primary focus:ring-4 focus:ring-green-500/5 text-xs font-bold text-gray-700 w-full md:w-64 transition-all shadow-sm"
+                                className="bg-white border border-gray-200 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 text-xs font-bold text-gray-700 w-full md:w-64 transition-all shadow-sm"
                             />
                             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -170,7 +170,7 @@ const MembershipPlansPage = () => {
 
                         <button
                             onClick={() => handleOpenModal()}
-                            className="bg-agri-green-primary hover:bg-agri-green-600 text-white px-6 py-2.5 rounded-xl font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-green-900/10 transition-all active:scale-95 shrink-0"
+                            className="bg-[#1b5e20] hover:bg-[#2e7d32] text-white px-6 py-2.5 rounded-xl font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-green-900/10 transition-all active:scale-95 shrink-0"
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             Add New Plan
@@ -183,7 +183,7 @@ const MembershipPlansPage = () => {
                     <div className="overflow-x-auto flex-1">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-agri-green-primary text-white">
+                                <tr className="bg-[#1b5e20] text-white">
                                     <th className="px-6 py-4 text-[10px] font-black text-white/90 border-b border-white/10">Plan Details</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-white/90 border-b border-white/10">Benefits</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-white/90 border-b border-white/10">Pricing</th>
@@ -282,7 +282,7 @@ const MembershipPlansPage = () => {
                                             <button
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-8 h-8 rounded-lg text-[10px] font-bold transition-all ${currentPage === pageNum ? 'bg-agri-green-primary text-white shadow-md' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                                                className={`w-8 h-8 rounded-lg text-[10px] font-bold transition-all ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
                                             >
                                                 {pageNum}
                                             </button>
@@ -308,7 +308,7 @@ const MembershipPlansPage = () => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto pt-20 pb-20">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
                         {/* Modal Header */}
-                        <div className="bg-agri-green-primary p-6 text-white relative">
+                        <div className="bg-[#1b5e20] p-6 text-white relative">
                             <h2 className="text-xl font-bold">{editingPlan ? 'Update Plan' : 'Create New Plan'}</h2>
                             <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest mt-1">Membership Configuration Console</p>
                             <button
@@ -329,7 +329,7 @@ const MembershipPlansPage = () => {
                                         required
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-agri-green-primary focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
                                         placeholder="e.g. Standard Member"
                                     />
                                 </div>
@@ -342,7 +342,7 @@ const MembershipPlansPage = () => {
                                             required
                                             value={formData.price}
                                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-agri-green-primary focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
+                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
                                             placeholder="3000"
                                         />
                                     </div>
@@ -353,7 +353,7 @@ const MembershipPlansPage = () => {
                                             required
                                             value={formData.duration}
                                             onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-agri-green-primary focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
+                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
                                             placeholder="e.g. 1 Year"
                                         />
                                     </div>
@@ -366,7 +366,7 @@ const MembershipPlansPage = () => {
                                         required
                                         value={formData.subMemberLimit}
                                         onChange={(e) => setFormData({ ...formData, subMemberLimit: e.target.value })}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-agri-green-primary focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
                                         placeholder="5"
                                     />
                                 </div>
@@ -377,7 +377,7 @@ const MembershipPlansPage = () => {
                                         required
                                         value={formData.benefits}
                                         onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-agri-green-primary focus:ring-4 focus:ring-green-500/5 outline-none transition-all h-24 no-scrollbar"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all h-24 no-scrollbar"
                                         placeholder="Feature 1, Feature 2, Feature 3..."
                                     />
                                 </div>
@@ -385,7 +385,7 @@ const MembershipPlansPage = () => {
 
                             <button
                                 type="submit"
-                                className="w-full bg-agri-green-primary hover:bg-agri-green-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-green-900/10 transition-all active:scale-[0.98] mt-4"
+                                className="w-full bg-[#1b5e20] hover:bg-[#2e7d32] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-green-900/10 transition-all active:scale-[0.98] mt-4"
                             >
                                 {editingPlan ? 'Update Plan' : 'Create Plan'}
                             </button>

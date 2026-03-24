@@ -52,7 +52,7 @@ export default function AdminHeader({ admin, title = "Admin Dashboard", isCollap
     };
 
     return (
-        <header className="h-14 bg-agri-gold-secondary flex items-center justify-between px-8 shadow-md rounded-full relative z-50">
+        <header className="h-14 bg-[#ffd600] flex items-center justify-between px-8 shadow-md rounded-full relative z-50">
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
                     {getHeaderIcon()}
@@ -67,7 +67,7 @@ export default function AdminHeader({ admin, title = "Admin Dashboard", isCollap
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                         <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                     </svg>
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] text-white border-2 border-agri-gold-secondary font-sans">
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] text-white border-2 border-[#ffd600] font-sans">
                         1
                     </div>
                 </div>

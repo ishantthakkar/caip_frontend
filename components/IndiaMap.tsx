@@ -68,7 +68,7 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ stateInsights }) => {
     if (!isMounted) {
         return (
             <div className="w-full h-full flex items-center justify-center bg-sky-50">
-                <div className="animate-spin h-8 w-8 border-4 border-agri-green-primary border-t-transparent rounded-full font-black"></div>
+                <div className="animate-spin h-8 w-8 border-4 border-[#1b5e20] border-t-transparent rounded-full font-black"></div>
             </div>
         );
     }
@@ -92,7 +92,7 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ stateInsights }) => {
                             <Marker key={index} position={coords}>
                                 <Popup>
                                     <div className="p-2">
-                                        <h4 className="font-black text-[10px] uppercase tracking-widest text-agri-green-primary mb-1">{insight.state}</h4>
+                                        <h4 className="font-black text-[10px] uppercase tracking-widest text-[#1b5e20] mb-1">{insight.state}</h4>
                                         <p className="text-[12px] font-black text-gray-900 border-b border-gray-100 pb-1 mb-1">
                                             Defaulters: {insight.count}
                                         </p>
@@ -112,7 +112,7 @@ const IndiaMap: React.FC<IndiaMapProps> = ({ stateInsights }) => {
             <div className="absolute top-4 left-4 z-[20] pointer-events-none space-y-2">
                 {stateInsights.slice(0, 3).map((insight, i) => (
                     <div key={i} className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-xl border border-gray-100 flex items-center gap-3">
-                        <span className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-red-500 animate-pulse' : 'bg-agri-green-primary'}`}></span>
+                        <span className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-red-500 animate-pulse' : 'bg-[#1b5e20]'}`}></span>
                         <div>
                             <p className="text-[8px] font-black uppercase text-gray-900 leading-none">{insight.state}</p>
                             <p className="text-[7px] font-bold text-gray-500 uppercase mt-0.5">{insight.count} Incident(s)</p>
