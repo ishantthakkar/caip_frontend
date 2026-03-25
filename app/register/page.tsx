@@ -12,25 +12,25 @@ const FormInput = ({ label, name, type = "text", placeholder, required = false, 
     const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
     return (
-        <div className={`space-y-1.5 ${className}`}>
-            <label className="text-[10px] font-bold text-gray-700 ml-1">
+        <div className={`mb-4 ${className}`}>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
                 {label} {required && <span className="text-red-500">*</span>}
             </label>
             <div className="relative">
                 <input
                     type={inputType}
                     name={name}
-                    value={value}
+                    value={value || ''}
                     onChange={onChange}
                     placeholder={placeholder}
                     required={required}
-                    className={`w-full border ${error ? 'border-red-400' : 'border-blue-100'} focus:border-blue-400 focus:ring-1 focus:ring-blue-100 py-2.5 px-4 rounded-lg outline-none transition-all text-xs text-gray-600 placeholder:text-gray-300 shadow-sm`}
+                    className={`w-full px-4 py-2.5 text-sm border ${error ? 'border-red-400' : 'border-gray-200'} rounded-md focus:outline-none focus:ring-2 focus:ring-agri-green-primary/20 focus:border-agri-green-primary transition-all text-gray-700 placeholder:text-gray-300 bg-white shadow-sm`}
                 />
                 {isPassword && (
                     <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-green-800 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-agri-green-primary transition-colors"
                     >
                         {showPassword ? (
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -40,22 +40,22 @@ const FormInput = ({ label, name, type = "text", placeholder, required = false, 
                     </button>
                 )}
             </div>
-            {error && <p className="text-[9px] text-red-500 font-bold ml-1">{error}</p>}
+            {error && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{error}</p>}
         </div>
     );
 };
 
 const FormSelect = ({ label, name, options, required = false, className = "", value, onChange, placeholder, error }: any) => (
-    <div className={`space-y-1.5 ${className}`}>
-        <label className="text-[10px] font-bold text-gray-700 uppercase ml-1">
+    <div className={`mb-4 ${className}`}>
+        <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
             {label} {required && <span className="text-red-500">*</span>}
         </label>
         <select
             name={name}
             required={required}
-            value={value}
+            value={value || ''}
             onChange={onChange}
-            className={`w-full border ${error ? 'border-red-400' : 'border-blue-100'} focus:border-blue-400 focus:ring-1 focus:ring-blue-100 py-2.5 px-4 rounded-lg outline-none transition-all text-xs text-gray-600 shadow-sm bg-white appearance-none`}
+            className={`w-full px-4 py-2.5 text-sm border ${error ? 'border-red-400' : 'border-gray-200'} rounded-md focus:outline-none focus:ring-2 focus:ring-agri-green-primary/20 focus:border-agri-green-primary transition-all text-gray-700 bg-white shadow-sm appearance-none`}
         >
             <option value="" disabled>{placeholder || `Select ${label}`}</option>
             {options && options.map((opt: any, index: number) => {
@@ -63,7 +63,7 @@ const FormSelect = ({ label, name, options, required = false, className = "", va
                 return <option key={`${val}-${index}`} value={val}>{val}</option>;
             })}
         </select>
-        {error && <p className="text-[9px] text-red-500 font-bold ml-1">{error}</p>}
+        {error && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{error}</p>}
     </div>
 );
 
@@ -322,206 +322,194 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen relative flex flex-col items-center justify-center font-sans overflow-hidden py-20">
-            {/* Background with blurred agriculture and network pattern */}
+        <div className="min-h-screen relative flex flex-col font-sans overflow-hidden">
+            {/* Background Image */}
             <div
-                className="fixed inset-0 bg-cover bg-center scale-110 blur-[2px]"
-                style={{
-                    backgroundImage: 'url("/images/login_bg_final.jpg")',
-                    opacity: 0.9
-                }}
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: 'url("/images/login_bg_final.jpg")' }}
             />
-            {/* Network Pattern Overlay */}
-            <div className="fixed inset-0 opacity-20 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-            <div className="fixed inset-0 bg-white/10 pointer-events-none" />
+            {/* Light Overlay to ensure contrast */}
+            <div className="absolute inset-0 bg-white opacity-50" />
+            
+            {/* Carbon Fiber Texture Overlay */}
+            <div
+                className="absolute inset-0 bg-repeat opacity-20 pointer-events-none"
+                style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/carbon-fibre.png")' }}
+            />
 
-            {/* Main Content Container */}
-            <div className="relative z-10 w-full max-w-2xl flex flex-col items-center px-4">
+            <div className="container mx-auto px-4 flex-1 flex flex-col pt-12 pb-10 relative z-10">
+                <div className="flex-1 flex flex-col items-center justify-center -mt-10">
+                    
+                    <div className="w-full max-w-2xl relative z-10">
+                        {/* Error & Success Toasts */}
+                        {message && (
+                            <div className={`mb-4 p-3 border text-sm font-medium rounded-lg text-center shadow-sm animate-in fade-in slide-in-from-top duration-300 ${message.type === 'success' ? 'bg-green-50 text-agri-green-primary border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
+                                {message.text}
+                            </div>
+                        )}
 
-                {/* Logo */}
-                <div className="w-16 h-16 mb-4 drop-shadow-lg scale-100 hover:scale-105 transition-transform duration-500">
-                    <img src="/images/caip_logo.png" alt="CAIP Logo" className="w-full h-full object-contain" />
-                </div>
-
-                {/* Login Card */}
-                <div className="w-full bg-white rounded-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden relative">
-
-                    {message && (
-                        <div className={`absolute top-0 left-0 right-0 z-50 p-3 text-white text-[11px] font-bold text-center animate-in fade-in slide-in-from-top duration-300 ${message.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
-                            {message.text}
+                        {/* Top Header Section */}
+                        <div className="mb-6 text-center">
+                            <Link href="/" className="inline-block mb-4">
+                                <img src="/images/caip_logo.png" alt="CAIP Logo" className="mx-auto h-[70px] drop-shadow-sm" />
+                            </Link>
+                            
+                            <div className="bg-agri-green-primary text-center px-4 py-3.5 rounded-2xl shadow-sm">
+                                <h4 className="text-white m-0 font-bold text-lg tracking-wide">Chamber for Agri Input Protection</h4>
+                            </div>
                         </div>
-                    )}
 
-                    {/* Card Header */}
-                    <div className="bg-[#1b5e20] p-6 text-center">
-                        <h2 className="text-xl font-bold text-white mb-1">Chamber for Agri Input Protection</h2>
-                        <p className="text-white/80 text-[10px] font-medium tracking-tight">
-                            Create your account to access defaulter information and exclusive member resources from the Chamber for Agri Input Protection.
-                        </p>
-                    </div>
-
-                    {/* Card Body */}
-                    {isRegistered ? (
-                        <div className="p-16 text-center space-y-6 animate-in zoom-in-95 duration-500">
-                            <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-100 shadow-inner">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1b5e20" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-gray-900 tracking-tight">Success!</h3>
-                                <p className="text-xs font-bold text-gray-800 tracking-[0.2em] mt-2">Registration Protocol Complete</p>
-                            </div>
-                            <p className="text-sm font-medium text-gray-600">
-                                Moving you to secure login console...
-                            </p>
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                                <FormInput label="Name" name="name" placeholder="Full Name" required error={errors.name} value={formData.name} onChange={handleInputChange} />
-                                <FormInput label="Phone" name="phone" placeholder="Enter Phone" required error={errors.phone} value={formData.phone} onChange={handleInputChange} />
-
-                                <FormInput label="Company Name" name="companyName" placeholder="Company Name" required error={errors.companyName} value={formData.companyName} onChange={handleInputChange} />
-                                
-                                <div className="flex items-end gap-2">
-                                    <FormInput 
-                                        label="GST" 
-                                        name="gst" 
-                                        placeholder="GST" 
-                                        required 
-                                        error={errors.gst} 
-                                        className="flex-1"
-                                        value={formData.gst}
-                                        onChange={handleInputChange}
-                                    />
-                                    <button 
-                                        type="button" 
-                                        onClick={handleGstFetch}
-                                        disabled={isGstFetching}
-                                        className="mb-1.5 h-[42px] px-4 bg-[#1b5e20] text-white rounded-lg text-[10px] font-bold hover:bg-green-900 transition-all disabled:opacity-50 shadow-sm"
-                                    >
-                                        {isGstFetching ? '...' : 'FETCH'}
-                                    </button>
-                                </div>
-
-                                <FormInput label="Pan" name="pan" placeholder="PAN" required error={errors.pan} value={formData.pan} onChange={handleInputChange} />
-                                <FormInput label="Email" name="email" type="email" placeholder="Email" required error={errors.email} value={formData.email} onChange={handleInputChange} />
-
-                                <FormSelect
-                                    label="State"
-                                    name="state"
-                                    value={selectedState}
-                                    onChange={(e: any) => setSelectedState(e.target.value)}
-                                    options={states}
-                                    placeholder="Select State"
-                                    required
-                                    error={errors.state}
-                                />
-                                <FormSelect
-                                    label="District"
-                                    name="district"
-                                    value={selectedDistrict}
-                                    onChange={(e: any) => { setSelectedDistrict(e.target.value); setSelectedSubDistrict(""); }}
-                                    options={districts}
-                                    placeholder="Select District"
-                                    required
-                                    error={errors.district}
-                                />
-                                <FormSelect
-                                    label="Sub District"
-                                    name="subDistrict"
-                                    value={selectedSubDistrict}
-                                    onChange={(e: any) => { setSelectedSubDistrict(e.target.value); setSelectedCity(""); }}
-                                    options={subDistricts}
-                                    placeholder="Select Sub District"
-                                    required
-                                    error={errors.subDistrict}
-                                />
-                                <FormSelect
-                                    label="City"
-                                    name="city"
-                                    value={selectedCity}
-                                    onChange={(e: any) => setSelectedCity(e.target.value)}
-                                    options={cities.length > 0 ? cities : []}
-                                    placeholder="Select City"
-                                    required
-                                    error={errors.city}
-                                />
-
-                                <div className="md:col-span-2">
-                                    <FormInput 
-                                        label="Business Address" 
-                                        name="businessAddress" 
-                                        placeholder="Full address will be autofilled from GST" 
-                                        value={formData.businessAddress} 
-                                        onChange={handleInputChange} 
-                                    />
-                                </div>
-
-                                <div className="space-y-1.5 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-gray-700 ml-1">
-                                        Business Documents (Upload multiple if needed)
-                                    </label>
-                                    <div className="relative">
-                                        <input
-                                            type="file"
-                                            name="businessDocuments"
-                                            multiple
-                                            accept=".pdf,image/*"
-                                            className="w-full border border-blue-100 py-3 px-4 rounded-xl text-[10px] text-gray-400 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-all shadow-sm"
-                                        />
-                                        <p className="text-[9px] text-gray-400 mt-1.5 ml-1">
-                                            Supports multiple PDF and Image files
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-3 pt-2">
-                                <div className="flex items-start gap-2 group cursor-pointer" onClick={() => setTermsAgreed(!termsAgreed)}>
-                                    <input type="checkbox" checked={termsAgreed} onChange={() => { }} className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 accent-[#1b5e20]" />
-                                    <div className="space-y-0.5">
-                                        <p className={`text-[10px] font-bold uppercase tracking-tight ${errors.terms ? 'text-red-500' : 'text-gray-800'}`}>
-                                            I agree to the <span className="text-green-700 underline">Terms and Conditions</span> of CAIP
-                                        </p>
-                                        <p className="text-[9px] text-gray-400 font-medium leading-relaxed">
-                                            CAIP is a platform dedicated to protecting the interests of the agri-input industry. All data is provided by members, is not owned or controlled by CAIP, and is subject to our privacy guidelines.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col items-center pt-2">
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className={`w-full bg-[#3d6e50] hover:bg-[#2d523c] text-white font-bold py-3 rounded-xl shadow-lg transition-all transform active:scale-[0.98] uppercase text-[11px] flex items-center justify-center gap-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                            Creating Account...
-                                        </>
-                                    ) : 'Create My Account'}
-                                </button>
-
-                                <p className="mt-6 text-[11px] font-bold text-gray-500">
-                                    Already a member? <Link href="/login" className="text-green-700 hover:underline">Log In Now</Link>
+                        {/* Form Card */}
+                        <div className="bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden mb-8">
+                            {/* Card Header */}
+                            <div className="bg-agri-green-primary p-5 text-center">
+                                <h5 className="text-white text-xl font-semibold mb-1">Membership Registration</h5>
+                                <p className="text-white/80 text-sm m-0">
+                                    Create your account to join the Chamber for Agri Input Protection.
                                 </p>
                             </div>
-                        </form>
-                    )}
+
+                            {/* Card Body */}
+                            <div className="p-6 md:p-8">
+                                {isRegistered ? (
+                                    <div className="py-12 text-center">
+                                        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-200 shadow-inner">
+                                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1f6306" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
+                                        <p className="text-sm font-medium text-gray-600">
+                                            Redirecting you to the secure login portal...
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleSubmit}>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+                                            <FormInput label="Full Name" name="name" placeholder="John Doe" required error={errors.name} value={formData.name} onChange={handleInputChange} />
+                                            <FormInput label="Phone Number" name="phone" placeholder="Enter 10-digit number" required error={errors.phone} value={formData.phone} onChange={handleInputChange} />
+                                            <FormInput label="Company Name" name="companyName" placeholder="Business Name" required error={errors.companyName} value={formData.companyName} onChange={handleInputChange} />
+                                            
+                                            <div className="mb-4">
+                                                <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+                                                    GST <span className="text-red-500">*</span>
+                                                </label>
+                                                <div className="flex bg-white rounded-lg relative shadow-sm overflow-hidden border border-gray-200 focus-within:ring-2 focus-within:ring-agri-green-primary/20 focus-within:border-agri-green-primary transition-all">
+                                                    <input
+                                                        type="text"
+                                                        name="gst"
+                                                        value={formData.gst}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Enter GST Number"
+                                                        required
+                                                        className={`w-full px-4 py-2.5 text-xs focus:outline-none text-gray-700 placeholder:text-gray-300`}
+                                                    />
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={handleGstFetch}
+                                                        disabled={isGstFetching}
+                                                        className={`px-4 bg-agri-green-primary text-white text-[10px] font-bold uppercase tracking-wider hover:bg-agri-green-800 transition-colors disabled:opacity-70 flex items-center justify-center whitespace-nowrap`}
+                                                    >
+                                                        {isGstFetching ? '...' : 'FETCH'}
+                                                    </button>
+                                                </div>
+                                                {errors.gst && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.gst}</p>}
+                                            </div>
+
+                                            <FormInput label="PAN" name="pan" placeholder="PAN Number" required error={errors.pan} value={formData.pan} onChange={handleInputChange} />
+                                            <FormInput label="Email Address" name="email" type="email" placeholder="john@example.com" required error={errors.email} value={formData.email} onChange={handleInputChange} />
+
+                                            <FormSelect label="State" name="state" value={selectedState} onChange={(e: any) => setSelectedState(e.target.value)} options={states} placeholder="Select State" required error={errors.state} />
+                                            <FormSelect label="District" name="district" value={selectedDistrict} onChange={(e: any) => { setSelectedDistrict(e.target.value); setSelectedSubDistrict(""); }} options={districts} placeholder="Select District" required error={errors.district} />
+                                            <FormSelect label="Sub District" name="subDistrict" value={selectedSubDistrict} onChange={(e: any) => { setSelectedSubDistrict(e.target.value); setSelectedCity(""); }} options={subDistricts} placeholder="Select Sub District" required error={errors.subDistrict} />
+                                            <FormSelect label="City" name="city" value={selectedCity} onChange={(e: any) => setSelectedCity(e.target.value)} options={cities.length > 0 ? cities : []} placeholder="Select City" required error={errors.city} />
+
+                                            <div className="md:col-span-2">
+                                                <FormInput 
+                                                    label="Business Address" 
+                                                    name="businessAddress" 
+                                                    placeholder="Full address (autofilled via GST optionally)" 
+                                                    value={formData.businessAddress} 
+                                                    onChange={handleInputChange} 
+                                                />
+                                            </div>
+
+                                            <div className="mb-4 md:col-span-2">
+                                                <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+                                                    Business Documents (Upload multiple if needed)
+                                                </label>
+                                                <input
+                                                    type="file"
+                                                    name="businessDocuments"
+                                                    multiple
+                                                    accept=".pdf,image/*"
+                                                    className="w-full border border-gray-200 py-3 px-4 rounded-lg text-xs text-gray-400 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-agri-green-50 file:text-agri-green-700 hover:file:bg-agri-green-100 transition-all shadow-sm bg-white"
+                                                />
+                                                <p className="text-[10px] text-gray-400 mt-1.5 ml-1 font-medium">Supports multiple PDF and Image files</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-4 mb-6">
+                                            <div className="flex items-start group cursor-pointer" onClick={() => setTermsAgreed(!termsAgreed)}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    id="terms"
+                                                    checked={termsAgreed} 
+                                                    onChange={() => {}}
+                                                    className={`mt-1 flex-shrink-0 w-4 h-4 text-agri-green-primary bg-gray-100 border-gray-300 rounded focus:ring-agri-green-primary focus:ring-2 cursor-pointer ${errors.terms ? 'border-red-400' : ''}`} 
+                                                />
+                                                <div className="ml-3">
+                                                    <label htmlFor="terms" className="text-sm font-semibold text-gray-800 cursor-pointer group-hover:text-agri-green-800 transition-colors uppercase tracking-tight">
+                                                        I agree to the <span className="text-agri-green-700 underline">Terms and Conditions</span>
+                                                    </label>
+                                                    <p className="text-[11px] text-gray-500 mt-1 font-medium leading-relaxed">
+                                                        CAIP is a platform dedicated to protecting the interests of the agri-input industry. All data is provided by members and subject to our privacy guidelines.
+                                                    </p>
+                                                    {errors.terms && <p className="text-xs text-red-500 font-bold mt-1">{errors.terms}</p>}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className={`w-full bg-agri-green-primary hover:bg-agri-green-700 text-white font-bold py-3.5 rounded-lg shadow-lg shadow-agri-green-950/20 transition-all transform active:scale-[0.98] uppercase text-xs flex items-center justify-center gap-2 cursor-pointer ${loading ? 'opacity-70' : ''}`}
+                                        >
+                                            {loading ? (
+                                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                            ) : 'Create My Account'}
+                                        </button>
+
+                                        <div className="mt-8 text-center">
+                                            <p className="text-sm font-bold text-gray-500 mb-0">
+                                                Already a member?{' '}
+                                                <Link href="/login" className="font-medium text-blue-600 hover:underline">
+                                                    Log In Now
+                                                </Link>
+                                            </p>
+                                        </div>
+                                    </form>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bottom Footer block - Pill Shaped */}
+                <div className="w-full pt-4 mt-auto z-10">
+                    <div className="bg-agri-gold-secondary rounded-xl py-4 px-6 flex flex-col md:flex-row justify-between items-center text-center shadow-[0_4px_15px_rgba(0,0,0,0.1)]">
+                        <div className="mb-2 md:mb-0">
+                            <p className="m-0 font-bold text-gray-900 text-[13px]">
+                                © {new Date().getFullYear()} Chamber for Agri Input Protection
+                            </p>
+                        </div>
+                        <div>
+                            <p className="m-0 font-bold text-gray-900 text-[13px]">
+                                Crafted with <span className="text-red-600">❤️</span> by <a href="https://www.metizsoft.com/" target="_blank" rel="noreferrer" className="underline hover:text-black transition-colors">Metizsoft Solution Private Limited</a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            {/* Footer Bar */}
-            <footer className="fixed bottom-0 left-0 right-0 bg-[#ffd600] py-4 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]">
-                <p className="text-xs font-bold text-gray-800 tracking-tight">
-                    © 2026 Chamber for Agri Input Protection
-                </p>
-                <p className="text-xs font-bold text-gray-800 tracking-tight mt-2 md:mt-0">
-                    Crafted with ❤️ by <a href="#" className="text-blue-600 hover:underline">Metizsoft Solution Private Limited</a>
-                </p>
-            </footer>
         </div>
     );
 }
+

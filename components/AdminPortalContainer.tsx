@@ -5,6 +5,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import AdminHeader from './AdminHeader';
 import AdminSidebar from './AdminSidebar';
 
+import { API_BASE_URL } from '@/config/apiConfig';
+
 interface AdminPortalContainerProps {
     children: React.ReactNode;
     title?: string;
@@ -60,7 +62,7 @@ export default function AdminPortalContainer({
 
     const fetchPendingCount = async (token: string) => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/'}users`, {
+            const res = await fetch(`${API_BASE_URL}users`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
