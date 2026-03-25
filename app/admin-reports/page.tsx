@@ -25,6 +25,7 @@ export default function AdminReportsPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
+    const [selectedMemberCompany, setSelectedMemberCompany] = useState('All');
     const [selectedDefaulter, setSelectedDefaulter] = useState<any | null>(null);
 
     // Initial load
@@ -71,10 +72,19 @@ export default function AdminReportsPage() {
         fetchData();
     }, [reportType]);
 
-    // Reset pagination on filter change
     useEffect(() => {
         setCurrentPage(1);
-    }, [filterOption, customStart, customEnd, searchTerm, reportType]);
+    }, [filterOption, customStart, customEnd, searchTerm, reportType, selectedMemberCompany]);
+
+    // Reset company filter on report type change
+    useEffect(() => {
+        setSelectedMemberCompany('All');
+    }, [reportType]);
+
+    const reportingMemberCompanies = useMemo(() => {
+        const comps = defaulters.map(d => d.user_id?.companyName).filter(Boolean);
+        return ['All', ...Array.from(new Set(comps)).sort()];
+    }, [defaulters]);
 
     const filterByDateAndSearch = (items: any[], type: string) => {
         let filtered = [...items];
@@ -124,6 +134,11 @@ export default function AdminReportsPage() {
             });
         }
 
+        // Member Company Filter (for Defaulter Report)
+        if (type === 'Defaulter Report' && selectedMemberCompany !== 'All') {
+            filtered = filtered.filter(item => item.user_id?.companyName === selectedMemberCompany);
+        }
+
         // Text Search
         if (searchTerm.trim() !== '') {
             const lowerTerm = searchTerm.toLowerCase();
@@ -158,7 +173,7 @@ export default function AdminReportsPage() {
 
     const activeFilteredData = useMemo(() => {
         return filterByDateAndSearch(reportType === 'Member Report' ? members : defaulters, reportType);
-    }, [members, defaulters, reportType, filterOption, customStart, customEnd, searchTerm]);
+    }, [members, defaulters, reportType, filterOption, customStart, customEnd, searchTerm, selectedMemberCompany]);
 
     const totalPages = Math.max(1, Math.ceil(activeFilteredData.length / itemsPerPage));
     const paginatedData = activeFilteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -180,6 +195,21 @@ export default function AdminReportsPage() {
                                 <option value="Defaulter Report">Defaulter Report</option>
                             </select>
                         </div>
+
+                        {reportType === 'Defaulter Report' && (
+                            <div className="flex flex-col animate-in fade-in slide-in-from-top-1 duration-300">
+                                <label className="text-[10px] font-black text-gray-400 mb-2 ml-1 tracking-wider">Member Company</label>
+                                <select
+                                    value={selectedMemberCompany}
+                                    onChange={(e) => setSelectedMemberCompany(e.target.value)}
+                                    className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] focus:ring-1 focus:ring-green-100 text-sm font-bold text-gray-700 w-full md:w-56 transition-all"
+                                >
+                                    {reportingMemberCompanies.map(comp => (
+                                        <option key={comp} value={comp}>{comp}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
                         <div className="flex flex-col">
                             <label className="text-[10px] font-black text-gray-400 mb-2 ml-1 tracking-wider">Range</label>

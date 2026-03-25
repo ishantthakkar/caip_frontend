@@ -21,7 +21,7 @@ export default function SubMembersPage() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
-        
+
         if (!token || !userData) {
             router.push('/login');
             return;
@@ -30,7 +30,7 @@ export default function SubMembersPage() {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         fetchSubMembers(parsedUser._id);
-        
+
         // Refresh profile to get latest subMemberLimit
         fetchLatestProfile(token);
     }, []);
@@ -166,10 +166,8 @@ export default function SubMembersPage() {
                     <div className="flex-1">
                         <h4 className="text-sm font-bold text-gray-800">Account Limits</h4>
                         <p className="text-sm text-gray-500 mt-1 max-w-2xl text-justify">
-                            Your current membership plan allows for up to <strong>{user?.subMemberLimit || 0} sub-member slots</strong>. 
-                            Only one sub-member can be active at any given time for system security. 
-                            Sub-members can access the dashboard and perform searches. 
-                            { (user?.subMemberLimit || 0) === 0 && <span className="text-red-500 font-bold ml-1 italic"> (Please purchase a membership to add staff)</span> }
+                            Your current membership plan allows for up to <strong>{user?.subMemberLimit || 0} sub-member slots</strong>.
+                            {(user?.subMemberLimit || 0) === 0 && <span className="text-red-500 font-bold ml-1 italic"> (Please purchase a membership to add staff)</span>}
                         </p>
                     </div>
                     <div className="md:ml-auto text-left md:text-right bg-gray-50 p-4 rounded-xl border border-gray-100 w-full md:w-auto min-w-[140px]">

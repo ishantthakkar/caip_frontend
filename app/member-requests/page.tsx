@@ -14,6 +14,7 @@ export default function MemberRequestsPage() {
     const [statusFilter, setStatusFilter] = useState('0'); // Default to Pending
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [showDocModal, setShowDocModal] = useState(false);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [showRejectionModal, setShowRejectionModal] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [processingUserId, setProcessingUserId] = useState<string | null>(null);
@@ -106,7 +107,7 @@ export default function MemberRequestsPage() {
                 <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
                     <div className="bg-white px-8 py-8 flex flex-wrap items-end gap-8 border-b border-gray-100">
                         <div className="flex-1 min-w-[200px] space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Report Type</label>
+                            <label className="text-[10px] font-black text-gray-400  tracking-widest ml-1">Report Type</label>
                             <div className="relative">
                                 <select
                                     className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3.5 text-xs font-black text-gray-900 outline-none focus:border-green-500 transition-all appearance-none cursor-pointer"
@@ -123,7 +124,7 @@ export default function MemberRequestsPage() {
                         </div>
 
                         <div className="flex-1 min-w-[150px] space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Range</label>
+                            <label className="text-[10px] font-black text-gray-400  tracking-widest ml-1">Range</label>
                             <div className="relative">
                                 <select className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3.5 text-xs font-black text-gray-900 outline-none appearance-none">
                                     <option>All</option>
@@ -133,7 +134,7 @@ export default function MemberRequestsPage() {
                         </div>
 
                         <div className="flex-[2] min-w-[300px] space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Search</label>
+                            <label className="text-[10px] font-black text-gray-400  tracking-widest ml-1">Search</label>
                             <div className="relative group">
                                 <input
                                     type="text"
@@ -163,6 +164,7 @@ export default function MemberRequestsPage() {
                                     <th className="px-6 py-6 text-center">Type</th>
                                     <th className="px-6 py-6 text-center whitespace-nowrap">Joined On</th>
                                     <th className="px-6 py-6 text-center">Docs</th>
+                                    <th className="px-6 py-6 text-center">View</th>
                                     <th className="px-6 py-6 text-right">Action</th>
                                 </tr>
                             </thead>
@@ -190,14 +192,14 @@ export default function MemberRequestsPage() {
                                         <td className="px-6 py-6 text-[10px] font-black text-gray-900">{user.companyName || '-'}</td>
                                         <td className="px-6 py-6 text-center">
                                             <span className={`text-[9px] font-black px-4 py-1.5 rounded-lg tracking-widest block mx-auto w-fit italic ${user.status === '0' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' :
-                                                    user.status === '1' ? 'bg-green-600 text-white shadow-lg shadow-green-600/20' :
-                                                        'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
+                                                user.status === '1' ? 'bg-green-600 text-white shadow-lg shadow-green-600/20' :
+                                                    'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
                                                 }`}>
                                                 {user.status === '0' ? 'PENDING' : user.status === '1' ? 'APPROVED' : 'REJECTED'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-6">
-                                            <p className="text-[10px] font-black text-gray-900 text-center tracking-widest uppercase">Member</p>
+                                            <p className="text-[10px] font-black text-gray-900 text-center tracking-widest ">Member</p>
                                         </td>
                                         <td className="px-6 py-6">
                                             <p className="text-[10px] font-bold text-gray-400 text-center whitespace-nowrap">{new Date(user.createdAt).toLocaleDateString('en-GB')}</p>
@@ -209,6 +211,14 @@ export default function MemberRequestsPage() {
                                                 title="View Documents"
                                             >
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                            </button>
+                                        </td>
+                                        <td className="px-6 py-6 text-center">
+                                            <button
+                                                onClick={() => { setSelectedUser(user); setShowDetailsModal(true); }}
+                                                className="px-4 py-2 bg-[#0051a8] text-white text-[10px] font-black  rounded-lg hover:bg-black transition-all shadow-sm"
+                                            >
+                                                View Details
                                             </button>
                                         </td>
                                         <td className="px-6 py-6 text-right">
@@ -247,14 +257,14 @@ export default function MemberRequestsPage() {
 
                     {!loading && filteredUsers.length > 0 && (
                         <div className="px-10 py-8 border-t border-gray-50 flex items-center justify-between bg-white">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            <span className="text-[10px] font-black text-gray-400  tracking-widest">
                                 Page {currentPage} of {totalPages} <span className="mx-2 opacity-30">•</span> {filteredUsers.length} Indexed Assets
                             </span>
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
-                                    className="px-8 py-3 rounded-xl border border-gray-100 bg-white text-[10px] font-black tracking-widest text-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 uppercase"
+                                    className="px-8 py-3 rounded-xl border border-gray-100 bg-white text-[10px] font-black tracking-widest text-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 "
                                 >
                                     Previous
                                 </button>
@@ -277,7 +287,7 @@ export default function MemberRequestsPage() {
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                     disabled={currentPage === totalPages}
-                                    className="px-8 py-3 rounded-xl border border-gray-100 bg-white text-[10px] font-black tracking-widest text-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 uppercase"
+                                    className="px-8 py-3 rounded-xl border border-gray-100 bg-white text-[10px] font-black tracking-widest text-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95 "
                                 >
                                     Next
                                 </button>
@@ -338,6 +348,76 @@ export default function MemberRequestsPage() {
                     </div>
                 </div>
             )}
+
+            {/* View Member Details Modal */}
+            {showDetailsModal && selectedUser && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl">👤</div>
+                                <div>
+                                    <h3 className="text-xl font-black tracking-widest ">{selectedUser.name}</h3>
+                                    <p className="text-[10px] font-black text-white/60 tracking-[0.2em] mt-1">MEMBER ID: {selectedUser.memberId || 'PENDING APPROVAL'}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowDetailsModal(false)} className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all">✕</button>
+                        </div>
+
+                        <div className="p-10 overflow-y-auto custom-scrollbar space-y-12">
+                            {/* Section 1: Entity Details */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <span className="text-lg">🏢</span>
+                                    <h4 className="text-xs font-black text-gray-800  tracking-widest">Company Details</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    <DetailItem label="Company Name" value={selectedUser.companyName} />
+                                    <DetailItem label="GST Number" value={selectedUser.gst} />
+                                    <DetailItem label="PAN Number" value={selectedUser.pan} />
+                                    <DetailItem label="Regsiter Date" value={new Date(selectedUser.createdAt).toLocaleDateString('en-GB')} />
+                                </div>
+                            </section>
+
+                            {/* Section 2: Primary Member Details */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <span className="text-lg">🆔</span>
+                                    <h4 className="text-xs font-black text-gray-800  tracking-widest">Member Info</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    <DetailItem label="Full Name" value={selectedUser.name} />
+                                    <DetailItem label="Email Address" value={selectedUser.email} />
+                                    <DetailItem label="Contact Number" value={selectedUser.phone} />
+                                    <DetailItem label="Membership Status" value={selectedUser.status === '1' ? 'ACTIVE' : selectedUser.status === '2' ? 'REJECTED' : 'PENDING'} isBadge status={selectedUser.status} />
+                                </div>
+                            </section>
+
+                            {/* Section 3: Geographic Location */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <span className="text-lg">📍</span>
+                                    <h4 className="text-xs font-black text-gray-800  tracking-widest">Location</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    <DetailItem label="State" value={selectedUser.state} />
+                                    <DetailItem label="District" value={selectedUser.district} />
+                                    <DetailItem label="Sub District" value={selectedUser.subDistrict} />
+                                    <DetailItem label="City" value={selectedUser.city} />
+                                    <div className="col-span-full">
+                                        <DetailItem label="Registered Address" value={selectedUser.businessAddress} />
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <div className="p-8 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-4">
+                            <button onClick={() => setShowDetailsModal(false)} className="px-10 py-3 bg-gray-900 text-white text-[10px] font-black tracking-widest rounded-xl hover:bg-black transition-all shadow-xl">CLOSE PORTAL</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Rejection Reason Modal */}
             {showRejectionModal && (
                 <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
@@ -390,3 +470,16 @@ export default function MemberRequestsPage() {
         </AdminPortalContainer>
     );
 }
+
+const DetailItem = ({ label, value, isBadge = false, status = '0' }: { label: string, value: any, isBadge?: boolean, status?: string }) => (
+    <div className="space-y-1.5">
+        <p className="text-[9px] font-black text-gray-400  tracking-widest leading-none">{label}</p>
+        {isBadge ? (
+            <span className={`inline-block px-3 py-1 rounded text-[9px] font-black tracking-widest ${status === '1' ? 'bg-green-600 text-white' : status === '2' ? 'bg-rose-600 text-white' : 'bg-orange-500 text-white'}`}>
+                {value || '-'}
+            </span>
+        ) : (
+            <p className="text-sm font-bold text-gray-700 break-words">{value || '-'}</p>
+        )}
+    </div>
+);

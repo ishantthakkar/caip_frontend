@@ -21,6 +21,46 @@ export default function AddDefaulterPage() {
         defaulter_name: '', mobile_number: '', email_id: '', gst_number: '', pan_number: '', cin_number: '', aadhar_number: '', state: '', district: '', cities: '', city: '', financial_year: '2025-2026', default_amount: '', industry: '', date_of_default: '', reason_description: '', defaulter_address: '', court_complex_name: '', case_type: '', case_number: '', case_year: '', case_status: ''
     });
 
+    const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+
+    // Duplicate search logic
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const { gst_number, pan_number, mobile_number, defaulter_address } = formData;
+            if (gst_number.length > 5 || pan_number.length > 5 || mobile_number.length === 10 || defaulter_address.length > 10) {
+                checkDuplicates();
+            } else {
+                setDuplicateWarning(null);
+            }
+        }, 800);
+        return () => clearTimeout(timer);
+    }, [formData.gst_number, formData.pan_number, formData.mobile_number, formData.defaulter_address]);
+
+    const checkDuplicates = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const q = new URLSearchParams();
+            if (formData.gst_number) q.append('gst', formData.gst_number.trim().toUpperCase());
+            if (formData.pan_number) q.append('pan', formData.pan_number.trim().toUpperCase());
+            if (formData.mobile_number) q.append('mobile', formData.mobile_number.trim());
+            if (formData.defaulter_address) q.append('address', formData.defaulter_address.trim());
+
+            if (q.toString()) {
+                const res = await fetch(`${API_BASE_URL}defaulter/check-duplicate?${q.toString()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.exists) {
+                    setDuplicateWarning(`System Alert: An entry already exists with matching ${data.field}. Please verify context.`);
+                } else {
+                    setDuplicateWarning(null);
+                }
+            }
+        } catch (e) {
+            console.error("Duplicate check failure:", e);
+        }
+    };
+
     useEffect(() => {
         fetchStates();
     }, []);
@@ -278,6 +318,12 @@ export default function AddDefaulterPage() {
                     </div>
 
                     <form className="p-8 flex-1 flex flex-col justify-between">
+                        {duplicateWarning && (
+                            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 animate-bounce">
+                                <span className="text-xl">⚠️</span>
+                                <p className="text-xs font-black text-amber-700 tracking-tight">{duplicateWarning}</p>
+                            </div>
+                        )}
                         {step === 1 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1.5 col-span-full md:col-span-1">

@@ -7,13 +7,12 @@ import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-const InfoItem = ({ icon, label, value }: { icon: any, label: string, value: any }) => (
+const InfoItem = ({ icon, label, value, isBold = false }: { icon: any, label: string, value: any, isBold?: boolean }) => (
     <div className="flex items-start gap-4">
-        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">{icon}</div>
-        <div className="min-w-0">
-            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                {label}: <span className="text-gray-600 lowercase font-medium ml-1">{value}</span>
-            </p>
+        <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-base flex-shrink-0 shadow-sm border border-gray-100">{icon}</div>
+        <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold text-gray-400  tracking-widest mb-1 leading-none">{label}</p>
+            <p className={`text-sm text-gray-800 break-words leading-relaxed ${isBold ? 'font-bold text-green-700' : 'font-semibold'}`}>{value || '-'}</p>
         </div>
     </div>
 );
@@ -304,7 +303,7 @@ export default function MemberDefaulterListPage() {
                     doc.setFontSize(14);
                     doc.setTextColor(200, 0, 0);
 
-                    const watermarkText = `${memberName.toUpperCase()} | ID: ${memberId} `;
+                    const watermarkText = `${memberName.toString().toUpperCase()} | ID: ${memberId} `;
                     const angle = 45;
                     const stepX = 100;
                     const stepY = 100;
@@ -383,8 +382,8 @@ export default function MemberDefaulterListPage() {
                                 <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-[7px] font-black px-1 rounded-sm border border-white">PDF</div>
                             </div>
                             <div className="flex flex-col items-start leading-tight">
-                                <span className="text-xs font-bold uppercase tracking-wide">Export PDF</span>
-                                <span className="text-[8px] font-medium opacity-80 uppercase whitespace-normal text-left max-w-[120px]">Do not share this document with anyone</span>
+                                <span className="text-xs font-bold  tracking-wide">Export PDF</span>
+                                <span className="text-[8px] font-medium opacity-80  whitespace-normal text-left max-w-[120px]">Do not share this document with anyone</span>
                             </div>
                         </button>
                         <Link href="/defaulter/add" className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors shadow-sm whitespace-nowrap">
@@ -419,7 +418,6 @@ export default function MemberDefaulterListPage() {
                                             <td className="px-6 py-4 text-sm opacity-60">{(currentPage - 1) * itemsPerPage + i + 1}</td>
                                             <td className="px-6 py-4">
                                                 <p className="text-sm inherit">{def.defaulter_name}</p>
-                                                <p className="text-[10px] opacity-60 tracking-wider">{def.gst_number || 'PAN: ' + def.pan_number}</p>
                                             </td>
                                             <td className="px-6 py-4 text-xs tracking-wider opacity-80">{new Date(def.createdAt).toLocaleDateString('en-GB')}</td>
                                             <td className="px-6 py-4 text-sm">₹{Number(def.default_amount).toLocaleString('en-IN')}</td>
@@ -452,7 +450,7 @@ export default function MemberDefaulterListPage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-center gap-2">
-                                                    {isWithin24Hours(def.updatedAt || def.createdAt) && (
+                                                    {isWithin24Hours(def.createdAt) && (
                                                         <button onClick={() => handleEditClick(def)} disabled={Number(def.outstanding_amount) === 0} className="bg-orange-400 text-white text-[10px] font-black px-3 py-1.5 rounded hover:bg-orange-500 transition-all shadow-sm disabled:opacity-30">Edit</button>
                                                     )}
                                                     <button onClick={() => handleViewClick(def)} className="bg-[#0051a8] text-white text-[10px] font-black px-3 py-1.5 rounded hover:bg-[#003d80] transition-all shadow-sm">View</button>
@@ -529,64 +527,108 @@ export default function MemberDefaulterListPage() {
                         </div>
 
                         <div className="p-0 overflow-y-auto no-scrollbar">
-                            {/* Section 1: Main Info */}
-                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-1">
-                                <div className="space-y-4">
-                                    <InfoItem icon="👤" label="Defaulter Company Name" value={selectedDefaulter.defaulter_name} />
-                                    <InfoItem icon="📞" label="Mobile" value={selectedDefaulter.mobile_number} />
-                                    <InfoItem icon="✉️" label="Email" value={selectedDefaulter.email_id || '-'} />
-                                    <InfoItem icon="🔢" label="GST" value={selectedDefaulter.gst_number || '-'} />
-                                    <InfoItem icon="💳" label="PAN" value={selectedDefaulter.pan_number || '-'} />
-                                    <InfoItem icon="🆔" label="CIN" value={selectedDefaulter.cin_number || '-'} />
-                                    <InfoItem icon="🛡️" label="Aadhar" value={selectedDefaulter.aadhar_number || '-'} />
-                                    <InfoItem icon="🏠" label="Defaulter Address" value={selectedDefaulter.defaulter_address || '-'} />
+                            <div className="p-8 space-y-10">
+                                {/* Group 1: Defaulter Company Details */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                        <span className="w-8 h-8 bg-green-50 text-green-600 rounded-lg flex items-center justify-center text-sm font-bold">01</span>
+                                        <h4 className="text-xs font-black text-gray-800 tracking-[0.2em]">Defaulter Company Details</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <InfoItem icon="👤" label="Company Name" value={selectedDefaulter.defaulter_name} isBold={true} />
+                                        <InfoItem icon="🏭" label="Industry" value={selectedDefaulter.industry} />
+                                        <InfoItem icon="🔢" label="GST Number" value={selectedDefaulter.gst_number} />
+                                        <InfoItem icon="💳" label="PAN Number" value={selectedDefaulter.pan_number} />
+                                        <InfoItem icon="🆔" label="CIN Number" value={selectedDefaulter.cin_number} />
+                                        <InfoItem icon="🛡️" label="Aadhar Number" value={selectedDefaulter.aadhar_number} />
+                                    </div>
                                 </div>
-                                <div className="space-y-4">
-                                    <InfoItem icon="📍" label="State" value={selectedDefaulter.state} />
-                                    <InfoItem icon="🏢" label="District" value={selectedDefaulter.district} />
-                                    <InfoItem icon="🗾" label="Sub District" value={selectedDefaulter.cities || '-'} />
-                                    <InfoItem icon="🏙️" label="City" value={selectedDefaulter.city || '-'} />
-                                    <InfoItem icon="📅" label="Financial Year" value={selectedDefaulter.financial_year || '-'} />
-                                    <InfoItem icon="📉" label="Outstanding" value={(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })} />
-                                    <InfoItem icon="🏭" label="Industry" value={selectedDefaulter.industry || '-'} />
-                                    <InfoItem icon="👤" label="Reported By" value={user?.companyName || user?.name || 'Local Member'} />
+
+                                {/* Group 2: Contact & Location */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                        <span className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-sm font-bold">02</span>
+                                        <h4 className="text-xs font-black text-gray-800 tracking-[0.2em]">Contact & Location</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <InfoItem icon="📞" label="Mobile" value={selectedDefaulter.mobile_number} />
+                                        <InfoItem icon="✉️" label="Email" value={selectedDefaulter.email_id} />
+                                        <InfoItem icon="📍" label="State" value={selectedDefaulter.state} />
+                                        <InfoItem icon="🏢" label="District" value={selectedDefaulter.district} />
+                                        <InfoItem icon="🗾" label="Sub District" value={selectedDefaulter.cities} />
+                                        <InfoItem icon="🏙️" label="City" value={selectedDefaulter.city} />
+                                        <div className="col-span-full">
+                                            <InfoItem icon="🏠" label="Full Address" value={selectedDefaulter.defaulter_address} />
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <hr className="border-gray-100" />
+                                {/* Group 3: Financial Status */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                        <span className="w-8 h-8 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center text-sm font-bold">03</span>
+                                        <h4 className="text-xs font-black text-gray-800  tracking-[0.2em]">Financial Status</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <InfoItem icon="💵" label="Default Amount" value={`₹${Number(selectedDefaulter.default_amount).toLocaleString('en-IN')}`} />
+                                        <InfoItem icon="📈" label="Outstanding" value={`₹${(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount || 0).toLocaleString('en-IN')}`} isBold={true} />
+                                        <InfoItem icon="📅" label="Date of Default" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString('en-GB') : '-'} />
+                                        <InfoItem icon="📅" label="Financial Year" value={selectedDefaulter.financial_year} />
+                                        <div className="col-span-full">
+                                            <InfoItem icon="⚠️" label="Reason for Default" value={selectedDefaulter.reason_description} />
+                                        </div>
+                                    </div>
+                                </div>
 
-                            {/* Section 2: Financial/Reason */}
-                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                                <InfoItem icon="💵" label="Default Amount" value={Number(selectedDefaulter.default_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })} />
-                                <InfoItem icon="📅" label="Date of Default" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toISOString().split('T')[0] : '-'} />
-                                <InfoItem icon="⚠️" label="Reason" value={selectedDefaulter.reason_description} />
-                                <div className="flex items-center gap-4">
-                                    <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm">✅</div>
-                                    <div>
-                                        <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Status</p>
-                                        <span className="px-3 py-1 bg-green-500 text-white rounded-full text-[10px] font-bold uppercase mt-1 inline-block">
-                                            {selectedDefaulter.status === 1 ? 'Approved' : 'Pending'}
-                                        </span>
+                                {/* Group 4: Legal & Proceedings */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                        <span className="w-8 h-8 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center text-sm font-bold">04</span>
+                                        <h4 className="text-xs font-black text-gray-800  tracking-[0.2em]">Legal & Proceedings</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <InfoItem icon="🏛️" label="Court Name" value={selectedDefaulter.court_complex_name} />
+                                        <InfoItem icon="🔢" label="Case Number" value={selectedDefaulter.case_number} />
+                                        <InfoItem icon="⚖️" label="Case Type" value={selectedDefaulter.case_type} />
+                                        <InfoItem icon="📅" label="Case Year" value={selectedDefaulter.case_year} />
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-base flex-shrink-0 shadow-sm border border-gray-100 text-green-600">⚖️</div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-[10px] font-bold text-gray-400  tracking-widest mb-1 leading-none">Legal Status</p>
+                                                <span className="px-3 py-1 bg-green-500 text-white rounded-lg text-[10px] font-bold  inline-block">
+                                                    {selectedDefaulter.case_status || 'Ongoing'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Group 5: Report Status */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                        <span className="w-8 h-8 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center text-sm font-bold">05</span>
+                                        <h4 className="text-xs font-black text-gray-800  tracking-[0.2em]">Report Information</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <InfoItem icon="👤" label="Reported By" value={user?.companyName || user?.name} />
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center text-base flex-shrink-0 shadow-sm border border-gray-100 text-green-600">✅</div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-[10px] font-bold text-gray-400  tracking-widest mb-1 leading-none">Verification Status</p>
+                                                <span className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold  inline-block">
+                                                    {selectedDefaulter.status === 1 ? 'Approved' : 'Pending Review'}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <hr className="border-gray-100" />
 
-                            {/* Section 3: Legal Info */}
-                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                                <InfoItem icon="🏛️" label="Court Complex Name" value={selectedDefaulter.court_complex_name || '-'} />
-                                <InfoItem icon="🔢" label="Case Number" value={selectedDefaulter.case_number || '-'} />
-                                <InfoItem icon="⚖️" label="Case Type" value={selectedDefaulter.case_type || '-'} />
-                                <InfoItem icon="📅" label="Case Year" value={selectedDefaulter.case_year || '-'} />
-                                <InfoItem icon="💼" label="Case Status" value={selectedDefaulter.case_status || '-'} />
-                            </div>
-
-                            <hr className="border-gray-100" />
-
                             {/* Section 4: Documents */}
                             <div className="p-8">
-                                <h4 className="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest flex items-center gap-2">
+                                <h4 className="text-[11px] font-black text-gray-400  mb-4 tracking-widest flex items-center gap-2">
                                     <span>📄</span> Documents
                                 </h4>
                                 {selectedDefaulter.attachment_documents && selectedDefaulter.attachment_documents.length > 0 ? (
@@ -624,7 +666,7 @@ export default function MemberDefaulterListPage() {
                                     <table className="w-full text-center">
                                         <thead>
                                             <tr className="bg-[#0a1f0a] text-white">
-                                                <th className="px-6 py-5 text-xs font-black uppercase border-r border-white/10">#</th>
+                                                <th className="px-6 py-5 text-xs font-black  border-r border-white/10">#</th>
                                                 <th className="px-6 py-5 text-base font-bold border-r border-white/10">Payment Date</th>
                                                 <th className="px-6 py-5 text-base font-bold">Amount</th>
                                             </tr>
@@ -670,38 +712,38 @@ export default function MemberDefaulterListPage() {
                         <form onSubmit={handleUpdate} className="p-8 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
                             {/* Section 1: Basic Identity */}
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b pb-2">1. Identity Information</h4>
+                                <h4 className="text-[10px] font-black text-gray-400  tracking-[0.2em] border-b pb-2">1. Identity Information</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Defaulter Company Name</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Defaulter Company Name</label>
                                         <input type="text" name="defaulter_name" value={editForm.defaulter_name} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Contact Number</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Contact Number</label>
                                         <input type="text" name="mobile_number" value={editForm.mobile_number} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Email Address</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Email Address</label>
                                         <input type="email" name="email_id" value={editForm.email_id} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">GST Number</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">GST Number</label>
                                         <input type="text" name="gst_number" value={editForm.gst_number} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">PAN Number</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">PAN Number</label>
                                         <input type="text" name="pan_number" value={editForm.pan_number} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">CIN Number</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">CIN Number</label>
                                         <input type="text" name="cin_number" value={editForm.cin_number} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Aadhar Number</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Aadhar Number</label>
                                         <input type="text" name="aadhar_number" value={editForm.aadhar_number} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Industry</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Industry</label>
                                         <select name="industry" value={editForm.industry} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
                                             <option value="">Select Industry</option>
                                             <option value="Agriculture">Agriculture</option>
@@ -716,35 +758,35 @@ export default function MemberDefaulterListPage() {
 
                             {/* Section 2: Address & Location */}
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b pb-2">2. Jurisdiction & Location</h4>
+                                <h4 className="text-[10px] font-black text-gray-400  tracking-[0.2em] border-b pb-2">2. Jurisdiction & Location</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">State</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">State</label>
                                         <select name="state" value={editForm.state} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
                                             <option value="">Select State</option>
                                             {locations.map(s => <option key={s.state} value={s.state}>{s.state}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">District</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">District</label>
                                         <select name="district" value={editForm.district} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
                                             <option value="">Select District</option>
                                             {districtsList.map((d: any) => <option key={d.district} value={d.district}>{d.district}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Sub District</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Sub District</label>
                                         <select name="cities" value={editForm.cities} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
                                             <option value="">Select Sub-District</option>
                                             {(districtsList.find((d: any) => d.district === editForm.district)?.subDistricts || []).map((sd: any) => <option key={sd} value={sd}>{sd}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">City</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">City</label>
                                         <input type="text" name="city" value={editForm.city || ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="col-span-full space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Full Address</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Full Address</label>
                                         <textarea name="defaulter_address" value={editForm.defaulter_address} onChange={handleInputChange} rows={2} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                 </div>
@@ -752,18 +794,18 @@ export default function MemberDefaulterListPage() {
 
                             {/* Section 3: Financials */}
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b pb-2">3. Financial Defaults</h4>
+                                <h4 className="text-[10px] font-black text-gray-400  tracking-[0.2em] border-b pb-2">3. Financial Defaults</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Default Amount</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Default Amount</label>
                                         <input type="number" name="default_amount" value={editForm.default_amount} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Outstanding Amount</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Outstanding Amount</label>
                                         <input type="number" name="outstanding_amount" value={editForm.outstanding_amount} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50 font-bold text-red-600" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Financial Year</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Financial Year</label>
                                         <select name="financial_year" value={editForm.financial_year} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
                                             <option value="">Select Year</option>
                                             {Array.from({ length: 10 }).map((_, i) => {
@@ -774,11 +816,11 @@ export default function MemberDefaulterListPage() {
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Date of Default</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Date of Default</label>
                                         <input type="date" name="date_of_default" value={editForm.date_of_default ? new Date(editForm.date_of_default).toISOString().split('T')[0] : ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="col-span-full space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Reason / Description</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Reason / Description</label>
                                         <textarea name="reason_description" value={editForm.reason_description} onChange={handleInputChange} rows={3} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                 </div>
@@ -786,26 +828,26 @@ export default function MemberDefaulterListPage() {
 
                             {/* Section 4: Legal Information */}
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b pb-2">4. Legal Proceedings (Optional)</h4>
+                                <h4 className="text-[10px] font-black text-gray-400  tracking-[0.2em] border-b pb-2">4. Legal Proceedings (Optional)</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Court Name</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Court Name</label>
                                         <input type="text" name="court_complex_name" value={editForm.court_complex_name || ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Case Number</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Case Number</label>
                                         <input type="text" name="case_number" value={editForm.case_number || ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Case Type</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Case Type</label>
                                         <input type="text" name="case_type" value={editForm.case_type || ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Case Year</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Case Year</label>
                                         <input type="text" name="case_year" value={editForm.case_year || ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Legal Status</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Legal Status</label>
                                         <select name="case_status" value={editForm.case_status || ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50 font-bold">
                                             <option value="">Select Status</option>
                                             <option value="Notice Issued">Notice Issued</option>
@@ -815,7 +857,7 @@ export default function MemberDefaulterListPage() {
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Add New Documents</label>
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">Add New Documents</label>
                                         <input
                                             type="file"
                                             multiple
@@ -826,7 +868,7 @@ export default function MemberDefaulterListPage() {
                                 </div>
                             </div>
 
-                            <button type="submit" disabled={saving} className="w-full bg-[#1b5e20] text-white font-black uppercase tracking-widest py-4 rounded-xl hover:bg-black transition-all disabled:opacity-50 mt-8 shadow-xl">
+                            <button type="submit" disabled={saving} className="w-full bg-[#1b5e20] text-white font-black  tracking-widest py-4 rounded-xl hover:bg-black transition-all disabled:opacity-50 mt-8 shadow-xl">
                                 {saving ? "Synchronizing..." : "Commit Updates"}
                             </button>
                         </form>
@@ -847,7 +889,7 @@ export default function MemberDefaulterListPage() {
                             <button onClick={() => setShowPayment(false)} className="text-white/60 hover:text-white transition-colors">✕</button>
                         </div>
 
-                        <div className="p-4 bg-gray-50 border-b flex items-center justify-between text-xs text-gray-500 font-bold uppercase tracking-wider">
+                        <div className="p-4 bg-gray-50 border-b flex items-center justify-between text-xs text-gray-500 font-bold  tracking-wider">
                             <span>Defaulter: {selectedDefaulter.defaulter_name}</span>
                             <span className="text-red-600">Pending: ₹{(Number(selectedDefaulter.outstanding_amount) || 0).toLocaleString()}</span>
                         </div>
@@ -857,7 +899,7 @@ export default function MemberDefaulterListPage() {
                                 {paymentRows.map((row, idx) => (
                                     <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-4 relative">
                                         <div className="flex flex-col gap-1">
-                                            <label className="text-[11px] font-black text-gray-400 uppercase">Payment Amount (₹)</label>
+                                            <label className="text-[11px] font-black text-gray-400 ">Payment Amount (₹)</label>
                                             <input
                                                 type="number"
                                                 value={row.amount}
@@ -868,7 +910,7 @@ export default function MemberDefaulterListPage() {
                                             />
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <label className="text-[11px] font-black text-gray-400 uppercase">Date of Payment</label>
+                                            <label className="text-[11px] font-black text-gray-400 ">Date of Payment</label>
                                             <input
                                                 type="date"
                                                 value={row.date}
@@ -881,7 +923,7 @@ export default function MemberDefaulterListPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemovePaymentRow(idx)}
-                                                className="w-full bg-red-500/10 text-red-500 py-2 rounded-lg text-[11px] font-black uppercase hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2"
+                                                className="w-full bg-red-500/10 text-red-500 py-2 rounded-lg text-[11px] font-black  hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2"
                                             >
                                                 🗑️ Remove
                                             </button>
@@ -893,7 +935,7 @@ export default function MemberDefaulterListPage() {
                             <button
                                 type="button"
                                 onClick={handleAddPaymentRow}
-                                className="mt-4 px-4 py-2 bg-[#1b5e20] text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:opacity-90 transition-all flex items-center gap-2"
+                                className="mt-4 px-4 py-2 bg-[#1b5e20] text-white rounded-lg text-[10px] font-black  tracking-wider hover:opacity-90 transition-all flex items-center gap-2"
                             >
                                 <span className="text-lg">+</span> Add Another Payment
                             </button>
@@ -902,7 +944,7 @@ export default function MemberDefaulterListPage() {
                                 <button
                                     type="submit"
                                     disabled={processingPayment}
-                                    className="bg-[#1b5e20] text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-green-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                                    className="bg-[#1b5e20] text-white px-8 py-3 rounded-xl font-black  tracking-widest text-[11px] shadow-lg shadow-green-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                                 >
                                     {processingPayment ? "Recording..." : "Save Payments"}
                                 </button>

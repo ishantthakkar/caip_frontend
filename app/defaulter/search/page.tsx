@@ -37,8 +37,9 @@ export default function SearchDefaulterPage() {
     const [showDetails, setShowDetails] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
 
+    const [cities, setCities] = useState<any[]>([]);
     const [filters, setFilters] = useState({
-        gst: '', pan: '', cin: '', aadhar: '', name: '', address: '', state: '', district: '', subDistrict: ''
+        gst: '', pan: '', cin: '', aadhar: '', name: '', address: '', state: '', district: '', subDistrict: '', city: ''
     });
 
     useEffect(() => {
@@ -56,6 +57,24 @@ export default function SearchDefaulterPage() {
             console.error("Error fetching locations:", error);
         }
     };
+
+    const fetchCities = async (state: string, district: string, subDistrict: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}cities?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}&subDistrict=${encodeURIComponent(subDistrict)}`);
+            const data = await res.json();
+            if (res.ok) setCities(data.cities || []);
+        } catch (error) {
+            console.error("Error fetching cities:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (filters.state && filters.district && filters.subDistrict) {
+            fetchCities(filters.state, filters.district, filters.subDistrict);
+        } else {
+            setCities([]);
+        }
+    }, [filters.state, filters.district, filters.subDistrict]);
 
     const fetchDefaulters = async () => {
         setSearching(true);
@@ -92,11 +111,12 @@ export default function SearchDefaulterPage() {
     };
 
     const handleReset = () => {
-        setFilters({ gst: '', pan: '', cin: '', aadhar: '', name: '', address: '', state: '', district: '', subDistrict: '' });
+        setFilters({ gst: '', pan: '', cin: '', aadhar: '', name: '', address: '', state: '', district: '', subDistrict: '', city: '' });
         setHasSearched(false);
         setDefaulters([]);
         setError('');
         setShowAdvanced(false);
+        setCities([]);
     };
 
     const handleFilterChange = (field: string, value: string) => {
@@ -104,8 +124,9 @@ export default function SearchDefaulterPage() {
         setFilters(prev => ({
             ...prev,
             [field]: value,
-            ...(field === 'state' ? { district: '', subDistrict: '' } : {}),
-            ...(field === 'district' ? { subDistrict: '' } : {})
+            ...(field === 'state' ? { district: '', subDistrict: '', city: '' } : {}),
+            ...(field === 'district' ? { subDistrict: '', city: '' } : {}),
+            ...(field === 'subDistrict' ? { city: '' } : {})
         }));
     };
 
@@ -127,8 +148,8 @@ export default function SearchDefaulterPage() {
                             <h2 className="text-lg font-bold text-gray-800">Global Search</h2>
                             <p className="text-xs text-gray-500">Search for defaulters by GST, PAN, Mobile, or Name</p>
                         </div>
-                        <Link 
-                            href="/defaulter/history" 
+                        <Link
+                            href="/defaulter/history"
                             className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2"
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></svg>
@@ -145,15 +166,15 @@ export default function SearchDefaulterPage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {[
-                                { label: 'GST Number', name: 'gst', placeholder: 'Enter GST' },
-                                { label: 'PAN Number', name: 'pan', placeholder: 'Enter PAN' },
-                                { label: 'CIN Number', name: 'cin', placeholder: 'Enter CIN' },
-                                { label: 'Aadhar Card', name: 'aadhar', placeholder: 'Enter Aadhar' },
-                                { label: 'Company Name', name: 'name', placeholder: 'Search by Company Name' },
-                                { label: 'Location/Address', name: 'address', placeholder: 'Search by Location' }
+                                { label: 'GST', name: 'gst', placeholder: 'Enter GST' },
+                                { label: 'PAN', name: 'pan', placeholder: 'Enter PAN' },
+                                { label: 'CIN', name: 'cin', placeholder: 'Enter CIN' },
+                                { label: 'Aadhar', name: 'aadhar', placeholder: 'Enter Aadhar' },
+                                { label: 'Company', name: 'name', placeholder: 'Search by Company Name' },
+                                { label: 'Address', name: 'address', placeholder: 'Search by Address' }
                             ].map((f) => (
                                 <div key={f.name} className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">{f.label}</label>
+                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">{f.label}</label>
                                     <input
                                         type="text"
                                         name={f.name}
@@ -179,14 +200,14 @@ export default function SearchDefaulterPage() {
                                         <path d="M5 12h14" />
                                     </svg>
                                 </div>
-                                {showAdvanced ? "Basic Search Mode" : "Advanced Filters (Location)"}
+                                {showAdvanced ? "Basic Search Mode" : "Advanced Filters"}
                             </button>
                         </div>
 
                         {showAdvanced && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 border-t border-gray-50 animate-in slide-in-from-top-2 duration-300">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">State</label>
+                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">State</label>
                                     <select
                                         value={filters.state}
                                         onChange={(e) => handleFilterChange('state', e.target.value)}
@@ -198,7 +219,7 @@ export default function SearchDefaulterPage() {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">District</label>
+                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">District</label>
                                     <select
                                         value={filters.district}
                                         onChange={(e) => handleFilterChange('district', e.target.value)}
@@ -211,7 +232,7 @@ export default function SearchDefaulterPage() {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Sub-District</label>
+                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Sub-District</label>
                                     <select
                                         value={filters.subDistrict}
                                         onChange={(e) => handleFilterChange('subDistrict', e.target.value)}
@@ -220,6 +241,19 @@ export default function SearchDefaulterPage() {
                                     >
                                         <option value="">All Sub-Districts</option>
                                         {subDistricts.map((sd: any) => <option key={sd} value={sd}>{sd}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">City/Town/Village</label>
+                                    <select
+                                        value={filters.city}
+                                        onChange={(e) => handleFilterChange('city', e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
+                                        disabled={!filters.subDistrict}
+                                    >
+                                        <option value="">All Cities</option>
+                                        {cities.map((city: any) => <option key={city} value={city}>{city}</option>)}
                                     </select>
                                 </div>
                             </div>
