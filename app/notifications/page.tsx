@@ -84,7 +84,7 @@ export default function NotificationsPage() {
             <MemberSidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
             
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <MemberHeader user={user} isCollapsed={isSidebarCollapsed} title="Notifications" />
+                <MemberHeader user={user} isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} title="Notifications" />
 
                 <div className="flex-1 overflow-y-auto p-4 md:p-8">
                     <div className="max-w-7xl mx-auto space-y-6">
