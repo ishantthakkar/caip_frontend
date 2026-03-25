@@ -39,6 +39,11 @@ export default function MemberDefaulterListPage() {
     const [user, setUser] = useState<any>(null);
     const [isSubMember, setIsSubMember] = useState(false);
 
+    // New high-precision location states
+    const [districts, setDistricts] = useState<string[]>([]);
+    const [subDistricts, setSubDistricts] = useState<string[]>([]);
+    const [cities, setCities] = useState<string[]>([]);
+
     useEffect(() => {
         fetchMyReports();
         fetchLocations();
@@ -75,11 +80,53 @@ export default function MemberDefaulterListPage() {
         try {
             const res = await fetch(`${API_BASE_URL}locations`);
             const data = await res.json();
-            setLocations(data.states || []);
+            setLocations(data.states.map((s: any) => s.state) || []);
         } catch (error) {
             console.error("Error fetching locations:", error);
         }
     };
+
+    const fetchDistricts = async (state: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}districts?state=${encodeURIComponent(state)}`);
+            const data = await res.json();
+            setDistricts(data.districts || []);
+        } catch (error) { console.error(error); }
+    };
+
+    const fetchSubDistricts = async (state: string, district: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}sub-districts?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`);
+            const data = await res.json();
+            setSubDistricts(data.subDistricts || []);
+        } catch (error) { console.error(error); }
+    };
+
+    const fetchCities = async (state: string, district: string, subDistrict: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}cities?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}&subDistrict=${encodeURIComponent(subDistrict)}`);
+            const data = await res.json();
+            setCities(data.cities || []);
+        } catch (error) { console.error(error); }
+    };
+
+    useEffect(() => {
+        if (showEdit && editForm.state) {
+            fetchDistricts(editForm.state);
+        }
+    }, [showEdit, editForm.state]);
+
+    useEffect(() => {
+        if (showEdit && editForm.state && editForm.district) {
+            fetchSubDistricts(editForm.state, editForm.district);
+        }
+    }, [showEdit, editForm.district]);
+
+    useEffect(() => {
+        if (showEdit && editForm.state && editForm.district && editForm.cities) {
+            fetchCities(editForm.state, editForm.district, editForm.cities);
+        }
+    }, [showEdit, editForm.cities]);
 
     const handleEditClick = (def: any) => {
         setSelectedDefaulter(def);
@@ -231,8 +278,6 @@ export default function MemberDefaulterListPage() {
     };
 
 
-    const districtsList = locations.find(s => s.state === editForm.state)?.districts || [];
-
     const handleExportPDF = async () => {
         try {
             const doc = new jsPDF('landscape');
@@ -364,17 +409,17 @@ export default function MemberDefaulterListPage() {
                                 className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-[#1b5e20] text-sm shadow-sm transition-all focus:ring-1 focus:ring-[#1b5e20]/20"
                             />
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#1b5e20] transition-colors">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                             </span>
                         </div>
                     </div>
-                    
+
                     <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto justify-end">
                         <button
                             onClick={handleExportPDF}
                             className="bg-white text-rose-600 border border-rose-100 px-5 py-2.5 rounded-xl hover:bg-rose-50 transition-all flex items-center gap-2.5 shadow-sm text-sm font-semibold whitespace-nowrap"
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><polyline points="9 15 12 18 15 15" /></svg>
                             Export PDF
                         </button>
                         <Link href="/defaulter/add" className="bg-[#1b5e20] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#144317] transition-all shadow-md shadow-[#1b5e20]/10 whitespace-nowrap flex items-center gap-2">
@@ -386,7 +431,7 @@ export default function MemberDefaulterListPage() {
                 {/* Table Section */}
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
                     <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                         <h3 className="text-[16px] font-semibold tracking-tight">My Reported Defaulters</h3>
                     </div>
                     <div className="p-4 md:p-5">
@@ -420,11 +465,10 @@ export default function MemberDefaulterListPage() {
                                                     <td className="px-5 py-4 font-semibold text-gray-900 font-mono">₹{Number(def.default_amount).toLocaleString('en-IN')}</td>
                                                     <td className="px-5 py-4 font-semibold text-red-600 font-mono">₹{Number(def.outstanding_amount === undefined ? def.default_amount : def.outstanding_amount).toLocaleString('en-IN')}</td>
                                                     <td className="px-5 py-4 text-center">
-                                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
-                                                            def.status === 1 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                            def.status === 2 ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                                            'bg-amber-50 text-amber-600 border-amber-100'
-                                                        }`}>
+                                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${def.status === 1 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                                def.status === 2 ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                                                    'bg-amber-50 text-amber-600 border-amber-100'
+                                                            }`}>
                                                             {def.status === 1 ? 'Approved' : def.status === 2 ? 'Rejected' : 'Pending'}
                                                         </span>
                                                     </td>
@@ -448,19 +492,19 @@ export default function MemberDefaulterListPage() {
                                                     <td className="px-5 py-4 text-center">
                                                         <div className="flex items-center justify-center gap-2">
                                                             {isWithin24Hours(def.createdAt) && !isPaid && (
-                                                                <button 
-                                                                    onClick={() => handleEditClick(def)} 
+                                                                <button
+                                                                    onClick={() => handleEditClick(def)}
                                                                     className="px-2.5 py-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors border border-amber-100 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
                                                                 >
-                                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
                                                                     Edit
                                                                 </button>
                                                             )}
-                                                            <button 
-                                                                onClick={() => handleViewClick(def)} 
+                                                            <button
+                                                                onClick={() => handleViewClick(def)}
                                                                 className="px-2.5 py-1.5 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors border border-gray-100 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
                                                             >
-                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                                                                 View
                                                             </button>
                                                         </div>
@@ -534,7 +578,7 @@ export default function MemberDefaulterListPage() {
                         <div className="px-8 py-5 bg-[#1b5e20] flex items-center justify-between text-white shadow-lg relative z-10">
                             <div className="flex items-center gap-4">
                                 <div className="p-2.5 bg-white/10 rounded-xl">
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
                                 </div>
                                 <div>
                                     <h3 className="text-[18px] font-bold tracking-tight uppercase">Defaulter record details</h3>
@@ -554,12 +598,12 @@ export default function MemberDefaulterListPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter company details</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Company name" value={selectedDefaulter.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg>} />
-                                    <DetailRow label="Industry" value={selectedDefaulter.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18"/><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4"/></svg>} />
-                                    <DetailRow label="Gst number" value={selectedDefaulter.gst_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>} />
-                                    <DetailRow label="Pan number" value={selectedDefaulter.pan_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2"/><path d="M3 10h18"/><path d="M7 15h.01"/><path d="M11 15h2"/></svg>} />
-                                    <DetailRow label="Cin number" value={selectedDefaulter.cin_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>} />
-                                    <DetailRow label="Aadhar number" value={selectedDefaulter.aadhar_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z"/></svg>} />
+                                    <DetailRow label="Company name" value={selectedDefaulter.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                    <DetailRow label="Industry" value={selectedDefaulter.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
+                                    <DetailRow label="Gst number" value={selectedDefaulter.gst_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
+                                    <DetailRow label="Pan number" value={selectedDefaulter.pan_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
+                                    <DetailRow label="Cin number" value={selectedDefaulter.cin_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
+                                    <DetailRow label="Aadhar number" value={selectedDefaulter.aadhar_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
                                 </div>
                             </div>
 
@@ -570,14 +614,14 @@ export default function MemberDefaulterListPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Contact & location</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Mobile" value={selectedDefaulter.mobile_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>} />
-                                    <DetailRow label="Email" value={selectedDefaulter.email_id} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>} />
-                                    <DetailRow label="State" value={selectedDefaulter.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} />
-                                    <DetailRow label="District" value={selectedDefaulter.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z"/><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z"/><path d="M2 7h20"/></svg>} />
-                                    <DetailRow label="Sub district" value={selectedDefaulter.sub_district || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3"/><path d="m15.5 11.5-3 3-3-3"/><path d="m15.5 17.5-3 3-3-3"/></svg>} />
-                                    <DetailRow label="City" value={selectedDefaulter.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z"/></svg>} />
+                                    <DetailRow label="Mobile" value={selectedDefaulter.mobile_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>} />
+                                    <DetailRow label="Email" value={selectedDefaulter.email_id} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>} />
+                                    <DetailRow label="State" value={selectedDefaulter.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
+                                    <DetailRow label="District" value={selectedDefaulter.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
+                                    <DetailRow label="Sub district" value={selectedDefaulter.sub_district || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
+                                    <DetailRow label="City" value={selectedDefaulter.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
                                     <div className="col-span-full pt-2">
-                                        <DetailRow label="Full address" value={selectedDefaulter.defaulter_address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} />
+                                        <DetailRow label="Full address" value={selectedDefaulter.defaulter_address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
                                     </div>
                                 </div>
                             </div>
@@ -589,12 +633,12 @@ export default function MemberDefaulterListPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Financial status</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Default amount" value={`₹${Number(selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>} />
-                                    <DetailRow label="Outstanding" value={`₹${Number(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} />
-                                    <DetailRow label="Date of default" value={selectedDefaulter.default_date ? new Date(selectedDefaulter.default_date).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>} />
-                                    <DetailRow label="Financial year" value={selectedDefaulter.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>} />
+                                    <DetailRow label="Default amount" value={`₹${Number(selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><path d="M12 8v8" /><path d="M8 12h8" /></svg>} />
+                                    <DetailRow label="Outstanding" value={`₹${Number(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>} />
+                                    <DetailRow label="Date of default" value={selectedDefaulter.default_date ? new Date(selectedDefaulter.default_date).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
+                                    <DetailRow label="Financial year" value={selectedDefaulter.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
                                     <div className="col-span-full">
-                                        <DetailRow label="Reason for default" value={selectedDefaulter.description || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01"/><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M12 9v4"/></svg>} />
+                                        <DetailRow label="Reason for default" value={selectedDefaulter.description || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01" /><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" /><path d="M12 9v4" /></svg>} />
                                     </div>
                                 </div>
                             </div>
@@ -606,11 +650,11 @@ export default function MemberDefaulterListPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & proceedings</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Court name" value={selectedDefaulter.court_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2"/><path d="M6 12v.01"/><path d="M18 12v.01"/><path d="M12 6v.01"/></svg>} />
-                                    <DetailRow label="Case number" value={selectedDefaulter.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>} />
-                                    <DetailRow label="Case type" value={selectedDefaulter.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>} />
-                                    <DetailRow label="Case year" value={selectedDefaulter.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>} />
-                                    <DetailRow label="Legal status" value={selectedDefaulter.legal_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>} />
+                                    <DetailRow label="Court name" value={selectedDefaulter.court_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
+                                    <DetailRow label="Case number" value={selectedDefaulter.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
+                                    <DetailRow label="Case type" value={selectedDefaulter.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
+                                    <DetailRow label="Case year" value={selectedDefaulter.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
+                                    <DetailRow label="Legal status" value={selectedDefaulter.legal_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
                                 </div>
                             </div>
 
@@ -621,8 +665,8 @@ export default function MemberDefaulterListPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Report information</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                                    <DetailRow label="Reported by" value={selectedDefaulter.reporter_name || 'Member Portal'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} />
-                                    <DetailRow label="Verification status" value={selectedDefaulter.status || 'Pending'} isStatus icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/><path d="m9 12 2 2 4-4"/></svg>} />
+                                    <DetailRow label="Reported by" value={selectedDefaulter.reporter_name || 'Member Portal'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+                                    <DetailRow label="Verification status" value={selectedDefaulter.status || 'Pending'} isStatus icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" /><path d="m9 12 2 2 4-4" /></svg>} />
                                 </div>
                             </div>
 
@@ -637,17 +681,17 @@ export default function MemberDefaulterListPage() {
                                         selectedDefaulter.attachment_documents.map((doc: string, idx: number) => {
                                             const isPdf = doc.toLowerCase().endsWith('.pdf');
                                             return (
-                                                <a 
-                                                    key={idx} 
-                                                    href={`${ASSETS_BASE_URL}uploads/${doc}`} 
-                                                    target="_blank" 
+                                                <a
+                                                    key={idx}
+                                                    href={`${ASSETS_BASE_URL}uploads/${doc}`}
+                                                    target="_blank"
                                                     className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl hover:border-[#1b5e20] hover:bg-emerald-50/10 transition-all group shadow-sm"
                                                 >
                                                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
                                                         {isPdf ? (
-                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
                                                         ) : (
-                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
                                                         )}
                                                     </div>
                                                     <div className="flex flex-col min-w-0">
@@ -659,7 +703,7 @@ export default function MemberDefaulterListPage() {
                                         })
                                     ) : (
                                         <div className="col-span-full py-8 border-2 border-dashed border-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-400 gap-2">
-                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="16" y2="17" /></svg>
                                             <p className="text-[13px] font-medium">No verified documents available</p>
                                         </div>
                                     )}
@@ -758,10 +802,10 @@ export default function MemberDefaulterListPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Jurisdiction & location</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                                    <FormInput label="State" name="state" value={editForm.state} onChange={handleInputChange} isSelect options={locations.map(s => s.state)} />
-                                    <FormInput label="District" name="district" value={editForm.district} onChange={handleInputChange} isSelect options={(locations.find(s => s.state === editForm.state)?.districts || []).map((d: any) => d.district)} disabled={!editForm.state} />
-                                    <FormInput label="Sub district" name="sub_district" value={editForm.sub_district} onChange={handleInputChange} />
-                                    <FormInput label="City" name="city" value={editForm.city} onChange={handleInputChange} />
+                                    <FormInput label="State" name="state" value={editForm.state} onChange={handleInputChange} isSelect options={locations} />
+                                    <FormInput label="District" name="district" value={editForm.district} onChange={handleInputChange} isSelect options={districts} disabled={!editForm.state} />
+                                    <FormInput label="Sub district" name="cities" value={editForm.cities} onChange={handleInputChange} isSelect options={subDistricts} disabled={!editForm.district} />
+                                    <FormInput label="City" name="city" value={editForm.city} onChange={handleInputChange} isSelect options={cities} disabled={!editForm.cities} />
                                     <div className="col-span-full">
                                         <FormInput label="Full address" name="defaulter_address" value={editForm.defaulter_address} onChange={handleInputChange} isTextArea />
                                     </div>
@@ -777,7 +821,7 @@ export default function MemberDefaulterListPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                                     <FormInput label="Default amount" name="default_amount" value={editForm.default_amount} onChange={handleInputChange} type="number" />
                                     <FormInput label="Outstanding amount" name="outstanding_amount" value={editForm.outstanding_amount} onChange={handleInputChange} type="number" />
-                                    <FormInput label="Financial year" name="financial_year" value={editForm.financial_year} onChange={handleInputChange} />
+                                    <FormInput label="Financial year" name="financial_year" value={editForm.financial_year} onChange={handleInputChange} isSelect options={Array.from({ length: 10 }).map((_, i) => { const yr = 2025 - i; return `${yr}-${(yr + 1).toString().slice(-2)}`; })} />
                                     <FormInput label="Date of default" name="default_date" value={editForm.default_date} onChange={handleInputChange} type="date" />
                                     <div className="col-span-full">
                                         <FormInput label="Reason / description" name="description" value={editForm.description} onChange={handleInputChange} isTextArea />
@@ -801,15 +845,15 @@ export default function MemberDefaulterListPage() {
                                 <div className="col-span-full space-y-2 pt-2">
                                     <label className="text-[13px] font-medium text-gray-500 tracking-tight px-1">Add new documents</label>
                                     <div className="relative group">
-                                        <input 
-                                            type="file" 
-                                            multiple 
+                                        <input
+                                            type="file"
+                                            multiple
                                             onChange={(e) => setEditFiles(e.target.files)}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                         />
                                         <div className="w-full border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-white group-hover:border-[#1b5e20] group-hover:bg-emerald-50/10 transition-all flex items-center justify-center gap-4">
                                             <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 group-hover:bg-[#1b5e20] group-hover:text-white transition-all shrink-0">
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                                             </div>
                                             <p className="text-[13px] font-bold text-gray-400 group-hover:text-gray-600 transition-colors">Replace current attachments</p>
                                         </div>
@@ -829,7 +873,7 @@ export default function MemberDefaulterListPage() {
                                     </>
                                 ) : (
                                     <>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
                                         Commit Updates
                                     </>
                                 )}
@@ -894,7 +938,7 @@ export default function MemberDefaulterListPage() {
                                                 onClick={() => handleRemovePaymentRow(idx)}
                                                 className="w-full bg-rose-50 text-rose-600 py-2.5 rounded-xl text-[12px] font-bold hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-rose-100/50"
                                             >
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
                                                 Discard Entry
                                             </button>
                                         )}
@@ -924,7 +968,7 @@ export default function MemberDefaulterListPage() {
                                         </>
                                     ) : (
                                         <>
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
                                             Save Payments
                                         </>
                                     )}
@@ -950,38 +994,38 @@ const FormInput = ({ label, name, value, onChange, type = 'text', isTextArea = f
         <div className="space-y-1.5 flex flex-col">
             <label className="text-[14px] font-medium text-gray-500 tracking-tight px-1">{label}</label>
             {isTextArea ? (
-                <textarea 
-                    name={name} 
-                    value={value || ''} 
-                    onChange={onChange} 
-                    disabled={disabled} 
-                    rows={4} 
-                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-2xl px-5 py-4 text-[15px] font-medium focus:border-[#1b5e20] focus:bg-white outline-none transition-all shadow-sm resize-none" 
+                <textarea
+                    name={name}
+                    value={value || ''}
+                    onChange={onChange}
+                    disabled={disabled}
+                    rows={4}
+                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-2xl px-5 py-4 text-[15px] font-medium focus:border-[#1b5e20] focus:bg-white outline-none transition-all shadow-sm resize-none"
                 />
             ) : isSelect ? (
                 <div className="relative">
-                    <select 
-                        name={name} 
-                        value={value || ''} 
-                        onChange={onChange} 
-                        disabled={disabled} 
+                    <select
+                        name={name}
+                        value={value || ''}
+                        onChange={onChange}
+                        disabled={disabled}
                         className="w-full bg-[#f8fafc] border border-gray-200 rounded-2xl px-5 py-3.5 text-[15px] font-medium focus:border-[#1b5e20] focus:bg-white outline-none transition-all shadow-sm appearance-none disabled:opacity-50"
                     >
                         <option value="">Select option</option>
                         {options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
                     </select>
                     <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                     </div>
                 </div>
             ) : (
-                <input 
-                    type={type} 
-                    name={name} 
-                    value={value || ''} 
-                    onChange={onChange} 
-                    disabled={disabled} 
-                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-5 py-3.5 text-[15px] font-medium focus:border-[#1b5e20] focus:bg-white outline-none transition-all shadow-sm disabled:opacity-50" 
+                <input
+                    type={type}
+                    name={name}
+                    value={value || ''}
+                    onChange={onChange}
+                    disabled={disabled}
+                    className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-5 py-3.5 text-[15px] font-medium focus:border-[#1b5e20] focus:bg-white outline-none transition-all shadow-sm disabled:opacity-50"
                 />
             )}
         </div>

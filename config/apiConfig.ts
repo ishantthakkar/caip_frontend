@@ -5,4 +5,4 @@
 
 export const API_BASE_URL = "https://caip-backend-uzjx.onrender.com/api/";
 export const ASSETS_BASE_URL = "https://caip-backend-uzjx.onrender.com/";
- 
+
