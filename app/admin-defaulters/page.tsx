@@ -5,12 +5,11 @@ import AdminPortalContainer from '@/components/AdminPortalContainer';
 import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
 
 const InfoItem = ({ icon, label, value }: { icon: any, label: string, value: any }) => (
-    <div className="flex items-start gap-4">
-        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">{icon}</div>
+    <div className="flex items-start gap-4 py-1">
+        <div className="w-1.5 h-1.5 rounded-full bg-[#1b5e20]/20 mt-1.5 flex-shrink-0" />
         <div className="min-w-0">
-            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                {label}: <span className="text-gray-600 lowercase font-medium ml-1">{value}</span>
-            </p>
+            <p className="text-[11px] font-medium text-gray-500 capitalize tracking-tight leading-none mb-1.5">{label}</p>
+            <p className="text-[15px] font-normal text-black break-words">{value || '-'}</p>
         </div>
     </div>
 );
@@ -164,85 +163,81 @@ export default function AdminDefaulterListPage() {
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
                 {/* Search & Header */}
-                <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 space-y-8">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                {/* Search & Header */}
+                <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="flex-1 w-full">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Search</label>
                             <div className="relative group">
                                 <input
                                     type="text"
-                                    placeholder="Search....."
+                                    placeholder="Search by defaulter, GST, PAN, district or member..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-gray-50/50 border-2 border-gray-100 rounded-2xl pl-12 pr-6 py-4 text-sm font-bold text-gray-800 outline-none focus:border-[#1b5e20] focus:bg-white transition-all italic"
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2 text-[15px] font-normal text-black outline-none focus:border-[#1b5e20] focus:bg-white transition-all shadow-sm placeholder:text-gray-400"
                                 />
-                                <span className="absolute left-5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">🔍</span>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4 shrink-0">
-                            <div className="bg-emerald-50 px-6 py-4 rounded-2xl border border-emerald-100 text-center">
-                                <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">Total Records</p>
-                                <h4 className="text-xl font-black text-emerald-900 leading-none">{processedData.length}</h4>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">State</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-50">
+                        <div className="space-y-1.5">
+                            <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">State</label>
                             <select
                                 value={filters.state}
                                 onChange={(e) => setFilters(p => ({ ...p, state: e.target.value, district: '', subDistrict: '', city: '' }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all"
+                                className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all cursor-pointer"
                             >
-                                <option value="">All States</option>
+                                <option value="">Select state</option>
                                 {states.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">District</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">District</label>
                             <select
                                 value={filters.district}
                                 disabled={!filters.state}
                                 onChange={(e) => setFilters(p => ({ ...p, district: e.target.value, subDistrict: '', city: '' }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all disabled:opacity-40"
+                                className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all disabled:opacity-40 cursor-pointer"
                             >
-                                <option value="">All Districts</option>
+                                <option value="">Select District</option>
                                 {districts.map(d => <option key={d} value={d}>{d}</option>)}
                             </select>
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Sub-District</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Sub-District</label>
                             <select
                                 value={filters.subDistrict}
                                 disabled={!filters.district}
                                 onChange={(e) => setFilters(p => ({ ...p, subDistrict: e.target.value, city: '' }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all disabled:opacity-40"
+                                className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all disabled:opacity-40 cursor-pointer"
                             >
-                                <option value="">All Sub-Districts</option>
+                                <option value="">Select Sub-District</option>
                                 {subDistricts.map(sd => <option key={sd} value={sd}>{sd}</option>)}
                             </select>
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">City/Town/Village</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Location Type</label>
                             <select
                                 value={filters.city}
                                 disabled={!filters.subDistrict}
                                 onChange={(e) => setFilters(p => ({ ...p, city: e.target.value }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all disabled:opacity-40"
+                                className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all disabled:opacity-40 cursor-pointer"
                             >
-                                <option value="">All Cities</option>
+                                <option value="">Select Location Type</option>
                                 {cities.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Financial Year</label>
+                        <div className="space-y-1.5">
+                            <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Financial Year</label>
                             <select
                                 value={filters.financialYear}
                                 onChange={(e) => setFilters(p => ({ ...p, financialYear: e.target.value }))}
-                                className="w-full bg-gray-50/50 border border-gray-100 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:border-[#1b5e20] transition-all"
+                                className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all cursor-pointer"
                             >
-                                <option value="">All Years</option>
+                                <option value="">Select Financial Year</option>
                                 {Array.from({ length: 6 }).map((_, i) => {
                                     const yr = 2024 - i;
                                     const val = `${yr}-${(yr + 1).toString().slice(-2)}`;
@@ -254,73 +249,95 @@ export default function AdminDefaulterListPage() {
                 </div>
 
                 {/* Table Section */}
-                <div className="bg-white rounded-[3rem] shadow-2xl shadow-gray-200/50 border border-gray-50 overflow-hidden flex flex-col">
-                    <div className="overflow-x-auto overflow-y-hidden custom-scrollbar">
-                        <table className="w-full text-left">
-                            <thead className="bg-[#1b5e20] text-white">
-                                <tr className="text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/10">
-                                    <th className="px-8 py-6">Sr.</th>
-                                    <th className="px-8 py-6">Defaulter Name</th>
-                                    <th className="px-8 py-6">Reporting Member</th>
-                                    <th className="px-8 py-6">Reported Date</th>
-                                    <th className="px-8 py-6">Outstanding</th>
-                                    <th className="px-8 py-6">Location</th>
-                                    <th className="px-8 py-6">Status</th>
-                                    <th className="px-8 py-6 text-center">Action</th>
+                {/* Table Section */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                    <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <h3 className="text-[16px] font-semibold tracking-tight">Defaulter List</h3>
+                    </div>
+                    <div className="p-4 md:p-5">
+                        <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                            <div className="overflow-x-auto overflow-y-hidden custom-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[2800px]">
+                            <thead className="bg-[#051a02] text-white sticky top-0 z-10">
+                                <tr className="divide-x divide-white/5">
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">#</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Defaulter Company Name</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported Date</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported By</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">GST No</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Pan No</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">CIN No</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Financial Year</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Default Amount</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Outstanding Amount</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Recovery Amount</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Recovery Status</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">State</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">District</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub District</th>
+                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {loading ? (
                                     Array.from({ length: 8 }).map((_, i) => (
                                         <tr key={i} className="animate-pulse">
-                                            <td colSpan={8} className="px-8 py-6"><div className="h-10 bg-gray-50 rounded-xl w-full"></div></td>
+                                            <td colSpan={8} className="px-4 py-8">
+                                                <div className="h-4 bg-gray-50 rounded w-full"></div>
+                                            </td>
                                         </tr>
                                     ))
                                 ) : paginatedItems.length > 0 ? (
                                     paginatedItems.map((def, i) => (
-                                        <tr key={def._id} className="hover:bg-gray-50 transition-colors group">
-                                            <td className="px-8 py-6 text-xs font-bold text-gray-400">
+                                        <tr key={def._id} className="hover:bg-gray-50/50 transition-colors group divide-x divide-gray-50">
+                                            <td className="px-4 py-3 text-sm text-gray-400 font-medium whitespace-nowrap">
                                                 {(currentPage - 1) * itemsPerPage + i + 1}
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-black text-gray-900 tracking-tight">{def.defaulter_name}</span>
-                                                    <span className="text-[10px] font-bold text-gray-400 italic">{def.gst_number || def.pan_number || 'No GST/PAN'}</span>
-                                                </div>
+                                            <td className="px-4 py-3 text-sm font-bold text-gray-900 whitespace-nowrap uppercase">
+                                                {def.defaulter_name}
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-[#1b5e20] uppercase tracking-widest">{def.user_id?.companyName || 'Unknown'}</span>
-                                                    <span className="text-[9px] font-bold text-gray-400">ID: {def.user_id?.memberId || 'N/A'}</span>
-                                                </div>
+                                            <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                                                {new Date(def.createdAt).toLocaleDateString('en-GB')}
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <span className="text-xs font-bold text-gray-800">
-                                                    {new Date(def.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                                </span>
+                                            <td className="px-4 py-3 text-sm font-semibold text-gray-800 whitespace-nowrap capitalize">
+                                                {def.user_id?.name || 'Unknown'}
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <span className="text-sm font-black text-rose-600">
-                                                    ₹{Number(def.outstanding_amount ?? def.default_amount).toLocaleString('en-IN')}
-                                                </span>
+                                            <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap uppercase">
+                                                {def.gst_number || '---'}
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">{def.district}</span>
-                                                    <span className="text-[9px] font-bold text-gray-400">{def.state}</span>
-                                                </div>
+                                            <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap uppercase">
+                                                {def.pan_number || '---'}
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black tracking-widest uppercase border ${def.status === 1 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                            <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap uppercase">
+                                                {def.cin_number || '---'}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap">
+                                                {def.financial_year || '---'}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
+                                                ₹{Number(def.default_amount || 0).toLocaleString('en-IN')}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
+                                                ₹{Number(def.outstanding_amount ?? def.default_amount ?? 0).toLocaleString('en-IN')}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
+                                                ₹{Number(def.recovered_amount || def.recovery_amount || def.recovered || 0).toLocaleString('en-IN')}
+                                            </td>
+                                            <td className="px-4 py-3 text-center whitespace-nowrap">
+                                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${def.status === 1 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                                                     def.status === 2 ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-amber-50 text-amber-600 border-amber-100'
                                                     }`}>
-                                                    {def.status === 1 ? 'Approved' : def.status === 2 ? 'Rejected' : 'Pending'}
+                                                    {def.status === 1 ? 'Settled' : def.status === 2 ? 'Rejected' : 'Pending'}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-6 text-center">
+                                            <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{def.state}</td>
+                                            <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap uppercase">{def.district}</td>
+                                            <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{def.cities || def.sub_district || '---'}</td>
+                                            <td className="px-4 py-3 text-center whitespace-nowrap">
                                                 <button
                                                     onClick={() => handleViewClick(def)}
-                                                    className="bg-[#1b5e20] text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#144317] transition-all shadow-md active:scale-95 whitespace-nowrap"
+                                                    className="bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-emerald-100 active:scale-95 cursor-pointer"
                                                 >
                                                     View Details
                                                 </button>
@@ -329,9 +346,9 @@ export default function AdminDefaulterListPage() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={8} className="px-8 py-48 text-center text-gray-300">
-                                            <div className="text-7xl mb-6 opacity-20">📂</div>
-                                            <p className="text-sm font-black uppercase tracking-[0.2em] italic">No Defaulters Found</p>
+                                        <td colSpan={8} className="px-8 py-32 text-center text-gray-400">
+                                            <div className="text-5xl mb-6 opacity-20">📂</div>
+                                            <p className="text-sm font-bold tracking-widest uppercase">No Defaulters Found</p>
                                         </td>
                                     </tr>
                                 )}
@@ -341,173 +358,154 @@ export default function AdminDefaulterListPage() {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="px-10 py-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
-                            <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                                 Page {currentPage} OF {totalPages}
                             </span>
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
-                                    className="px-6 py-2 rounded-xl bg-white border border-gray-200 text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30 transition-all shadow-sm active:scale-95"
+                                    className="px-4 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold uppercase tracking-wider hover:bg-gray-100 disabled:opacity-30 transition-all shadow-sm active:scale-95 cursor-pointer"
                                 >
                                     Prev
                                 </button>
                                 <button
                                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="px-6 py-2 rounded-xl bg-[#1b5e20] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#144317] disabled:opacity-30 transition-all shadow-md active:scale-95"
+                                    className="px-4 py-1.5 rounded-lg bg-[#1b5e20] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#1a4a1c] disabled:opacity-30 transition-all shadow-sm active:scale-95 cursor-pointer"
                                 >
                                     Next
                                 </button>
                             </div>
                         </div>
                     )}
+                        </div>
+                    </div>
+                    </div>
                 </div>
-            </div>
 
             {/* View Modal */}
             {showDetails && selectedDefaulter && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDetails(false)}></div>
-                    <div className="relative bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-300">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
                         {/* Header */}
-                        <div className="px-10 py-8 bg-[#1b5e20] flex items-center justify-between text-white border-b border-white/10">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl">👤</div>
-                                <div>
-                                    <h3 className="text-xl font-black tracking-tighter">Defaulter Master Record</h3>
-                                    <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mt-0.5">Comprehensive audit trail & profile</p>
-                                </div>
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
+                            <div className="flex items-center gap-3">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                <h3 className="text-lg font-bold tracking-tight">Defaulter Master Record</h3>
                             </div>
-                            <button onClick={() => setShowDetails(false)} className="bg-white/10 hover:bg-white/20 p-3 rounded-2xl transition-all active:scale-90">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                            <button onClick={() => setShowDetails(false)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">
+                                ✕
                             </button>
                         </div>
 
-                        <div className="p-0 overflow-y-auto no-scrollbar bg-gray-50/30">
-                            <div className="p-8 lg:p-12 space-y-10">
-
+                        <div className="p-4 md:p-8 overflow-y-auto custom-scrollbar bg-gray-50/50">
+                            <div className="space-y-6">
                                 {/* Section 1: Business Profile */}
-                                <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50">
-                                    <h5 className="text-[10px] font-black text-[#1b5e20] uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
-                                        <span className="w-5 h-5 rounded bg-green-50 flex items-center justify-center">💼</span> Business Profile
+                                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                    <h5 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                        <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Business Profile
                                     </h5>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                                        <InfoItem icon="👤" label="Defaulter Company Name" value={selectedDefaulter.defaulter_name} />
-                                        <InfoItem icon="📞" label="Mobile" value={selectedDefaulter.mobile_number} />
-                                        <InfoItem icon="✉️" label="Email" value={selectedDefaulter.email_id || '-'} />
-                                        <InfoItem icon="🏙️" label="City" value={selectedDefaulter.city || '-'} />
-                                        <InfoItem icon="🗾" label="Sub District" value={selectedDefaulter.cities || '-'} />
-                                        <InfoItem icon="🏢" label="District" value={selectedDefaulter.district} />
-                                        <InfoItem icon="📍" label="State" value={selectedDefaulter.state} />
-                                        <InfoItem icon="🏠" label="Full Address" value={selectedDefaulter.defaulter_address || '-'} />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <InfoItem icon={null} label="Defaulter Company Name" value={selectedDefaulter.defaulter_name} />
+                                        <InfoItem icon={null} label="Mobile" value={selectedDefaulter.mobile_number} />
+                                        <InfoItem icon={null} label="Email" value={selectedDefaulter.email_id} />
+                                        <InfoItem icon={null} label="State" value={selectedDefaulter.state} />
+                                        <InfoItem icon={null} label="District" value={selectedDefaulter.district} />
+                                        <InfoItem icon={null} label="Sub District" value={selectedDefaulter.cities || selectedDefaulter.sub_district} />
+                                        <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                                            <InfoItem icon={null} label="Defaulter Address" value={selectedDefaulter.defaulter_address} />
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Section 2: Statutory & Reporting */}
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                    <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50">
-                                        <h5 className="text-[10px] font-black text-[#1b5e20] uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
-                                            <span className="w-5 h-5 rounded bg-green-50 flex items-center justify-center">📜</span> Statutory Info
+                                {/* Statutory & Financials */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                        <h5 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                            <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Statutory Details
                                         </h5>
-                                        <div className="space-y-6">
-                                            <InfoItem icon="🔢" label="GST Number" value={selectedDefaulter.gst_number || '-'} />
-                                            <InfoItem icon="💳" label="PAN Number" value={selectedDefaulter.pan_number || '-'} />
-                                            <InfoItem icon="🆔" label="CIN Number" value={selectedDefaulter.cin_number || '-'} />
-                                            <InfoItem icon="🛡️" label="Aadhar" value={selectedDefaulter.aadhar_number || '-'} />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <InfoItem icon={null} label="GST" value={selectedDefaulter.gst_number} />
+                                            <InfoItem icon={null} label="PAN" value={selectedDefaulter.pan_number} />
+                                            <InfoItem icon={null} label="CIN" value={selectedDefaulter.cin_number} />
+                                            <InfoItem icon={null} label="Aadhar" value={selectedDefaulter.aadhar_number} />
                                         </div>
                                     </div>
-                                    <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50">
-                                        <h5 className="text-[10px] font-black text-rose-600 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
-                                            <span className="w-5 h-5 rounded bg-rose-50 flex items-center justify-center">📢</span> Reporting Context
+                                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                        <h5 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                            <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Reporting Context
                                         </h5>
-                                        <div className="space-y-6">
-                                            <InfoItem icon="🏭" label="Industry" value={selectedDefaulter.industry || '-'} />
-                                            <InfoItem icon="📅" label="Financial Year" value={selectedDefaulter.financial_year || '-'} />
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-sm">👔</div>
-                                                <div>
-                                                    <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Reported By</p>
-                                                    <span className="text-xs font-black text-[#1b5e20] tracking-tighter block">{selectedDefaulter.user_id?.companyName}</span>
-                                                    <span className="text-[9px] font-bold text-gray-400 italic">Code: {selectedDefaulter.user_id?.memberId}</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm">🛡️</div>
-                                                <div>
-                                                    <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">System Status</p>
-                                                    <span className={`px-4 py-1 rounded-full text-[9px] font-bold uppercase mt-1 inline-block ${selectedDefaulter.status === 1 ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
-                                                        }`}>
-                                                        {selectedDefaulter.status === 1 ? 'Approved' : 'Review Required'}
-                                                    </span>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <InfoItem icon={null} label="Industry" value={selectedDefaulter.industry} />
+                                            <InfoItem icon={null} label="Financial Year" value={selectedDefaulter.financial_year} />
+                                            <div className="col-span-1 sm:col-span-2">
+                                                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                                    <div className="w-10 h-10 rounded-full bg-[#1b5e20]/10 text-[#1b5e20] flex items-center justify-center text-lg">👤</div>
+                                                    <div>
+                                                        <p className="text-[11px] font-medium text-gray-500 capitalize tracking-tight">Reported By</p>
+                                                        <p className="text-[15px] font-normal text-black capitalize">{selectedDefaulter.user_id?.name || selectedDefaulter.user_id?.companyName}</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Section 3: Financial Default Details */}
-                                <div className="bg-[#1b5e20]/[0.02] p-8 rounded-[2.5rem] border-2 border-dashed border-[#1b5e20]/10">
+                                {/* Financial Abstract */}
+                                <div className="bg-[#1b5e20] p-8 rounded-xl text-white shadow-lg shadow-emerald-900/10">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                        <div className="text-center md:text-left">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Original Default</p>
-                                            <h4 className="text-3xl font-black text-gray-900 tracking-tighter">₹ {Number(selectedDefaulter.default_amount).toLocaleString('en-IN')}</h4>
+                                        <div className="space-y-2">
+                                            <p className="text-[11px] font-medium text-white/60 capitalize tracking-tight">Original Default</p>
+                                            <h4 className="text-3xl font-light">₹{Number(selectedDefaulter.default_amount).toLocaleString('en-IN')}</h4>
                                         </div>
-                                        <div className="text-center md:border-x border-gray-100 px-8">
-                                            <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-2">Current Outstanding</p>
-                                            <h4 className="text-3xl font-black text-rose-600 tracking-tighter">₹ {(selectedDefaulter.outstanding_amount ?? selectedDefaulter.default_amount).toLocaleString('en-IN')}</h4>
+                                        <div className="space-y-2 md:border-x border-white/10 md:px-8">
+                                            <p className="text-[11px] font-medium text-white/60 capitalize tracking-tight">Current Outstanding</p>
+                                            <h4 className="text-3xl font-light text-amber-300">₹{(selectedDefaulter.outstanding_amount ?? selectedDefaulter.default_amount).toLocaleString('en-IN')}</h4>
                                         </div>
-                                        <div className="text-center md:text-right">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Default Date</p>
-                                            <h4 className="text-2xl font-black text-gray-900 tracking-tighter uppercase italic">{selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}</h4>
+                                        <div className="space-y-2 text-md-right">
+                                            <p className="text-[11px] font-medium text-white/60 capitalize tracking-tight">Default Date</p>
+                                            <h4 className="text-2xl font-light">{selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString('en-GB') : '-'}</h4>
                                         </div>
                                     </div>
-                                    <div className="mt-8 pt-6 border-t border-[#1b5e20]/10">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Reason for Default</p>
-                                        <div className="p-6 bg-white border border-gray-100 rounded-2xl italic text-sm text-gray-600 font-medium leading-relaxed">
-                                            " {selectedDefaulter.reason_description} "
-                                        </div>
+                                    <div className="mt-8 pt-8 border-t border-white/10">
+                                        <p className="text-[11px] font-medium text-white/60 capitalize tracking-tight mb-3">Reason for Default</p>
+                                        <p className="text-[16px] font-normal leading-relaxed italic text-white/90">
+                                            "{selectedDefaulter.reason_description || 'No description provided'}"
+                                        </p>
                                     </div>
                                 </div>
 
-                                {/* Section 4: Evidence & Documents */}
-                                <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50">
-                                    <h5 className="text-[10px] font-black text-[#1b5e20] uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
-                                        <span className="w-5 h-5 rounded bg-green-50 flex items-center justify-center">📄</span> Attached Evidence
+                                {/* Documents */}
+                                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                    <h5 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                        <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Attached Evidence
                                     </h5>
                                     {selectedDefaulter.attachment_documents && selectedDefaulter.attachment_documents.length > 0 ? (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {selectedDefaulter.attachment_documents.map((doc: string, idx: number) => {
                                                 const isPdf = doc.toLowerCase().endsWith('.pdf');
                                                 return (
-                                                    <a key={idx} href={`${ASSETS_BASE_URL}uploads/${doc}`} target="_blank" className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-[#1b5e20] hover:bg-white transition-all group">
-                                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
+                                                    <a key={idx} href={`${ASSETS_BASE_URL}uploads/${doc}`} target="_blank" className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-[#1b5e20] hover:bg-white transition-all group">
+                                                        <div className={`w-12 h-12 rounded flex items-center justify-center text-xl ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
                                                             {isPdf ? '📄' : '🖼️'}
                                                         </div>
-                                                        <div className="flex flex-col min-w-0">
-                                                            <span className="text-xs font-black text-gray-900 group-hover:text-[#1b5e20] transition-colors truncate uppercase">DOC_{idx + 1}</span>
-                                                            <span className="text-[9px] font-bold text-gray-400 uppercase">View Attachment →</span>
+                                                        <div className="min-w-0">
+                                                            <p className="text-[12px] font-normal text-black truncate uppercase">DOCUMENT_{idx + 1}</p>
+                                                            <p className="text-[10px] font-medium text-gray-400 capitalize group-hover:text-[#1b5e20]">View File →</p>
                                                         </div>
                                                     </a>
                                                 );
                                             })}
                                         </div>
                                     ) : (
-                                        <div className="py-12 text-center border-2 border-dashed border-gray-100 rounded-3xl">
-                                            <span className="text-4xl opacity-20 block mb-4">🙊</span>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No evidence files provided.</p>
+                                        <div className="py-12 text-center border-2 border-dashed border-gray-50 rounded-xl">
+                                            <p className="text-sm font-medium text-gray-400 capitalize tracking-tight">No evidence files provided.</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="px-12 py-8 bg-gray-50 border-t border-gray-100 flex justify-end">
-                            <button onClick={() => setShowDetails(false)} className="bg-gray-900 text-white px-10 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95">
-                                Close Master Record
-                            </button>
                         </div>
                     </div>
                 </div>

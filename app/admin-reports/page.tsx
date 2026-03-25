@@ -180,389 +180,367 @@ export default function AdminReportsPage() {
 
     return (
         <AdminPortalContainer title="Reports">
-            <div className="space-y-8 flex-1 flex flex-col">
-                {/* Filters Toolbar */}
-                <div className="bg-white p-6 rounded-[2rem] border border-gray-100 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
-                    <div className="flex flex-col md:flex-row gap-6 w-full md:w-auto">
-                        <div className="flex flex-col">
-                            <label className="text-[10px] font-black text-gray-400 mb-2 ml-1 tracking-wider">Report Type</label>
-                            <select
-                                value={reportType}
-                                onChange={(e) => setReportType(e.target.value)}
-                                className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] focus:ring-1 focus:ring-green-100 text-sm font-black text-gray-700 w-full md:w-56 transition-all"
-                            >
-                                <option value="Member Report">Member Report</option>
-                                <option value="Defaulter Report">Defaulter Report</option>
-                            </select>
-                        </div>
-
-                        {reportType === 'Defaulter Report' && (
-                            <div className="flex flex-col animate-in fade-in slide-in-from-top-1 duration-300">
-                                <label className="text-[10px] font-black text-gray-400 mb-2 ml-1 tracking-wider">Member Company</label>
+            <div className="space-y-12">
+                <div className="space-y-6">
+                    {/* Search and Filters */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+                            <div className="lg:col-span-3 space-y-1.5">
+                                <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Report Type</label>
                                 <select
-                                    value={selectedMemberCompany}
-                                    onChange={(e) => setSelectedMemberCompany(e.target.value)}
-                                    className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] focus:ring-1 focus:ring-green-100 text-sm font-bold text-gray-700 w-full md:w-56 transition-all"
+                                    value={reportType}
+                                    onChange={(e) => setReportType(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all cursor-pointer"
                                 >
-                                    {reportingMemberCompanies.map(comp => (
-                                        <option key={comp} value={comp}>{comp}</option>
+                                    <option value="Member Report">Member Report</option>
+                                    <option value="Defaulter Report">Defaulter Report</option>
+                                </select>
+                            </div>
+
+                            {reportType === 'Defaulter Report' && (
+                                <div className="lg:col-span-3 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-300">
+                                    <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Member Company</label>
+                                    <select
+                                        value={selectedMemberCompany}
+                                        onChange={(e) => setSelectedMemberCompany(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all cursor-pointer"
+                                    >
+                                        {reportingMemberCompanies.map(comp => (
+                                            <option key={comp} value={comp}>{comp}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            <div className="lg:col-span-3 space-y-1.5">
+                                <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Range</label>
+                                <select
+                                    value={filterOption}
+                                    onChange={(e) => setFilterOption(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all cursor-pointer"
+                                >
+                                    {dateFilterOptions.map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
                                     ))}
                                 </select>
                             </div>
-                        )}
 
-                        <div className="flex flex-col">
-                            <label className="text-[10px] font-black text-gray-400 mb-2 ml-1 tracking-wider">Range</label>
-                            <select
-                                value={filterOption}
-                                onChange={(e) => setFilterOption(e.target.value)}
-                                className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] focus:ring-1 focus:ring-green-100 text-sm font-bold text-gray-700 w-full md:w-48 transition-all"
-                            >
-                                {dateFilterOptions.map(opt => (
-                                    <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                            </select>
-                        </div>
+                            {filterOption === 'Custom Range' && (
+                                <div className="lg:col-span-3 space-y-1.5 animate-in slide-in-from-left duration-300">
+                                    <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Custom Interval</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="date"
+                                            value={customStart}
+                                            onChange={(e) => setCustomStart(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-[13px] font-normal text-gray-700 outline-none focus:border-[#1b5e20]"
+                                        />
+                                        <span className="text-gray-400 text-xs">to</span>
+                                        <input
+                                            type="date"
+                                            value={customEnd}
+                                            onChange={(e) => setCustomEnd(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-[13px] font-normal text-gray-700 outline-none focus:border-[#1b5e20]"
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
-                        {filterOption === 'Custom Range' && (
-                            <div className="flex flex-col animate-in slide-in-from-left duration-300">
-                                <label className="text-[10px] font-black text-gray-400 mb-2 ml-1 tracking-wider">Custom Interval</label>
-                                <div className="flex items-center gap-2">
+                            <div className={`${(reportType === 'Defaulter Report' || filterOption === 'Custom Range') ? 'lg:col-span-3' : 'lg:col-span-6'} space-y-1.5`}>
+                                <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Search Records</label>
+                                <div className="relative">
                                     <input
-                                        type="date"
-                                        value={customStart}
-                                        onChange={(e) => setCustomStart(e.target.value)}
-                                        className="bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 outline-none focus:border-[#1b5e20] text-xs font-black text-gray-700 shadow-inner"
+                                        type="text"
+                                        placeholder="Search by name, email, region..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2 text-[15px] font-normal text-black placeholder-gray-400 outline-none focus:border-[#1b5e20] transition-all"
                                     />
-                                    <span className="text-gray-300 font-black">to</span>
-                                    <input
-                                        type="date"
-                                        value={customEnd}
-                                        onChange={(e) => setCustomEnd(e.target.value)}
-                                        className="bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 outline-none focus:border-[#1b5e20] text-xs font-black text-gray-700 shadow-inner"
-                                    />
+                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                                 </div>
                             </div>
-                        )}
-                    </div>
-
-                    <div className="flex flex-col w-full md:w-auto">
-                        <label className="text-[10px] font-black text-gray-400 mb-2 ml-1 tracking-wider">Search</label>
-                        <div className="relative group">
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#1b5e20] focus:bg-white text-sm font-bold text-gray-700 w-full md:w-80 transition-all shadow-inner tracking-tight"
-                            />
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-opacity">🔎</span>
                         </div>
                     </div>
-                </div>
 
-                {/* Report Data Table */}
-                <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 flex flex-col flex-1 overflow-hidden transition-all">
+                    {/* Table Section */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <h3 className="text-sm font-bold tracking-tight">{reportType} List</h3>
+                        </div>
 
-                    <div className="overflow-x-auto flex-1">
-                        {reportType === 'Member Report' ? (
-                            <table className="w-full text-left">
-                                <thead className="bg-[#1b5e20] text-white">
-                                    <tr className="text-[10px] font-black tracking-[0.15em] text-white/90 border-b border-white/10">
-                                        <th className="px-6 py-4 min-w-[120px]">Member ID</th>
-                                        <th className="px-6 py-4 min-w-[180px]">Name</th>
-                                        <th className="px-6 py-4 min-w-[180px]">Email</th>
-                                        <th className="px-6 py-4 min-w-[120px]">Phone</th>
-                                        <th className="px-6 py-4 min-w-[120px]">State</th>
-                                        <th className="px-6 py-4 min-w-[120px]">District</th>
-                                        <th className="px-6 py-4 min-w-[120px]">Sub District</th>
-                                        <th className="px-6 py-4 min-w-[200px]">Organization</th>
-                                        <th className="px-6 py-4 min-w-[140px]">Status</th>
-                                        <th className="px-6 py-4 min-w-[120px]">Type</th>
-                                        <th className="px-6 py-4 min-w-[140px]">Joined On</th>
-                                        <th className="px-6 py-4 min-w-[140px]">Expiry</th>
-                                        <th className="px-6 py-4 min-w-[120px]">Payment</th>
-                                        <th className="px-6 py-4 min-w-[140px]">Method</th>
-                                        <th className="px-6 py-4 min-w-[120px] text-center">Reports</th>
-                                        <th className="px-6 py-4 min-w-[120px] text-right">Searches</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {loading ? (
-                                        <tr>
-                                            <td colSpan={16} className="py-32 text-center">
-                                                <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
-                                                <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Loadning Records...</p>
-                                            </td>
-                                        </tr>
-                                    ) : paginatedData.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={16} className="py-40 text-center text-gray-400">
-                                                <div className="text-6xl mb-6 opacity-20">👥</div>
-                                                <p className="text-sm font-black tracking-wider">Void Network: Zero active members listed</p>
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        paginatedData.map((item, i) => (
-                                            <tr key={item._id || i} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
-                                                <td className="px-6 py-4">
-                                                    <span className="text-xs font-bold text-[#1b5e20] bg-green-50 px-2 py-1 rounded border border-green-100">{item.memberId || 'N/A'}</span>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-sm font-bold text-gray-900">{item.name}</p>
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-gray-500">
-                                                    {item.email}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-gray-600 font-medium">
-                                                    {item.phone}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs font-bold text-emerald-700">
-                                                    {item.state || 'N/A'}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-gray-700 font-medium">
-                                                    {item.district || 'N/A'}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-gray-500">
-                                                    {item.subDistrict || 'N/A'}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm font-medium text-gray-800">
-                                                    {item.companyName || 'N/A'}
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${item.status === '1' || item.status === 1 ? 'bg-green-600 text-white' :
-                                                        item.status === '2' || item.status === 2 ? 'bg-red-600 text-white' :
-                                                            'bg-amber-500 text-white'
-                                                        }`}>
-                                                        {item.status === '1' || item.status === 1 ? 'Active' : item.status === '2' || item.status === 2 ? 'Deactivated' : 'Pending'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-xs font-bold text-gray-600 uppercase">
-                                                    {item.businessType || 'Member'}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-gray-400 font-medium">
-                                                    {new Date(item.createdAt).toLocaleDateString('en-GB')}
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-gray-400 font-medium">
-                                                    {item.membershipExpiry || 'N/A'}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${item.paymentStatus === 'Failed' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}>
-                                                        {item.paymentStatus || 'Success'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-gray-500 font-medium italic">
-                                                    {item.paymentMethod || 'Online'}
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="text-sm font-black text-rose-600 bg-rose-50 px-3 py-1 rounded-lg border border-rose-100">
-                                                        {item.defaultersReported || 0}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <span className="text-sm font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100">
-                                                        {item.searchPerformed || 0}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        ) : (
-                            // Defaulter Report Table View
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50 border-b border-gray-200">
-                                    <tr className="text-[10px] font-black tracking-[0.15em] text-gray-400">
-                                        <th className="px-6 py-4">Date</th>
-                                        <th className="px-6 py-4">Defaulter Company</th>
-                                        <th className="px-6 py-4 text-right">Amount</th>
-                                        <th className="px-6 py-4 text-right">Outstanding</th>
-                                        <th className="px-6 py-4 text-center">Status</th>
-                                        <th className="px-6 py-4 text-right">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50 font-black">
-                                    {loading ? (
-                                        <tr>
-                                            <td colSpan={6} className="py-32 text-center">
-                                                <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
-                                                <p className="text-sm font-black text-gray-400 animate-pulse tracking-widest">Loading Records...</p>
-                                            </td>
-                                        </tr>
-                                    ) : paginatedData.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="py-40 text-center text-gray-400">
-                                                <div className="text-6xl mb-6 opacity-20 animate-bounce">🛡️</div>
-                                                <p className="text-sm font-black tracking-wider">No Records Found</p>
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        paginatedData.map((item, i) => {
-                                            const isPaid = Number(item.outstanding_amount ?? item.default_amount) === 0;
-                                            return (
-                                                <tr key={item._id || i} className={`${isPaid ? 'text-green-600' : 'text-black'} hover:bg-gray-50 transition-all border-b border-gray-100 font-semibold`}>
-                                                    <td className="px-6 py-4 text-xs opacity-70">
-                                                        {new Date(item.createdAt).toLocaleDateString('en-GB')}
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <p className="text-sm inherit">{item.defaulter_name}</p>
-                                                        <p className="text-[10px] opacity-60 font-medium tracking-wide">GST: {item.gst_number || 'N/A'}</p>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm font-black text-right">
-                                                        ₹{Number(item.default_amount || 0).toLocaleString('en-IN')}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm font-black text-right">
-                                                        ₹{Number(item.outstanding_amount ?? item.default_amount).toLocaleString('en-IN')}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-center">
-                                                        <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${item.status === 1 ? 'bg-green-600 text-white' :
-                                                            item.status === 2 ? 'bg-red-600 text-white' :
-                                                                'bg-amber-500 text-white'
-                                                            }`}>
-                                                            {item.status === 1 ? 'Approved' : item.status === 2 ? 'Rejected' : 'Pending'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <button
-                                                            onClick={() => setSelectedDefaulter(item)}
-                                                            className="px-4 py-1.5 bg-[#0051a8] text-white hover:bg-[#003d80] rounded text-[10px] font-black uppercase transition-all shadow-sm active:scale-95"
-                                                        >
-                                                            View
-                                                        </button>
-                                                    </td>
+                        <div className="p-4 md:p-5">
+                            <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                                <div className="overflow-x-auto overflow-y-auto max-h-[650px] custom-scrollbar">
+                                    {reportType === 'Member Report' ? (
+                                        <table className="w-full text-left border-collapse min-w-[1800px]">
+                                            <thead className="sticky top-0 z-10 bg-[#051a02] text-white">
+                                                <tr className="divide-x divide-white/5">
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Member Id</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Name</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Email</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Phone</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">State</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">District</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub District</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Organization</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Status</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Type</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Joined On</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Expiry Date</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Payment</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Method</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Reports</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Searches</th>
                                                 </tr>
-                                            );
-                                        })
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50">
+                                                {loading ? (
+                                                    <tr>
+                                                        <td colSpan={16} className="py-24 text-center">
+                                                            <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                                            <p className="text-sm font-medium text-gray-500 animate-pulse">Loading Member Records...</p>
+                                                        </td>
+                                                    </tr>
+                                                ) : paginatedData.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={16} className="py-32 text-center text-gray-400">
+                                                            <p className="text-sm font-medium tracking-widest uppercase">No Records Found</p>
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    paginatedData.map((item, i) => (
+                                                        <tr key={item._id || i} className="hover:bg-gray-50/50 transition-colors group">
+                                                            <td className="px-4 py-3.5">
+                                                                <span className="text-[12px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100">
+                                                                    {item.memberId || 'N/A'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-gray-900">{item.name}</td>
+                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-gray-600">{item.email}</td>
+                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-gray-700">{item.phone}</td>
+                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-[#1b5e20]">{item.state || 'N/A'}</td>
+                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-gray-700">{item.district || 'N/A'}</td>
+                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-gray-700">{item.subDistrict || 'N/A'}</td>
+                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-gray-900">{item.companyName || 'N/A'}</td>
+                                                            <td className="px-4 py-3.5 text-center">
+                                                                <span className={`text-[11px] font-bold px-3 py-1.5 rounded-md inline-block min-w-[90px] ${item.status === '1' || item.status === 1 ? 'bg-green-100 text-green-700 border border-green-200' :
+                                                                    item.status === '2' || item.status === 2 ? 'bg-red-100 text-red-700 border border-red-200' :
+                                                                        'bg-amber-100 text-amber-700 border border-amber-200'
+                                                                    }`}>
+                                                                    {item.status === '1' || item.status === 1 ? 'ACTIVE' : item.status === '2' || item.status === 2 ? 'DEACTIVATED' : 'PENDING'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3.5 text-center text-[13px] font-normal text-gray-600 uppercase">
+                                                                {item.businessType || 'Member'}
+                                                            </td>
+                                                            <td className="px-4 py-3.5 text-center text-[13px] font-normal text-gray-600 whitespace-nowrap">
+                                                                {new Date(item.createdAt).toLocaleDateString('en-GB')}
+                                                            </td>
+                                                            <td className="px-4 py-3.5 text-center text-[13px] font-normal text-gray-600">
+                                                                {item.membershipExpiry === 'Lifetime' 
+                                                                    ? 'Lifetime' 
+                                                                    : (item.membershipExpiry && item.membershipExpiry !== 'N/A' 
+                                                                        ? new Date(item.membershipExpiry).toLocaleDateString('en-GB') 
+                                                                        : 'N/A')}
+                                                            </td>
+                                                            <td className="px-4 py-3.5 text-center">
+                                                                <span className={`text-[11px] font-bold px-2 py-1 rounded inline-block ${item.paymentStatus === 'Failed' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                                                                    {item.paymentStatus || 'Success'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3.5 text-center text-[13px] font-normal text-gray-500 italic">
+                                                                {item.paymentMethod || 'Online'}
+                                                            </td>
+                                                            <td className="px-4 py-3.5 text-center">
+                                                                <span className="text-[13px] font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded">
+                                                                    {item.defaultersReported || 0}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3.5 text-right">
+                                                                <span className="text-[13px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                                                    {item.searchPerformed || 0}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    ) : (
+                                        <table className="w-full text-left border-collapse min-w-[800px]">
+                                            <thead className="sticky top-0 z-10 bg-[#051a02] text-white">
+                                                <tr className="divide-x divide-white/5">
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Date</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Defaulter Company</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Amount</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Outstanding</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Status</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50">
+                                                {loading ? (
+                                                    <tr>
+                                                        <td colSpan={6} className="py-24 text-center">
+                                                            <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                                            <p className="text-sm font-medium text-gray-500 animate-pulse">Loading Defaulter Records...</p>
+                                                        </td>
+                                                    </tr>
+                                                ) : paginatedData.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={6} className="py-32 text-center text-gray-400">
+                                                            <p className="text-sm font-medium tracking-widest uppercase">No Records Found</p>
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    paginatedData.map((item, i) => {
+                                                        const isPaid = Number(item.outstanding_amount ?? item.default_amount) === 0;
+                                                        return (
+                                                            <tr key={item._id || i} className="hover:bg-gray-50/50 transition-colors group">
+                                                                <td className="px-4 py-3.5 text-[14px] font-normal text-gray-600">
+                                                                    {new Date(item.createdAt).toLocaleDateString('en-GB')}
+                                                                </td>
+                                                                <td className="px-4 py-3.5">
+                                                                    <p className="text-[14px] font-normal text-gray-900">{item.defaulter_name}</p>
+                                                                    <p className="text-[11px] font-medium text-gray-400 mt-0.5">GST: {item.gst_number || 'N/A'}</p>
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-right text-[14px] font-bold text-gray-900">
+                                                                    ₹{Number(item.default_amount || 0).toLocaleString('en-IN')}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-right text-[14px] font-bold text-green-700">
+                                                                    ₹{Number(item.outstanding_amount ?? item.default_amount).toLocaleString('en-IN')}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-center">
+                                                                    <span className={`text-[11px] font-bold px-3 py-1.5 rounded-md inline-block min-w-[90px] ${item.status === 1 ? 'bg-green-100 text-green-700' :
+                                                                        item.status === 2 ? 'bg-red-100 text-red-700' :
+                                                                            'bg-amber-100 text-amber-700'
+                                                                        }`}>
+                                                                        {item.status === 1 ? 'APPROVED' : item.status === 2 ? 'REJECTED' : 'PENDING'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-right">
+                                                                    <button
+                                                                        onClick={() => setSelectedDefaulter(item)}
+                                                                        className="px-4 py-1.5 bg-gray-50 text-gray-700 text-[12px] font-medium rounded-lg hover:bg-[#1b5e20] hover:text-white transition-all border border-gray-200 shadow-sm active:scale-95"
+                                                                    >
+                                                                        View Details
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })
+                                                )}
+                                            </tbody>
+                                        </table>
                                     )}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-
-                    {/* Pagination Footer */}
-                    {!loading && activeFilteredData.length > 0 && (
-                        <div className="px-10 py-6 border-t border-gray-100 flex items-center justify-between bg-gray-50/50 mt-auto">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                                Page {currentPage} OF {totalPages} <span className="mx-2 opacity-30">•</span> {activeFilteredData.length} Indexed Assets
-                            </span>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}
-                                    className="px-6 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] uppercase tracking-widest text-gray-500 shadow-sm active:scale-95"
-                                >
-                                    Previous
-                                </button>
-
-                                <div className="flex items-center gap-1.5 ">
-                                    {Array.from({ length: totalPages }).map((_, idx) => {
-                                        const pageNum = idx + 1;
-                                        if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
-                                            return (
-                                                <button
-                                                    key={pageNum}
-                                                    onClick={() => setCurrentPage(pageNum)}
-                                                    className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all shadow-sm ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-lg shadow-emerald-900/20' : 'bg-white border border-gray-200 hover:bg-gray-100 text-gray-400 hover:text-[#1b5e20]'}`}
-                                                >
-                                                    {pageNum}
-                                                </button>
-                                            );
-                                        } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                                            return <span key={pageNum} className="px-1 text-gray-300 font-black tracking-widest">...</span>;
-                                        }
-                                        return null;
-                                    })}
                                 </div>
-
-                                <button
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                    disabled={currentPage === totalPages}
-                                    className="px-6 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] uppercase tracking-widest text-gray-500 shadow-sm active:scale-95"
-                                >
-                                    Next
-                                </button>
                             </div>
                         </div>
-                    )}
+
+                        {!loading && activeFilteredData.length > 0 && (
+                            <div className="px-6 py-4 border-t border-gray-50 flex items-center justify-between bg-white mt-auto">
+                                <span className="text-[12px] font-medium text-gray-500">
+                                    Showing <span className="font-bold text-gray-900">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-bold text-gray-900">{Math.min(currentPage * itemsPerPage, activeFilteredData.length)}</span> of <span className="font-bold text-gray-900">{activeFilteredData.length}</span> records
+                                </span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
+                                    >
+                                        Previous
+                                    </button>
+                                    <div className="flex items-center gap-1">
+                                        {Array.from({ length: totalPages }).map((_, idx) => {
+                                            const pageNum = idx + 1;
+                                            if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => setCurrentPage(pageNum)}
+                                                        className={`w-9 h-9 rounded-lg text-[12px] font-bold transition-all ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                                                return <span key={pageNum} className="text-gray-300">...</span>;
+                                            }
+                                            return null;
+                                        })}
+                                    </div>
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
             {/* View Defaulter Data Modal */}
             {selectedDefaulter && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col font-sans animate-in zoom-in-95 duration-300">
-                        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
-                            <div>
-                                <h3 className="font-bold text-2xl text-gray-800">Defaulter Details</h3>
-                                <p className="text-[10px] font-black text-gray-400 tracking-wider mt-1">Reported on {new Date(selectedDefaulter.createdAt).toLocaleDateString()}</p>
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex justify-between items-center text-white">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">🛡️</div>
+                                <div>
+                                    <h3 className="text-lg font-bold tracking-tight">Defaulter Record</h3>
+                                    <p className="text-[11px] font-medium text-white/60 capitalize mt-0.5">Reported on {new Date(selectedDefaulter.createdAt).toLocaleDateString()}</p>
+                                </div>
                             </div>
-                            <button
-                                onClick={() => setSelectedDefaulter(null)}
-                                className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-all"
-                            >
-                                <span className="text-2xl">✕</span>
-                            </button>
+                            <button onClick={() => setSelectedDefaulter(null)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">✕</button>
                         </div>
 
-                        <div className="p-8 space-y-8">
-                            {/* Entity Info */}
-                            <div className="grid grid-cols-2 gap-x-12 gap-y-6">
-                                <div>
-                                    <p className="text-[10px] font-black text-gray-400 tracking-wider mb-1">Defaulter Company Name</p>
-                                    <p className="text-base font-bold text-gray-800">{selectedDefaulter.defaulter_name || 'N/A'}</p>
+                        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar space-y-8 bg-gray-50/50">
+                            {/* Section 1: Entity Details */}
+                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Company Details
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <DetailItem label="Defaulter Company Name" value={selectedDefaulter.defaulter_name} />
+                                    <DetailItem label="Date of Default" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString() : 'N/A'} />
+                                    <DetailItem label="Mobile Number" value={selectedDefaulter.mobile_number} />
+                                    <DetailItem label="Email ID" value={selectedDefaulter.email_id} />
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-gray-400 tracking-wider mb-1">Date of Default</p>
-                                    <p className="text-base font-bold text-gray-800">{selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString() : 'N/A'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-gray-400 tracking-wider mb-1">Mobile Number</p>
-                                    <p className="text-base font-bold text-gray-800">{selectedDefaulter.mobile_number || 'N/A'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-gray-400 tracking-wider mb-1">Email</p>
-                                    <p className="text-base font-bold text-gray-800">{selectedDefaulter.email_id || 'N/A'}</p>
-                                </div>
-                            </div>
+                            </section>
 
-                            <div className="h-px bg-gray-100 w-full" />
+                            {/* Section 2: Identifiers */}
+                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Identifiers
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    <DetailItem label="GST" value={selectedDefaulter.gst_number} />
+                                    <DetailItem label="PAN" value={selectedDefaulter.pan_number} />
+                                    <DetailItem label="CIN" value={selectedDefaulter.cin_number} />
+                                    <DetailItem label="AADHAR" value={selectedDefaulter.aadhar_number} />
+                                </div>
+                            </section>
 
-                            {/* Identifiers */}
-                            <div>
-                                <h4 className="text-sm font-bold text-gray-800 mb-4">Identifiers</h4>
-                                <div className="grid grid-cols-4 gap-4">
-                                    {[
-                                        { label: 'GST', val: selectedDefaulter.gst_number },
-                                        { label: 'PAN', val: selectedDefaulter.pan_number },
-                                        { label: 'CIN', val: selectedDefaulter.cin_number },
-                                        { label: 'AADHAR', val: selectedDefaulter.aadhar_number }
-                                    ].map((id, i) => (
-                                        <div key={i}>
-                                            <p className="text-[9px] font-black text-gray-400 tracking-wider mb-1">{id.label}</p>
-                                            <p className="text-sm font-bold text-gray-800">{id.val || 'N/A'}</p>
-                                        </div>
-                                    ))}
+                            {/* Section 3: Geographic Location */}
+                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Location
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <DetailItem label="State" value={selectedDefaulter.state} />
+                                    <DetailItem label="District" value={selectedDefaulter.district} />
+                                    <DetailItem label="Sub District" value={selectedDefaulter.cities || 'Main City'} />
                                 </div>
-                            </div>
+                            </section>
+                        </div>
 
-                            <div className="h-px bg-gray-100 w-full" />
-
-                            {/* Location */}
-                            <div className="grid grid-cols-4 gap-4">
-                                <div>
-                                    <p className="text-[9px] font-black text-gray-400 tracking-wider mb-1">State</p>
-                                    <p className="text-sm font-bold text-gray-800">{selectedDefaulter.state || 'N/A'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[9px] font-black text-gray-400 tracking-wider mb-1">District</p>
-                                    <p className="text-sm font-bold text-gray-800">{selectedDefaulter.district || 'N/A'}</p>
-                                </div>
-                                <div className="col-span-2">
-                                    <p className="text-[9px] font-black text-gray-400 tracking-wider mb-1">Sub-District</p>
-                                    <p className="text-sm font-bold text-gray-800">{selectedDefaulter.cities || 'Main City'}</p>
-                                </div>
-                            </div>
+                        <div className="p-6 border-t border-gray-100 bg-white flex justify-end">
+                            <button onClick={() => setSelectedDefaulter(null)} className="px-8 py-2 bg-gray-900 text-white text-[12px] font-bold rounded-lg hover:bg-black transition-all shadow-lg active:scale-95">Close Record</button>
                         </div>
                     </div>
                 </div>
@@ -570,4 +548,20 @@ export default function AdminReportsPage() {
         </AdminPortalContainer>
     );
 }
+
+const DetailItem = ({ label, value, isBadge = false, status = '0' }: { label: string, value: any, isBadge?: boolean, status?: string }) => (
+    <div className="flex items-start gap-4 py-1">
+        <div className="w-1.5 h-1.5 rounded-full bg-[#1b5e20]/20 mt-1.5 flex-shrink-0" />
+        <div className="min-w-0">
+            <p className="text-[11px] font-medium text-gray-500 capitalize tracking-tight leading-none mb-1.5">{label}</p>
+            {isBadge ? (
+                <span className={`inline-block px-3 py-1 rounded-md text-[11px] font-bold ${status === '1' ? 'bg-green-100 text-green-700' : status === '2' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {value || '-'}
+                </span>
+            ) : (
+                <p className="text-[15px] font-normal text-black break-words leading-tight">{value || '-'}</p>
+            )}
+        </div>
+    </div>
+);
 

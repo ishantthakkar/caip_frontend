@@ -281,10 +281,10 @@ export default function AdminDashboardPage() {
                                     <thead className="bg-[#051a02] text-white">
                                         <tr className="divide-x divide-white/5">
                                             <th className="px-4 py-3 text-[13px] font-semibold tracking-tight">#</th>
-                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-left">Defaulter Company</th>
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-left">Defaulter Company Name</th>
                                             <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-left">Reported By</th>
-                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-center">Defaulted</th>
-                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-right">Recovered</th>
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-center">Defaulted Amount</th>
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-right">Recovered Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
@@ -293,11 +293,9 @@ export default function AdminDashboardPage() {
                                                 <td className="px-4 py-3 text-gray-400">{i + 1}</td>
                                                 <td className="px-4 py-3 text-left">
                                                     <p className="font-semibold text-gray-900 leading-tight truncate max-w-[150px]">{report.defaulter_name}</p>
-                                                    <p className="text-[11px] text-gray-400">{report.industry || 'General'}</p>
                                                 </td>
                                                 <td className="px-4 py-3 text-left">
                                                     <p className="font-semibold text-gray-900">{report.user_id?.name || '---'}</p>
-                                                    <p className="text-[10px] text-gray-400 font-bold tracking-tight">MEMBER</p>
                                                 </td>
                                                 <td className="px-4 py-3 font-semibold text-red-600">₹ {report.default_amount?.toLocaleString()}</td>
                                                 <td className="px-4 py-3 text-right font-semibold text-emerald-600 italic">₹ {(report.default_amount - (report.outstanding_amount || 0)).toLocaleString()}</td>
@@ -394,9 +392,8 @@ export default function AdminDashboardPage() {
                                     <thead className="bg-[#051a02] text-white">
                                         <tr className="divide-x divide-white/5">
                                             <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">State</th>
-                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Entries</th>
-                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Debt</th>
-                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight text-right">Recovered</th>
+                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Total Defaulters</th>
+                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight text-right">Total Default Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
@@ -404,8 +401,7 @@ export default function AdminDashboardPage() {
                                             <tr key={i} className="hover:bg-gray-50/50 divide-x divide-gray-50 transition-colors">
                                                 <td className="px-4 py-3 font-semibold text-gray-900">{insight.state}</td>
                                                 <td className="px-4 py-3 text-[#1b5e20] font-bold">{insight.count}</td>
-                                                <td className="px-4 py-3 font-semibold text-red-600">₹ {insight.amount?.toLocaleString()}</td>
-                                                <td className="px-4 py-3 text-right font-semibold text-emerald-600 italic">₹ {insight.recovered?.toLocaleString()}</td>
+                                                <td className="px-4 py-3 text-right font-semibold text-red-600">₹ {insight.amount?.toLocaleString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -427,11 +423,11 @@ export default function AdminDashboardPage() {
                                 <thead className="bg-[#051a02] text-white">
                                     <tr className="divide-x divide-white/5">
                                         <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">#</th>
-                                        <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">TX ID</th>
-                                        <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Member</th>
-                                        <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Company</th>
+                                        <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Transaction No</th>
+                                        <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Member Name</th>
+                                        <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Company Name</th>
                                         <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Amount</th>
-                                        <th className="px-4 py-3 text-[12px] font-semibold tracking-tight text-right">Status</th>
+                                        <th className="px-4 py-3 text-[12px] font-semibold tracking-tight text-right">Transaction Type</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
