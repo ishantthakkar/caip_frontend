@@ -91,22 +91,24 @@ export default function MemberSidebar({ isCollapsed, setIsCollapsed }: MemberSid
         <aside className={`${isCollapsed ? 'w-24' : 'w-72'} bg-white border-r border-gray-100 flex flex-col h-full overflow-y-auto no-scrollbar hidden md:flex shrink-0 transition-all duration-300 ease-in-out`}>
             {/* Logo Section */}
             <div className={`p-6 border-b border-gray-50 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-                {!isCollapsed && (
-                    <div className="flex items-center gap-3">
-                        <img src="/images/caip_logo.png" alt="CAIP Logo" className="h-10 w-auto object-contain" />
-                        <span className="text-xl font-black text-[#1b5e20] tracking-tighter">CAIP</span>
-                    </div>
+                {isCollapsed ? (
+                    <img src="/images/caip_logo.png" alt="CAIP" className="h-10 w-auto object-contain" />
+                ) : (
+                    <>
+                        <div className="flex items-center gap-3">
+                            <img src="/images/caip_logo.png" alt="CAIP Logo" className="h-10 w-auto object-contain" />
+                            <span className="text-xl font-black text-[#1b5e20] tracking-tighter">CAIP</span>
+                        </div>
+                        <button 
+                            onClick={() => setIsCollapsed(!isCollapsed)}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-900"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
+                            </svg>
+                        </button>
+                    </>
                 )}
-                {isCollapsed && <img src="/images/caip_logo.png" alt="CAIP" className="h-10 w-auto object-contain" />}
-                
-                <button 
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-900"
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                </button>
             </div>
 
             <div className={`p-4 ${isCollapsed ? 'px-2' : ''}`}>

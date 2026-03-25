@@ -140,27 +140,27 @@ export default function SearchDefaulterPage() {
 
     return (
         <MemberPortalContainer title="Search Defaulter">
-            <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="space-y-8 animate-in fade-in duration-500">
                 {/* Search Form Card */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                            <h2 className="text-lg font-bold text-gray-800">Global Search</h2>
-                            <p className="text-xs text-gray-500">Search for defaulters by GST, PAN, Mobile, or Name</p>
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
+                    <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
+                        <div className="flex items-center gap-3">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <h2 className="text-[17px] font-bold tracking-tight">Search Defaulter</h2>
                         </div>
                         <Link
                             href="/defaulter/history"
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2"
+                            className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-[11px] font-black tracking-widest uppercase transition-all flex items-center gap-2 border border-white/10"
                         >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></svg>
-                            Search History
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></svg>
+                            History
                         </Link>
                     </div>
 
-                    <form onSubmit={handleSearch} className="p-6 space-y-6">
+                    <form onSubmit={handleSearch} className="p-8 space-y-8 bg-[#fbfcfd]">
                         {error && (
-                            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-xs font-semibold">
-                                {error}
+                            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-xl text-xs font-bold flex items-center gap-3 shadow-sm">
+                                <span className="text-lg">⚠️</span> {error}
                             </div>
                         )}
 
@@ -170,34 +170,32 @@ export default function SearchDefaulterPage() {
                                 { label: 'PAN', name: 'pan', placeholder: 'Enter PAN' },
                                 { label: 'CIN', name: 'cin', placeholder: 'Enter CIN' },
                                 { label: 'Aadhar', name: 'aadhar', placeholder: 'Enter Aadhar' },
-                                { label: 'Company', name: 'name', placeholder: 'Search by Company Name' },
-                                { label: 'Address', name: 'address', placeholder: 'Search by Address' }
+                                { label: 'Company', name: 'name', placeholder: 'Enter Company Name' },
+                                { label: 'Address', name: 'address', placeholder: 'Enter Address' }
                             ].map((f) => (
-                                <div key={f.name} className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">{f.label}</label>
+                                <div key={f.name} className="space-y-1.5 flex flex-col">
+                                    <label className="text-[14px] font-medium text-gray-500 tracking-tight px-1">{f.label}</label>
                                     <input
                                         type="text"
                                         name={f.name}
                                         value={(filters as any)[f.name]}
                                         onChange={(e) => handleFilterChange(f.name, e.target.value)}
                                         placeholder={f.placeholder}
-                                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm"
+                                        className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] text-[15px] font-medium shadow-sm transition-all"
                                     />
                                 </div>
                             ))}
-
                         </div>
 
-                        <div className="flex items-center pt-6 pb-2">
+                        <div className="flex items-center">
                             <button
                                 type="button"
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="px-6 py-2.5 bg-green-50 text-green-700 font-bold text-sm rounded-lg hover:bg-green-100 transition-all flex items-center gap-3 border border-green-200/50 shadow-sm active:scale-95"
+                                className="px-6 py-2.5 bg-gray-50 text-gray-600 font-bold text-[13px] rounded-xl hover:bg-gray-100 transition-all flex items-center gap-3 border border-gray-200 shadow-sm active:scale-95"
                             >
-                                <div className="p-1 bg-green-600 rounded-md">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`}>
-                                        <path d="M12 5v14M5 12h14" className={showAdvanced ? 'opacity-0' : 'opacity-100'} transition-opacity="true" />
-                                        <path d="M5 12h14" />
+                                <div className={`p-1 bg-[#1b5e20] rounded-md transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M6 9l6 6 6-6" />
                                     </svg>
                                 </div>
                                 {showAdvanced ? "Basic Search Mode" : "Advanced Filters"}
@@ -205,25 +203,25 @@ export default function SearchDefaulterPage() {
                         </div>
 
                         {showAdvanced && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 border-t border-gray-50 animate-in slide-in-from-top-2 duration-300">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">State</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-6 border-t border-gray-100 animate-in slide-in-from-top-4 duration-300">
+                                <div className="space-y-1.5 flex flex-col">
+                                    <label className="text-[14px] font-medium text-gray-500 tracking-tight px-1">State</label>
                                     <select
                                         value={filters.state}
                                         onChange={(e) => handleFilterChange('state', e.target.value)}
-                                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
+                                        className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] text-[15px] font-medium shadow-sm appearance-none"
                                     >
                                         <option value="">All States</option>
                                         {locations.map(s => <option key={s.state} value={s.state}>{s.state}</option>)}
                                     </select>
                                 </div>
 
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">District</label>
+                                <div className="space-y-1.5 flex flex-col">
+                                    <label className="text-[14px] font-medium text-gray-500 tracking-tight px-1">District</label>
                                     <select
                                         value={filters.district}
                                         onChange={(e) => handleFilterChange('district', e.target.value)}
-                                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
+                                        className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] text-[15px] font-medium shadow-sm appearance-none disabled:bg-gray-50"
                                         disabled={!filters.state}
                                     >
                                         <option value="">All Districts</option>
@@ -231,12 +229,12 @@ export default function SearchDefaulterPage() {
                                     </select>
                                 </div>
 
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Sub-District</label>
+                                <div className="space-y-1.5 flex flex-col">
+                                    <label className="text-[14px] font-medium text-gray-500 tracking-tight px-1">Sub-District</label>
                                     <select
                                         value={filters.subDistrict}
                                         onChange={(e) => handleFilterChange('subDistrict', e.target.value)}
-                                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
+                                        className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] text-[15px] font-medium shadow-sm appearance-none disabled:bg-gray-50"
                                         disabled={!filters.district}
                                     >
                                         <option value="">All Sub-Districts</option>
@@ -244,12 +242,12 @@ export default function SearchDefaulterPage() {
                                     </select>
                                 </div>
 
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">City/Town/Village</label>
+                                <div className="space-y-1.5 flex flex-col">
+                                    <label className="text-[14px] font-medium text-gray-500 tracking-tight px-1">City/Village</label>
                                     <select
                                         value={filters.city}
                                         onChange={(e) => handleFilterChange('city', e.target.value)}
-                                        className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
+                                        className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] text-[15px] font-medium shadow-sm appearance-none disabled:bg-gray-50"
                                         disabled={!filters.subDistrict}
                                     >
                                         <option value="">All Cities</option>
@@ -259,18 +257,28 @@ export default function SearchDefaulterPage() {
                             </div>
                         )}
 
-                        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
+                        <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-100">
                             <button
                                 type="submit"
                                 disabled={searching}
-                                className="flex-1 bg-green-600 text-white font-semibold py-2.5 rounded-lg shadow-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+                                className="flex-[2] bg-[#1b5e20] text-white font-bold py-3.5 rounded-xl shadow-lg shadow-[#1b5e20]/20 hover:bg-[#144317] transition-all flex items-center justify-center gap-3 text-[15px] disabled:opacity-50 active:scale-95"
                             >
-                                {searching ? "Searching..." : "Search Records"}
+                                {searching ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        Searching...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                        Search Records
+                                    </>
+                                )}
                             </button>
                             <button
                                 type="button"
                                 onClick={handleReset}
-                                className="px-6 py-2.5 border border-gray-200 text-gray-500 font-semibold rounded-lg hover:bg-gray-50 transition-all text-sm"
+                                className="flex-1 px-6 py-3.5 border border-gray-200 text-gray-500 font-bold rounded-xl hover:bg-gray-50 transition-all text-[14px]"
                             >
                                 Clear All
                             </button>
@@ -279,219 +287,90 @@ export default function SearchDefaulterPage() {
                 </div>
 
                 {/* Results Section */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                     {!hasSearched ? (
-                        <div className="bg-white rounded-xl p-16 text-center border border-gray-100 shadow-sm animate-in fade-in duration-500">
-                            <h3 className="text-sm font-semibold text-gray-400">Enter search criteria above to see results.</h3>
-                        </div>
-                    ) : defaulters.length === 0 ? (
-                        <div className="bg-white rounded-xl p-16 text-center border border-red-50 shadow-sm">
-                            <h3 className="text-sm font-bold text-red-500">No records found matching your search.</h3>
+                        <div className="bg-white rounded-xl p-20 text-center border border-gray-100 shadow-lg animate-in fade-in duration-700">
+                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl opacity-40">🔍</div>
+                            <h3 className="text-[16px] font-bold text-gray-900 tracking-tight">Ready to Search</h3>
+                            <p className="text-[13px] text-gray-400 mt-2 max-w-sm mx-auto">Enter at least one search criteria above to query the CAIP Defaulter Database.</p>
                         </div>
                     ) : (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div className="bg-green-600 px-6 py-3">
-                                <span className="text-white text-xs font-bold uppercase tracking-widest leading-none">Search Results: {defaulters.length} Match(es)</span>
+                        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
+                            <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
+                                <h3 className="text-[16px] font-semibold tracking-tight flex items-center gap-3">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                    Search Results: {defaulters.length} Match{defaulters.length !== 1 ? 'es' : ''}
+                                </h3>
+                                <div className="text-white/40 text-xs font-black tracking-widest uppercase">Database Query Result</div>
                             </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50 border-b border-gray-200">
-                                        <tr>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Reported By</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Reporting Company</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Defaulter Company</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Address</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">GST No.</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">PAN No.</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">CIN No.</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aadhar No.</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Location</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Status</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {defaulters.map((def, i) => (
-                                            <tr key={def._id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-6 py-4 text-xs text-gray-500">{i + 1}</td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-xs font-bold text-gray-700">{def.user_id?.name || 'N/A'}</p>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-xs font-bold text-green-700">{def.user_id?.companyName || 'Verified Member'}</p>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-sm font-bold text-gray-900">{def.defaulter_name}</p>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-xs text-gray-600 line-clamp-2 max-w-[150px]">{def.defaulter_address || 'N/A'}</p>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-xs text-gray-500 font-mono">{def.gst_number || '-'}</p>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-xs text-gray-500 font-mono">{def.pan_number || '-'}</p>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-xs text-gray-500 font-mono">{def.cin_number || '-'}</p>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <p className="text-xs text-gray-500 font-mono">{def.aadhar_number || '-'}</p>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <p className="text-[11px] font-bold text-gray-700">{def.city ? `${def.city}, ` : ''}{def.district}, {def.state}</p>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="bg-red-50 text-red-600 px-2 py-1 rounded text-[10px] font-bold uppercase border border-red-100">
-                                                        Defaulter
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => handleViewClick(def)}
-                                                        className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition-colors shadow-sm"
-                                                    >
-                                                        Details
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {showDetails && selectedDefaulter && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDetails(false)}></div>
-                        <div className="relative bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in duration-300">
-                            {/* Header */}
-                            <div className="px-8 py-5 bg-[#0a1f0a] flex items-center justify-between text-white">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xl">👥</span>
-                                    <h3 className="text-lg font-bold tracking-tight">Defaulter Details</h3>
-                                </div>
-                                <button onClick={() => setShowDetails(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                                </button>
-                            </div>
-
-                            <div className="p-0 overflow-y-auto no-scrollbar">
-                                {/* Section 1: Main Info */}
-                                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-1">
-                                    <div className="space-y-4">
-                                        <InfoItem icon="👤" label="Defaulter Company Name" value={selectedDefaulter.defaulter_name} />
-                                        <InfoItem icon="📞" label="Mobile" value={selectedDefaulter.mobile_number} />
-                                        <InfoItem icon="✉️" label="Email" value={selectedDefaulter.email_id || '-'} />
-                                        <InfoItem icon="🔢" label="GST" value={selectedDefaulter.gst_number || '-'} />
-                                        <InfoItem icon="💳" label="PAN" value={selectedDefaulter.pan_number || '-'} />
-                                        <InfoItem icon="🆔" label="CIN" value={selectedDefaulter.cin_number || '-'} />
-                                        <InfoItem icon="🛡️" label="Aadhar" value={selectedDefaulter.aadhar_number || '-'} />
-                                        <InfoItem icon="🏠" label="Defaulter Address" value={selectedDefaulter.defaulter_address || '-'} />
-                                    </div>
-                                    <div className="space-y-4">
-                                        <InfoItem icon="📍" label="State" value={selectedDefaulter.state} />
-                                        <InfoItem icon="🏢" label="District" value={selectedDefaulter.district} />
-                                        <InfoItem icon="🗾" label="Sub District" value={selectedDefaulter.cities || '-'} />
-                                        <InfoItem icon="🏙️" label="City" value={selectedDefaulter.city || '-'} />
-                                        <InfoItem icon="📅" label="Financial Year" value={selectedDefaulter.financial_year || '-'} />
-                                        <InfoItem icon="📉" label="Outstanding" value={(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })} />
-                                        <InfoItem icon="🏭" label="Industry" value={selectedDefaulter.industry || '-'} />
-                                        <InfoItem icon="👤" label="Reported By" value={selectedDefaulter.user_id?.companyName || selectedDefaulter.user_id?.name || 'Verified Member'} />
-                                    </div>
-                                </div>
-
-                                <hr className="border-gray-100" />
-
-                                {/* Section 2: Financial/Reason */}
-                                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                                    <InfoItem icon="💵" label="Default Amount" value={Number(selectedDefaulter.default_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })} />
-                                    <InfoItem icon="📅" label="Date of Default" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toISOString().split('T')[0] : '-'} />
-                                    <InfoItem icon="⚠️" label="Reason" value={selectedDefaulter.reason_description} />
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm">✅</div>
-                                        <div>
-                                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Status</p>
-                                            <span className="px-3 py-1 bg-green-500 text-white rounded-full text-[10px] font-bold uppercase mt-1 inline-block">
-                                                {selectedDefaulter.status === 1 ? 'Approved' : 'Pending'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <hr className="border-gray-100" />
-
-                                {/* Section 3: Legal Info */}
-                                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                                    <InfoItem icon="🏛️" label="Court Complex Name" value={selectedDefaulter.court_complex_name || '-'} />
-                                    <InfoItem icon="🔢" label="Case Number" value={selectedDefaulter.case_number || '-'} />
-                                    <InfoItem icon="⚖️" label="Case Type" value={selectedDefaulter.case_type || '-'} />
-                                    <InfoItem icon="📅" label="Case Year" value={selectedDefaulter.case_year || '-'} />
-                                    <InfoItem icon="💼" label="Case Status" value={selectedDefaulter.case_status || '-'} />
-                                </div>
-
-                                <hr className="border-gray-100" />
-
-                                {/* Section 4: Documents */}
-                                <div className="p-8">
-                                    <h4 className="text-[11px] font-black text-gray-400 uppercase mb-4 tracking-widest flex items-center gap-2">
-                                        <span>📄</span> Documents
-                                    </h4>
-                                    {selectedDefaulter.attachment_documents && selectedDefaulter.attachment_documents.length > 0 ? (
-                                        <div className="flex flex-wrap gap-3">
-                                            {selectedDefaulter.attachment_documents.map((doc: string, idx: number) => {
-                                                const isPdf = doc.toLowerCase().endsWith('.pdf');
-                                                return (
-                                                    <a key={idx} href={`${ASSETS_BASE_URL}uploads/${doc}`} target="_blank" className="bg-gray-50 border border-gray-100 px-4 py-2 rounded-lg text-xs font-bold text-green-700 hover:bg-green-50 transition-all flex items-center gap-3 group">
-                                                        <div className={`w-8 h-8 rounded-md flex items-center justify-center ${isPdf ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'}`}>
-                                                            {isPdf ? (
-                                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" /></svg>
-                                                            ) : (
-                                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
-                                                            )}
-                                                        </div>
-                                                        <span className="group-hover:translate-x-0.5 transition-transform">Document {idx + 1}</span>
-                                                    </a>
-                                                );
-                                            })}
-                                        </div>
-                                    ) : (
-                                        <p className="text-xs text-gray-400 italic">No documents attached.</p>
-                                    )}
-                                </div>
-
-                                <hr className="border-gray-100" />
-
-                                {/* Section 5: Payment Records */}
-                                <div className="p-8 bg-gray-50/50">
-                                    <h4 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-3">
-                                        <span className="w-10 h-10 bg-[#0a1f0a] text-white rounded-xl flex items-center justify-center text-sm">💰</span>
-                                        Payment Records
-                                    </h4>
-                                    <div className="bg-white rounded-[1.5rem] border border-gray-100 shadow-xl overflow-hidden">
-                                        <table className="w-full text-center">
-                                            <thead>
-                                                <tr className="bg-[#0a1f0a] text-white">
-                                                    <th className="px-6 py-5 text-xs font-black uppercase border-r border-white/10">#</th>
-                                                    <th className="px-6 py-5 text-base font-bold border-r border-white/10">Payment Date</th>
-                                                    <th className="px-6 py-5 text-base font-bold">Amount</th>
+                            <div className="p-4 md:p-5">
+                                <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-center border-collapse">
+                                            <thead className="bg-[#051a02] text-white">
+                                                <tr className="divide-x divide-white/5 whitespace-nowrap">
+                                                    <th className="px-4 py-4 text-[13px] font-semibold tracking-tight w-12 text-center">#</th>
+                                                    <th className="px-4 py-4 text-[13px] font-semibold tracking-tight text-left">Defaulter Company</th>
+                                                    <th className="px-4 py-4 text-[13px] font-semibold tracking-tight">Reported By</th>
+                                                    <th className="px-4 py-4 text-[13px] font-semibold tracking-tight">Tax Identifiers</th>
+                                                    <th className="px-4 py-4 text-[13px] font-semibold tracking-tight">Location</th>
+                                                    <th className="px-4 py-4 text-[13px] font-semibold tracking-tight">Status</th>
+                                                    <th className="px-4 py-4 text-[13px] font-semibold tracking-tight text-center">Actions</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-gray-100">
-                                                {(selectedDefaulter.payments || []).map((p: any, idx: number) => (
-                                                    <tr key={idx} className="hover:bg-gray-50/80 transition-all">
-                                                        <td className="px-6 py-5 text-sm font-bold text-gray-400 border-r border-gray-50">{idx + 1}</td>
-                                                        <td className="px-6 py-5 text-sm font-semibold text-gray-600 border-r border-gray-50">{new Date(p.date).toISOString().split('T')[0]}</td>
-                                                        <td className="px-6 py-5 text-sm font-black text-gray-800">{Number(p.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                    </tr>
-                                                ))}
-                                                {(selectedDefaulter.payments || []).length === 0 && (
+                                            <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
+                                                {defaulters.length > 0 ? (
+                                                    defaulters.map((def, i) => (
+                                                        <tr key={def._id} className="hover:bg-gray-50/50 transition-colors divide-x divide-gray-50">
+                                                            <td className="px-4 py-4 text-gray-400">{i + 1}</td>
+                                                            <td className="px-4 py-4 text-left">
+                                                                <div className="flex flex-col">
+                                                                    <span className="font-bold text-gray-900">{def.defaulter_name}</span>
+                                                                    <span className="text-[11px] text-gray-400 line-clamp-1 italic max-w-[200px]">{def.defaulter_address || 'Address N/A'}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-4">
+                                                                <div className="flex flex-col items-center">
+                                                                    <span className="font-bold text-[#1b5e20]">{def.user_id?.companyName || 'Verified Member'}</span>
+                                                                    <span className="text-[11px] text-gray-400">{def.user_id?.name || 'N/A'}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-4">
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    {def.gst_number && <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-600">GST: {def.gst_number}</span>}
+                                                                    {def.pan_number && <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-600">PAN: {def.pan_number}</span>}
+                                                                    {!def.gst_number && !def.pan_number && <span className="text-[10px] text-gray-400">No Tax ID</span>}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-4">
+                                                                <div className="flex flex-col items-center">
+                                                                    <span className="text-[13px] font-bold text-gray-800">{def.district || 'N/A'}</span>
+                                                                    <span className="text-[11px] text-gray-400">{def.state || 'N/A'}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-4">
+                                                                <span className="px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase bg-rose-50 text-rose-600 border border-rose-100">
+                                                                    Defaulter
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-4 text-center">
+                                                                <button
+                                                                    onClick={() => handleViewClick(def)}
+                                                                    className="p-1.5 bg-[#1b5e20] text-white rounded-lg hover:bg-[#144317] transition-all shadow-md shadow-[#1b5e20]/10"
+                                                                    title="Expand Details"
+                                                                >
+                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
                                                     <tr>
-                                                        <td colSpan={3} className="px-6 py-10 text-xs font-bold text-gray-400 italic">No payments recorded yet.</td>
+                                                        <td colSpan={7} className="py-24 text-center text-gray-400">
+                                                            <div className="text-4xl mb-3 opacity-20">📂</div>
+                                                            <p className="text-sm font-bold text-rose-500">No records found matching your rigorous criteria.</p>
+                                                        </td>
                                                     </tr>
                                                 )}
                                             </tbody>
@@ -499,17 +378,132 @@ export default function SearchDefaulterPage() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    )}
+                </div>
 
-                            {/* Footer */}
-                            <div className="px-8 py-5 bg-gray-50 border-t flex justify-end">
-                                <button onClick={() => setShowDetails(false)} className="bg-gray-400 text-white px-8 py-2 rounded-lg font-bold hover:bg-gray-500 transition-all shadow-md">
-                                    Close
+                {/* Details Modal */}
+                {showDetails && selectedDefaulter && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDetails(false)}></div>
+                        <div className="relative bg-[#fbfcff] w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in zoom-in duration-300">
+                            {/* Modal Header */}
+                            <div className="px-8 py-5 bg-[#1b5e20] flex items-center justify-between text-white">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-lg shadow-inner">📜</div>
+                                    <div>
+                                        <h3 className="text-lg font-bold tracking-tight">Defaulter Verification Profile</h3>
+                                        <p className="text-[10px] text-white/60 font-black uppercase tracking-widest mt-0.5">Global Repository Identity Access</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setShowDetails(false)} className="text-white/60 hover:text-white transition-all bg-white/10 p-2 rounded-lg">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                </button>
+                            </div>
+
+                            <div className="p-0 overflow-y-auto custom-scrollbar flex-1">
+                                {/* Section 1: Identity & Location */}
+                                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                                    <div className="space-y-6">
+                                        <h4 className="text-[11px] font-black text-[#1b5e20] uppercase tracking-[0.2em] mb-4 border-l-4 border-[#1b5e20] pl-3">Company Identification</h4>
+                                        <div className="grid grid-cols-1 gap-5">
+                                            <InfoItem icon="🏗️" label="Legal Entity Name" value={selectedDefaulter.defaulter_name} />
+                                            <InfoItem icon="📋" label="Tax ID (GST)" value={selectedDefaulter.gst_number || 'NOT PROVIDED'} />
+                                            <InfoItem icon="💳" label="PAN Identifier" value={selectedDefaulter.pan_number || 'NOT PROVIDED'} />
+                                            <InfoItem icon="🏢" label="CIN Number" value={selectedDefaulter.cin_number || 'NOT PROVIDED'} />
+                                            <InfoItem icon="🆔" label="Aadhar Access" value={selectedDefaulter.aadhar_number || 'NOT PROVIDED'} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <h4 className="text-[11px] font-black text-[#1b5e20] uppercase tracking-[0.2em] mb-4 border-l-4 border-[#1b5e20] pl-3">Geographic Presence</h4>
+                                        <div className="grid grid-cols-1 gap-5">
+                                            <InfoItem icon="📍" label="Operating State" value={selectedDefaulter.state} />
+                                            <InfoItem icon="🏙️" label="District / HQ" value={selectedDefaulter.district} />
+                                            <InfoItem icon="🗾" label="Detailed Region" value={selectedDefaulter.cities || selectedDefaulter.sub_district || 'N/A'} />
+                                            <InfoItem icon="🏠" label="Registered Address" value={selectedDefaulter.defaulter_address || 'Address N/A'} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="px-8"><div className="h-px bg-gray-100 flex-1"></div></div>
+
+                                {/* Section 2: Financial Liability */}
+                                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 bg-white">
+                                    <div className="space-y-6">
+                                        <h4 className="text-[11px] font-black text-rose-600 uppercase tracking-[0.2em] mb-4 border-l-4 border-rose-600 pl-3">Default Metrics</h4>
+                                        <div className="grid grid-cols-1 gap-5">
+                                            <InfoItem icon="💵" label="Default Principal" value={`₹${Number(selectedDefaulter.default_amount).toLocaleString('en-IN')}`} />
+                                            <InfoItem icon="📉" label="Outstanding Due" value={`₹${Number(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount).toLocaleString('en-IN')}`} />
+                                            <InfoItem icon="📅" label="Occurrence Date" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString('en-GB') : 'N/A'} />
+                                            <InfoItem icon="🏗️" label="Industry Sector" value={selectedDefaulter.industry || 'General Industry'} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <h4 className="text-[11px] font-black text-amber-600 uppercase tracking-[0.2em] mb-4 border-l-4 border-amber-600 pl-3">Reporting Authority</h4>
+                                        <div className="grid grid-cols-1 gap-5">
+                                            <InfoItem icon="🛡️" label="Verified Member" value={selectedDefaulter.user_id?.companyName || 'CAIP TRUSTED MEMBER'} />
+                                            <InfoItem icon="👤" label="Authorized User" value={selectedDefaulter.user_id?.name || 'Authorized Personnel'} />
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm flex-shrink-0 mt-1">📝</div>
+                                                <div className="min-w-0">
+                                                    <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-1.5">Official Reason</p>
+                                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 italic text-[12px] text-gray-600 leading-relaxed font-medium">
+                                                        "{selectedDefaulter.reason_description || 'No detailed reason provided.'}"
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section 3: Document Repository */}
+                                <div className="p-8 border-t border-gray-100 bg-[#fbfcfd]">
+                                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 bg-[#1b5e20] rounded-full"></span>
+                                        Annexed Evidence & Documentation
+                                    </h4>
+                                    {selectedDefaulter.attachment_documents && selectedDefaulter.attachment_documents.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {selectedDefaulter.attachment_documents.map((doc: string, idx: number) => {
+                                                const isPdf = doc.toLowerCase().endsWith('.pdf');
+                                                return (
+                                                    <a key={idx} href={`${ASSETS_BASE_URL}uploads/${doc}`} target="_blank" className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-xl hover:border-[#1b5e20] hover:shadow-md transition-all group">
+                                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'} group-hover:scale-110 transition-transform`}>
+                                                            {isPdf ? "📕" : "🖼️"}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-[11px] font-bold text-gray-900 truncate">Identity Document {idx + 1}</p>
+                                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">{isPdf ? 'PDF Archive' : 'Image Scan'}</p>
+                                                        </div>
+                                                    </a>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="py-12 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100 text-center">
+                                            <p className="text-[11px] text-gray-400 font-black uppercase tracking-widest italic">Zero Documentation Found in Repository</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="px-8 py-5 bg-white border-t border-gray-100 flex justify-end gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+                                <button onClick={() => setShowDetails(false)} className="px-10 py-3 bg-gray-900 text-white rounded-xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all active:scale-95 shadow-lg shadow-black/10">
+                                    Finalize Review
                                 </button>
                             </div>
                         </div>
                     </div>
                 )}
             </div>
+
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+            `}</style>
         </MemberPortalContainer>
     );
 }

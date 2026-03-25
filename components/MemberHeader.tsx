@@ -9,6 +9,7 @@ interface MemberHeaderProps {
     user: any;
     title?: string;
     isCollapsed?: boolean;
+    setIsCollapsed: (c: boolean) => void;
 }
 
 interface Notification {
@@ -19,7 +20,7 @@ interface Notification {
     read_by: string[];
 }
 
-export default function MemberHeader({ user, title = "Dashboard", isCollapsed = false }: MemberHeaderProps) {
+export default function MemberHeader({ user, title = "Dashboard", isCollapsed = false, setIsCollapsed }: MemberHeaderProps) {
     const pathname = usePathname();
     const router = useRouter();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -127,11 +128,21 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
     };
 
     return (
-        <header className="h-14 bg-[#ffd600] flex items-center justify-between px-8 shadow-md rounded-full relative z-50">
-            <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
+        <header className="h-12 bg-[#ffd600] flex items-center justify-between px-3.5 shadow-md rounded-xl relative z-50">
+            <div className="flex items-center gap-3">
+                {isCollapsed && (
+                    <button 
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className="p-1.5 hover:bg-black/5 rounded-lg text-black transition-all active:scale-90"
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/>
+                        </svg>
+                    </button>
+                )}
+                <div className={`flex items-center gap-3 ${isCollapsed ? 'pl-1.5' : 'pl-3'}`}>
                     {getHeaderIcon()}
-                    <h1 className="text-xl text-black tracking-tight font-serif uppercase font-bold">{title}</h1>
+                    <h1 className="text-[17px] text-black tracking-tight font-bold">{title}</h1>
                 </div>
             </div>
 
