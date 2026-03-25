@@ -71,8 +71,8 @@ export default function MemberPortalContainer({
             <MemberSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <div className="px-6 pt-6">
-                    <MemberHeader user={user} title={title} isCollapsed={isCollapsed} />
+                <div className="px-4 pt-4">
+                    <MemberHeader user={user} title={title} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
                 </div>
 
                 <main className={`flex-1 overflow-y-auto no-scrollbar bg-[#f8fafc] transition-all duration-300 ${showFullWidth ? 'w-full' : 'max-w-[1920px] mx-auto w-full'}`}>
