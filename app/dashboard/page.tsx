@@ -58,26 +58,28 @@ export default function DashboardPage() {
         <MemberPortalContainer title="Dashboard">
             <div className="space-y-8 animate-in fade-in duration-500">
                 {/* Identifier Subheader */}
-                <div className="text-center py-6 border-b border-gray-100 flex items-center justify-center gap-4">
-                    <div className="w-10 h-10 hover:scale-110 transition-transform duration-300">
+                <div className="text-center py-4 border-b border-gray-100 flex items-center justify-center gap-4">
+                    <div className="w-8 h-8 hover:scale-110 transition-transform duration-300">
                         <img src="/images/caip_logo.png" alt="CAIP Logo" className="w-full h-full object-contain" />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-600 tracking-tight">CAIP - Chamber for Agri Input Protection</h2>
+                    <h2 className="text-[16px] font-semibold text-gray-600 tracking-tight">CAIP - Chamber for Agri Input Protection</h2>
                 </div>
 
                 {/* Row 1: Trend & Stats */}
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-                    {/* Trend Chart (2/3 width) */}
-                    <div className="xl:col-span-3 bg-white rounded-[2rem] shadow-xl border border-gray-100/50 overflow-hidden flex flex-col">
-                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center justify-between text-white">
-                            <h3 className="text-lg font-bold tracking-tight flex items-center gap-3">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect x="3" y="12" width="4" height="9" /><rect x="10" y="7" width="4" height="14" /><rect x="17" y="3" width="4" height="18" /></svg>
-                                Yearly Search Activity Trend ({new Date().getFullYear()})
+                    {/* Trend Chart (3/4 width) */}
+                    <div className="xl:col-span-3 bg-white rounded-xl shadow-lg border border-gray-100/50 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
+                            <h3 className="text-[16px] font-semibold tracking-tight flex items-center gap-3">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
+                                </svg>
+                                Defaulter Search Trend (2026)
                             </h3>
+                            <div className="text-white/40 text-xs font-black tracking-widest cursor-pointer hover:text-white transition-colors">•••</div>
                         </div>
-                        <div className="p-10 flex-1 flex flex-col min-h-[400px]">
-                            {/* Bar Chart Implementation */}
-                            <div className="flex-1 flex items-end gap-3 md:gap-6 relative border-b border-gray-100 pb-2">
+                        <div className="pl-16 p-8 pb-10 flex-1 flex flex-col min-h-[350px]">
+                            <div className="flex-1 flex items-end gap-1 relative border-b border-gray-100 pb-10">
                                 {(() => {
                                     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                     const trendData = stats.searchTrend || [];
@@ -86,45 +88,29 @@ export default function DashboardPage() {
                                         const entry = trendData.find((d: any) => d.month === monthNum);
                                         return { label: m, count: entry ? entry.count : 0 };
                                     });
-
-                                    const maxCount = Math.max(...fullData.map(d => d.count), 500);
-
+                                    const maxCount = 500;
                                     return (
                                         <>
-                                            {/* Grid Lines with Y-Axis Labels */}
                                             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none -left-12">
-                                                {[0, 1, 2, 3, 4].map((i) => (
-                                                    <div key={i} className="flex items-center gap-3 w-[calc(100%+48px)]">
-                                                        <span className="text-[10px] font-bold text-gray-400 w-9 text-right tabular-nums">
-                                                            {Math.round(maxCount - (i * (maxCount / 4)))}
-                                                        </span>
+                                                {[500, 400, 300, 200, 100, 0].map((val) => (
+                                                    <div key={val} className="flex items-center gap-3 w-[calc(100%+48px)]">
+                                                        <span className="text-[14px] font-medium text-gray-400 w-9 text-right tabular-nums">{val}</span>
                                                         <div className="flex-1 border-t border-gray-100 flex-grow"></div>
                                                     </div>
                                                 ))}
                                             </div>
-
                                             {fullData.map((data, i) => {
                                                 const height = (data.count / maxCount) * 100;
                                                 return (
-                                                    <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end z-10">
-                                                        {/* Tooltip */}
-                                                        <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all bg-gray-900 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg pointer-events-none z-20 whitespace-nowrap shadow-xl">
-                                                            {data.count} Searches in {data.label}
-                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
-                                                        </div>
-
-                                                        {/* Bar */}
+                                                    <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end z-10 pt-10">
                                                         <div
-                                                            style={{ height: `${height}%` }}
-                                                            className="w-full max-w-[40px] bg-gradient-to-t from-[#1b5e20] to-[#4caf50] rounded-t-lg transition-all duration-700 ease-out group-hover:to-[#ffd600] group-hover:scale-x-110 shadow-lg relative overflow-hidden"
-                                                        >
-                                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                            style={{ height: `${Math.max(height, 0)}%`, minHeight: data.count > 0 ? '8px' : '0px' }}
+                                                            className="w-1/2 max-w-[28px] bg-[#ffcd1e] rounded-full transition-all duration-700 ease-out shadow-[0_2px_8px_rgba(255,205,30,0.3)] relative"
+                                                        />
+                                                        <div className="absolute top-full flex flex-col items-center w-full">
+                                                            <div className="h-2 w-px bg-gray-100 mb-2"></div>
+                                                            <span className="text-[13px] font-medium text-gray-400">{data.label}</span>
                                                         </div>
-
-                                                        {/* Label */}
-                                                        <span className="absolute -bottom-8 text-[11px] font-black text-gray-400 uppercase tracking-tighter transition-colors group-hover:text-[#1b5e20]">
-                                                            {data.label}
-                                                        </span>
                                                     </div>
                                                 );
                                             })}
@@ -138,200 +124,99 @@ export default function DashboardPage() {
                     {/* Summary Cards */}
                     <div className="space-y-6">
                         {[
-                            { title: 'Total Defaulters Reported', val: stats?.summary?.totalReported || 0, color: '#1b5e20' },
-                            { title: 'Total Default Amount', val: `₹ ${(stats?.summary?.totalAmount || 0).toLocaleString()}`, color: '#1b5e20' },
-                            { title: 'Total Amount Recovered', val: `₹ ${(stats?.summary?.totalRecovered || 0).toLocaleString()}`, color: '#1b5e20' }
+                            { 
+                                title: 'Total Defaulters Reported', 
+                                val: stats?.summary?.totalReported || 0,
+                                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                            },
+                            { 
+                                title: 'Total Default Amount', 
+                                val: `₹ ${(stats?.summary?.totalAmount || 0).toLocaleString()}`,
+                                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                            },
+                            { 
+                                title: 'Total Amount Recovered', 
+                                val: `₹ ${(stats?.summary?.totalRecovered || 0).toLocaleString()}`,
+                                icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                            }
                         ].map((s, i) => (
-                            <div key={i} className="bg-white rounded-[1.5rem] shadow-lg border border-gray-100 overflow-hidden group">
-                                <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
-                                    <h4 className="text-sm font-bold tracking-tight flex items-center gap-3">
-                                        {i === 0 ? '👥' : i === 1 ? '💵' : '✅'}
+                            <div key={i} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden group">
+                                <div className="bg-[#1b5e20] px-5 py-3 flex items-center justify-between text-white">
+                                    <h4 className="text-[16px] font-semibold tracking-tight flex items-center gap-2.5">
+                                        {s.icon}
                                         {s.title}
                                     </h4>
-                                    <button className="opacity-40 hover:opacity-100 transition-all translate-x-1">•••</button>
+                                    <button className="opacity-40 hover:opacity-100 transition-all text-xs">•••</button>
                                 </div>
-                                <div className="p-8">
-                                    <p className="text-3xl font-black text-gray-900 tracking-tighter">{s.val}</p>
+                                <div className="p-5">
+                                    <p className="text-[20px] font-semibold text-gray-900 tracking-tight">{s.val}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* Row 2: Activities, Reported, Industries */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                    <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center gap-4 text-white">
-                            <span className="text-xl">⌚</span>
-                            <h3 className="text-base font-bold tracking-wider">Recent Activities</h3>
+                {/* Row 2: Activities & Reported (Side-by-Side) */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    
+                    {/* Recent Activities */}
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <h3 className="text-[16px] font-semibold tracking-tight">Recent Activities</h3>
                         </div>
-                        <div className="overflow-x-auto flex-1">
-                            <table className="w-full text-center border-collapse">
-                                <thead className="bg-[#1b5e20] text-gray-300">
-                                    <tr className="divide-x divide-white/5 border-t border-white/10 uppercase">
-                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">#</th>
-                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">Activity Type</th>
-                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">Timestamp</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50 text-sm font-medium text-gray-600">
-                                    {(stats?.recentActivities || []).length > 0 ? (stats.recentActivities.slice(0, 5).map((act: any, i: number) => (
-                                        <tr key={i} className="hover:bg-gray-50 divide-x divide-gray-50">
-                                            <td className="px-6 py-4 font-bold">{i + 1}</td>
-                                            <td className="px-6 py-4 font-bold text-gray-900">{act.activityType}</td>
-                                            <td className="px-6 py-4 text-gray-400">{new Date(act.createdAt).toLocaleString('en-GB')}</td>
-                                        </tr>
-                                    ))) : (
-                                        <tr>
-                                            <td colSpan={3} className="px-6 py-10 text-gray-400 italic">No recent activity detected.</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center gap-4 text-white">
-                            <span className="text-xl">📁</span>
-                            <h3 className="text-base font-bold tracking-wider">My Reported Defaulters</h3>
-                        </div>
-                        <div className="overflow-x-auto flex-1">
-                            <table className="w-full text-center border-collapse">
-                                <thead className="bg-[#1b5e20] text-gray-300 uppercase">
-                                    <tr className="divide-x divide-white/5 border-t border-white/10">
-                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">#</th>
-                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">Defaulter Name</th>
-                                        <th className="px-6 py-4 text-xs font-bold tracking-widest">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50 text-sm font-medium text-gray-600">
-                                    {(stats?.myReports || []).map((def: any, i: number) => (
-                                        <tr key={i} className="hover:bg-gray-50 divide-x divide-gray-50">
-                                            <td className="px-6 py-4 font-bold">{i + 1}</td>
-                                            <td className="px-6 py-4 font-bold text-gray-900">{def.defaulter_name}</td>
-                                            <td className="px-6 py-4 font-bold text-[#1b5e20]">₹ {(def.default_amount || 0).toLocaleString()}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="bg-[#1b5e20] px-8 py-5 flex items-center justify-between text-white">
-                            <div className="flex items-center gap-4">
-                                <span className="text-xl">🏢</span>
-                                <h3 className="text-base font-bold tracking-wider">Defaulter Industry Types({new Date().getFullYear()})</h3>
-                            </div>
-                            <button className="opacity-40 hover:opacity-100 transition-all font-bold">•••</button>
-                        </div>
-                        <div className="p-10 flex-1 flex flex-col items-center justify-center">
-                            {(() => {
-                                const industryData = stats.industryDist || [];
-                                const total = industryData.reduce((acc: number, curr: any) => acc + curr.value, 0);
-
-                                if (total === 0) {
-                                    return (
-                                        <div className="text-center py-10">
-                                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-gray-200">
-                                                <span className="text-2xl opacity-20">📊</span>
-                                            </div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No Sector Data</p>
-                                        </div>
-                                    );
-                                }
-
-                                const chartData = {
-                                    labels: industryData.map((s: any) => s.name.toLowerCase().replace(/[^a-z0-9]/g, '')),
-                                    datasets: [
-                                        {
-                                            data: industryData.map((s: any) => s.value),
-                                            backgroundColor: ['#ff5274', '#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#00bcd4'],
-                                            borderWidth: 2,
-                                            borderColor: '#ffffff',
-                                        },
-                                    ],
-                                };
-
-                                const chartOptions = {
-                                    plugins: {
-                                        legend: {
-                                            display: true,
-                                            position: 'top' as const,
-                                            labels: {
-                                                boxWidth: 40,
-                                                boxHeight: 12,
-                                                padding: 20,
-                                                font: {
-                                                    family: "'Outfit', sans-serif",
-                                                    size: 13,
-                                                },
-                                                color: '#666',
-                                                generateLabels: (chart: any) => {
-                                                    const datasets = chart.data.datasets;
-                                                    return chart.data.labels.map((label: string, i: number) => ({
-                                                        text: label,
-                                                        fillStyle: datasets[0].backgroundColor[i],
-                                                        strokeStyle: datasets[0].backgroundColor[i],
-                                                        lineWidth: 0,
-                                                        hidden: false,
-                                                        index: i
-                                                    }));
-                                                }
-                                            }
-                                        },
-                                        tooltip: {
-                                            enabled: true,
-                                            backgroundColor: 'rgba(0,0,0,0.8)',
-                                            padding: 12,
-                                            titleFont: { family: "'Outfit', sans-serif", size: 13 },
-                                            bodyFont: { family: "'Outfit', sans-serif", size: 14, weight: 'bold' as const },
-                                            cornerRadius: 8,
-                                        }
-                                    },
-                                    maintainAspectRatio: false,
-                                    cutout: '0%', // This makes it a pie chart instead of a doughnut
-                                };
-
-                                return (
-                                    <div className="w-full h-[280px] relative">
-                                        <Pie data={chartData} options={chartOptions} />
-                                    </div>
-                                );
-                            })()}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Row 3: Geographic Insights */}
-                <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="bg-[#1b5e20] px-8 py-5 flex items-center gap-4 text-white">
-                        <span className="text-xl">🗺️</span>
-                        <h3 className="text-base font-bold tracking-wider">State-wise Defaulter Insights</h3>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2">
-                        <div className="min-h-[400px] relative overflow-hidden">
-                            <IndiaMap stateInsights={stats?.stateInsights || []} />
-                        </div>
-                        <div className="border-l border-gray-50 flex flex-col">
-                            <div className="overflow-x-auto">
+                        <div className="p-4 md:p-5">
+                            <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
                                 <table className="w-full text-center border-collapse">
-                                    <thead className="bg-[#1b5e20] text-gray-300 uppercase">
-                                        <tr className="divide-x divide-white/5 border-t border-white/10">
-                                            <th className="px-6 py-4 text-xs font-bold tracking-widest">State</th>
-                                            <th className="px-6 py-4 text-xs font-bold tracking-widest">Total Defaulters</th>
-                                            <th className="px-6 py-4 text-xs font-bold tracking-widest">Total Default Amount</th>
+                                    <thead className="bg-[#051a02] text-white">
+                                        <tr className="divide-x divide-white/5">
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight">#</th>
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight">Activity Type</th>
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight">Timestamp</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-50 text-sm font-medium text-gray-600">
-                                        {(stats?.stateInsights || []).map((row: any, i: number) => (
-                                            <tr key={i} className="hover:bg-gray-50 divide-x divide-gray-50">
-                                                <td className="px-6 py-5 font-bold text-gray-900 tracking-tight">{row.state}</td>
-                                                <td className="px-6 py-5 font-black text-[#1b5e20]">{row.count}</td>
-                                                <td className="px-6 py-5 font-black text-red-600">₹ {(row.amount || 0).toLocaleString()}</td>
+                                    <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
+                                        {(stats?.recentActivities || []).length > 0 ? (stats.recentActivities.slice(0, 5).map((act: any, i: number) => (
+                                            <tr key={i} className="hover:bg-gray-50/50 divide-x divide-gray-50 transition-colors">
+                                                <td className="px-4 py-3 text-gray-400">{i + 1}</td>
+                                                <td className="px-4 py-3 font-semibold text-gray-900">{act.activityType}</td>
+                                                <td className="px-4 py-3 text-gray-400 text-[12px]">{new Date(act.createdAt).toLocaleString('en-GB')}</td>
                                             </tr>
-                                        ))}
+                                        ))) : (
+                                            <tr><td colSpan={3} className="px-4 py-8 text-gray-400 italic">No recent activity.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* My Reported Defaulters */}
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <h3 className="text-[16px] font-semibold tracking-tight">My Reported Defaulters</h3>
+                        </div>
+                        <div className="p-4 md:p-5">
+                            <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                                <table className="w-full text-center border-collapse">
+                                    <thead className="bg-[#051a02] text-white">
+                                        <tr className="divide-x divide-white/5">
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight">#</th>
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight">Defaulter Name</th>
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
+                                        {(stats?.myReports || []).length > 0 ? (stats.myReports.slice(0, 5).map((def: any, i: number) => (
+                                            <tr key={i} className="hover:bg-gray-50/50 divide-x divide-gray-50 transition-colors">
+                                                <td className="px-4 py-3 text-gray-400">{i + 1}</td>
+                                                <td className="px-4 py-3 font-semibold text-gray-900 line-clamp-1">{def.defaulter_name}</td>
+                                                <td className="px-4 py-3 font-semibold text-red-600">₹ {(def.default_amount || 0).toLocaleString()}</td>
+                                            </tr>
+                                        ))) : (
+                                            <tr><td colSpan={3} className="px-4 py-8 text-gray-400 italic">No reports.</td></tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -339,41 +224,120 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Row 4: Search History */}
-                <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="bg-[#1b5e20] px-8 py-5 flex items-center gap-4 text-white">
-                        <span className="text-xl">🔎</span>
-                        <h3 className="text-base font-bold tracking-wider">Defaulter Search History</h3>
+                {/* Remaining Rows in Full Width Stack */}
+                <div className="space-y-8 mt-6">
+                    {/* Defaulter Industry Types */}
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            <h3 className="text-[16px] font-semibold tracking-tight">Defaulter Industry Types ({new Date().getFullYear()})</h3>
+                        </div>
+                        <div className="p-4 md:p-6 flex flex-col items-center justify-center">
+                            {(() => {
+                                const industryData = stats.industryDist || [];
+                                const total = industryData.reduce((acc: number, curr: any) => acc + curr.value, 0);
+                                if (total === 0) return <div className="py-16 text-gray-400 italic">No industry data.</div>;
+
+                                const chartData = {
+                                    labels: industryData.map((s: any) => s.name),
+                                    datasets: [{
+                                        data: industryData.map((s: any) => s.value),
+                                        backgroundColor: ['#1f6306', '#ffcd1e', '#2e7d32', '#f9a825', '#43a047', '#ff8f00'],
+                                        borderWidth: 2,
+                                        borderColor: '#ffffff',
+                                    }],
+                                };
+                                const chartOptions = {
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'right' as const,
+                                            labels: { font: { family: "'Outfit', sans-serif", size: 13 }, color: '#666', padding: 20 }
+                                        },
+                                        tooltip: { enabled: true, backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 8 }
+                                    },
+                                    maintainAspectRatio: false,
+                                };
+                                return <div className="w-full max-w-[500px] h-[280px] relative">
+                                    <Pie data={chartData} options={chartOptions} />
+                                </div>;
+                            })()}
+                        </div>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-center border-collapse">
-                            <thead className="bg-[#1b5e20] text-gray-300 uppercase">
-                                <tr className="divide-x divide-white/5 border-t border-white/10">
-                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">#</th>
-                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">Target Name</th>
-                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">GST Identifier</th>
-                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">PAN Identification</th>
-                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">Records Identified</th>
-                                    <th className="px-6 py-4 text-xs font-bold tracking-widest">Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 text-sm font-medium text-gray-600">
-                                {(stats?.searchHistory || []).map((log: any, i: number) => (
-                                    <tr key={i} className="hover:bg-gray-50 divide-x divide-gray-50">
-                                        <td className="px-6 py-5 font-bold text-gray-900">{i + 1}</td>
-                                        <td className="px-6 py-5 font-bold text-gray-700">{log.filters?.name || '---'}</td>
-                                        <td className="px-6 py-5 font-mono">{log.filters?.gst || '---'}</td>
-                                        <td className="px-6 py-5 font-mono">{log.filters?.pan || '---'}</td>
-                                        <td className="px-6 py-5">
-                                            <span className={`px-4 py-1.5 rounded-lg font-bold ${log.resultCount > 0 ? 'bg-green-50 text-[#1b5e20]' : 'bg-red-50 text-red-600'}`}>
-                                                {log.resultCount} Records
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-5 text-gray-400">{new Date(log.createdAt).toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+
+                    {/* State-wise Insights */}
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7M4 21V10m5 11V10m5 11V10m5 11V10"/></svg>
+                            <h3 className="text-[16px] font-semibold tracking-tight">State-wise Defaulter Insights</h3>
+                        </div>
+                        <div className="p-0 flex flex-col lg:flex-row border-t border-gray-50">
+                            <div className="lg:w-1/2 min-h-[400px] border-r border-gray-50 bg-[#fbfcfd]">
+                                <IndiaMap stateInsights={stats?.stateInsights || []} />
+                            </div>
+                            <div className="lg:w-1/2 p-4 md:p-6">
+                                <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                                    <table className="w-full text-center border-collapse">
+                                        <thead className="bg-[#051a02] text-white">
+                                            <tr className="divide-x divide-white/5">
+                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">State</th>
+                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Total Defaulters</th>
+                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Total Default Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
+                                            {(stats?.stateInsights || []).map((row: any, i: number) => (
+                                                <tr key={i} className="hover:bg-gray-50 transition-colors divide-x divide-gray-50">
+                                                    <td className="px-4 py-3 font-semibold text-gray-900">{row.state}</td>
+                                                    <td className="px-4 py-3 font-semibold text-[#1b5e20]">{row.count}</td>
+                                                    <td className="px-4 py-3 font-semibold text-red-600">₹ {(row.amount || 0).toLocaleString()}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Search History */}
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <h3 className="text-[16px] font-semibold tracking-tight">Defaulter Search History</h3>
+                        </div>
+                        <div className="p-4 md:p-6">
+                            <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                                <table className="w-full text-center border-collapse">
+                                    <thead className="bg-[#051a02] text-white">
+                                        <tr className="divide-x divide-white/5">
+                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight w-12">#</th>
+                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Target Name</th>
+                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">GST Identifier</th>
+                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">PAN Identification</th>
+                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Records Identified</th>
+                                            <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Timestamp</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
+                                        {(stats?.searchHistory || []).map((log: any, i: number) => (
+                                            <tr key={i} className="hover:bg-gray-50 transition-colors divide-x divide-gray-50">
+                                                <td className="px-4 py-3 text-gray-400">{i + 1}</td>
+                                                <td className="px-4 py-3 font-semibold text-gray-800">{log.filters?.name || '---'}</td>
+                                                <td className="px-4 py-3 font-mono text-[12px]">{log.filters?.gst || '---'}</td>
+                                                <td className="px-4 py-3 font-mono text-[12px]">{log.filters?.pan || '---'}</td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`px-2 py-1 rounded-full font-semibold text-[11px] ${log.resultCount > 0 ? 'bg-green-50 text-agri-green-primary border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+                                                        {log.resultCount} Records
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-400 text-[12px]">{new Date(log.createdAt).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

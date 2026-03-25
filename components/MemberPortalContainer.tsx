@@ -23,7 +23,7 @@ export default function MemberPortalContainer({
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -76,7 +76,7 @@ export default function MemberPortalContainer({
                 </div>
 
                 <main className={`flex-1 overflow-y-auto no-scrollbar bg-[#f8fafc] transition-all duration-300 ${showFullWidth ? 'w-full' : 'max-w-[1920px] mx-auto w-full'}`}>
-                    <div className="p-6 lg:p-10 pb-20">
+                    <div className="p-4 lg:p-6 pb-20">
                         {children}
                     </div>
                 </main>
