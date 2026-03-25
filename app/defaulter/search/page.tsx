@@ -38,6 +38,8 @@ export default function SearchDefaulterPage() {
     const [showAdvanced, setShowAdvanced] = useState(false);
 
     const [cities, setCities] = useState<any[]>([]);
+    const [districts, setDistricts] = useState<string[]>([]);
+    const [subDistricts, setSubDistricts] = useState<string[]>([]);
     const [filters, setFilters] = useState({
         gst: '', pan: '', cin: '', aadhar: '', name: '', address: '', state: '', district: '', subDistrict: '', city: ''
     });
@@ -52,10 +54,26 @@ export default function SearchDefaulterPage() {
         try {
             const res = await fetch(`${API_BASE_URL}locations`);
             const data = await res.json();
-            setLocations(data.states || []);
+            setLocations(data.states.map((s: any) => s.state) || []);
         } catch (error) {
             console.error("Error fetching locations:", error);
         }
+    };
+
+    const fetchDistricts = async (state: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}districts?state=${encodeURIComponent(state)}`);
+            const data = await res.json();
+            setDistricts(data.districts || []);
+        } catch (error) { console.error(error); }
+    };
+
+    const fetchSubDistricts = async (state: string, district: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}sub-districts?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`);
+            const data = await res.json();
+            setSubDistricts(data.subDistricts || []);
+        } catch (error) { console.error(error); }
     };
 
     const fetchCities = async (state: string, district: string, subDistrict: string) => {
@@ -67,6 +85,18 @@ export default function SearchDefaulterPage() {
             console.error("Error fetching cities:", error);
         }
     };
+
+    useEffect(() => {
+        if (filters.state) {
+            fetchDistricts(filters.state);
+        }
+    }, [filters.state]);
+
+    useEffect(() => {
+        if (filters.state && filters.district) {
+            fetchSubDistricts(filters.state, filters.district);
+        }
+    }, [filters.district]);
 
     useEffect(() => {
         if (filters.state && filters.district && filters.subDistrict) {
@@ -134,9 +164,6 @@ export default function SearchDefaulterPage() {
         setSelectedDefaulter(def);
         setShowDetails(true);
     };
-
-    const districts = locations.find(s => s.state === filters.state)?.districts || [];
-    const subDistricts = districts.find((d: any) => d.district === filters.district)?.subDistricts || [];
 
     return (
         <MemberPortalContainer title="Search Defaulter">
@@ -214,7 +241,7 @@ export default function SearchDefaulterPage() {
                                         className="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm appearance-none"
                                     >
                                         <option value="">All States</option>
-                                        {locations.map(s => <option key={s.state} value={s.state}>{s.state}</option>)}
+                                        {locations.map(s => <option key={s} value={s}>{s}</option>)}
                                     </select>
                                 </div>
 
@@ -227,7 +254,7 @@ export default function SearchDefaulterPage() {
                                         disabled={!filters.state}
                                     >
                                         <option value="">All Districts</option>
-                                        {districts.map((d: any) => <option key={d.district} value={d.district}>{d.district}</option>)}
+                                        {districts.map(d => <option key={d} value={d}>{d}</option>)}
                                     </select>
                                 </div>
 
@@ -240,7 +267,7 @@ export default function SearchDefaulterPage() {
                                         disabled={!filters.district}
                                     >
                                         <option value="">All Sub-Districts</option>
-                                        {subDistricts.map((sd: any) => <option key={sd} value={sd}>{sd}</option>)}
+                                        {subDistricts.map(sd => <option key={sd} value={sd}>{sd}</option>)}
                                     </select>
                                 </div>
 

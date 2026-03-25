@@ -121,7 +121,7 @@ export default function RegisterPage() {
                     const gstState = data.pradr.addr.stcd;
                     const matchedState = states.find(s => s.toLowerCase() === gstState.toLowerCase()) || gstState;
                     setSelectedState(matchedState);
-                    
+
                     if (data.pradr.addr.dst) {
                         setPendingLocation({
                             district: data.pradr.addr.dst,
@@ -330,7 +330,7 @@ export default function RegisterPage() {
             />
             {/* Light Overlay to ensure contrast */}
             <div className="absolute inset-0 bg-white opacity-50" />
-            
+
             {/* Carbon Fiber Texture Overlay */}
             <div
                 className="absolute inset-0 bg-repeat opacity-20 pointer-events-none"
@@ -339,7 +339,7 @@ export default function RegisterPage() {
 
             <div className="container mx-auto px-4 flex-1 flex flex-col pt-12 pb-10 relative z-10">
                 <div className="flex-1 flex flex-col items-center justify-center -mt-10">
-                    
+
                     <div className="w-full max-w-2xl relative z-10">
                         {/* Error & Success Toasts */}
                         {message && (
@@ -353,7 +353,7 @@ export default function RegisterPage() {
                             <Link href="/" className="inline-block mb-4">
                                 <img src="/images/caip_logo.png" alt="CAIP Logo" className="mx-auto h-[70px] drop-shadow-sm" />
                             </Link>
-                            
+
                             <div className="bg-agri-green-primary text-center px-4 py-3.5 rounded-2xl shadow-sm">
                                 <h4 className="text-white m-0 font-bold text-lg tracking-wide">Chamber for Agri Input Protection</h4>
                             </div>
@@ -386,8 +386,6 @@ export default function RegisterPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
                                             <FormInput label="Full Name" name="name" placeholder="John Doe" required error={errors.name} value={formData.name} onChange={handleInputChange} />
                                             <FormInput label="Phone Number" name="phone" placeholder="Enter 10-digit number" required error={errors.phone} value={formData.phone} onChange={handleInputChange} />
-                                            <FormInput label="Company Name" name="companyName" placeholder="Business Name" required error={errors.companyName} value={formData.companyName} onChange={handleInputChange} />
-                                            
                                             <div className="mb-4">
                                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
                                                     GST <span className="text-red-500">*</span>
@@ -402,8 +400,8 @@ export default function RegisterPage() {
                                                         required
                                                         className={`w-full px-4 py-2.5 text-xs focus:outline-none text-gray-700 placeholder:text-gray-300`}
                                                     />
-                                                    <button 
-                                                        type="button" 
+                                                    <button
+                                                        type="button"
                                                         onClick={handleGstFetch}
                                                         disabled={isGstFetching}
                                                         className={`px-4 bg-agri-green-primary text-white text-[10px] font-bold uppercase tracking-wider hover:bg-agri-green-800 transition-colors disabled:opacity-70 flex items-center justify-center whitespace-nowrap`}
@@ -413,6 +411,9 @@ export default function RegisterPage() {
                                                 </div>
                                                 {errors.gst && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.gst}</p>}
                                             </div>
+                                            <FormInput label="Company Name" name="companyName" placeholder="Business Name" required error={errors.companyName} value={formData.companyName} onChange={handleInputChange} />
+
+
 
                                             <FormInput label="PAN" name="pan" placeholder="PAN Number" required error={errors.pan} value={formData.pan} onChange={handleInputChange} />
                                             <FormInput label="Email Address" name="email" type="email" placeholder="john@example.com" required error={errors.email} value={formData.email} onChange={handleInputChange} />
@@ -420,15 +421,15 @@ export default function RegisterPage() {
                                             <FormSelect label="State" name="state" value={selectedState} onChange={(e: any) => setSelectedState(e.target.value)} options={states} placeholder="Select State" required error={errors.state} />
                                             <FormSelect label="District" name="district" value={selectedDistrict} onChange={(e: any) => { setSelectedDistrict(e.target.value); setSelectedSubDistrict(""); }} options={districts} placeholder="Select District" required error={errors.district} />
                                             <FormSelect label="Sub District" name="subDistrict" value={selectedSubDistrict} onChange={(e: any) => { setSelectedSubDistrict(e.target.value); setSelectedCity(""); }} options={subDistricts} placeholder="Select Sub District" required error={errors.subDistrict} />
-                                            <FormSelect label="City" name="city" value={selectedCity} onChange={(e: any) => setSelectedCity(e.target.value)} options={cities.length > 0 ? cities : []} placeholder="Select City" required error={errors.city} />
+                                            <FormSelect label="City/Town/Village" name="city" value={selectedCity} onChange={(e: any) => setSelectedCity(e.target.value)} options={cities.length > 0 ? cities : []} placeholder="Select City" required error={errors.city} />
 
                                             <div className="md:col-span-2">
-                                                <FormInput 
-                                                    label="Business Address" 
-                                                    name="businessAddress" 
-                                                    placeholder="Full address (autofilled via GST optionally)" 
-                                                    value={formData.businessAddress} 
-                                                    onChange={handleInputChange} 
+                                                <FormInput
+                                                    label="Business Address"
+                                                    name="businessAddress"
+                                                    placeholder="Full address (autofilled via GST optionally)"
+                                                    value={formData.businessAddress}
+                                                    onChange={handleInputChange}
                                                 />
                                             </div>
 
@@ -449,12 +450,12 @@ export default function RegisterPage() {
 
                                         <div className="mt-4 mb-6">
                                             <div className="flex items-start group cursor-pointer" onClick={() => setTermsAgreed(!termsAgreed)}>
-                                                <input 
-                                                    type="checkbox" 
+                                                <input
+                                                    type="checkbox"
                                                     id="terms"
-                                                    checked={termsAgreed} 
-                                                    onChange={() => {}}
-                                                    className={`mt-1 flex-shrink-0 w-4 h-4 text-agri-green-primary bg-gray-100 border-gray-300 rounded focus:ring-agri-green-primary focus:ring-2 cursor-pointer ${errors.terms ? 'border-red-400' : ''}`} 
+                                                    checked={termsAgreed}
+                                                    onChange={() => { }}
+                                                    className={`mt-1 flex-shrink-0 w-4 h-4 text-agri-green-primary bg-gray-100 border-gray-300 rounded focus:ring-agri-green-primary focus:ring-2 cursor-pointer ${errors.terms ? 'border-red-400' : ''}`}
                                                 />
                                                 <div className="ml-3">
                                                     <label htmlFor="terms" className="text-sm font-semibold text-gray-800 cursor-pointer group-hover:text-agri-green-800 transition-colors uppercase tracking-tight">

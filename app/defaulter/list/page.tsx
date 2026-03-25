@@ -39,6 +39,11 @@ export default function MemberDefaulterListPage() {
     const [user, setUser] = useState<any>(null);
     const [isSubMember, setIsSubMember] = useState(false);
 
+    // New high-precision location states
+    const [districts, setDistricts] = useState<string[]>([]);
+    const [subDistricts, setSubDistricts] = useState<string[]>([]);
+    const [cities, setCities] = useState<string[]>([]);
+
     useEffect(() => {
         fetchMyReports();
         fetchLocations();
@@ -75,11 +80,53 @@ export default function MemberDefaulterListPage() {
         try {
             const res = await fetch(`${API_BASE_URL}locations`);
             const data = await res.json();
-            setLocations(data.states || []);
+            setLocations(data.states.map((s: any) => s.state) || []);
         } catch (error) {
             console.error("Error fetching locations:", error);
         }
     };
+
+    const fetchDistricts = async (state: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}districts?state=${encodeURIComponent(state)}`);
+            const data = await res.json();
+            setDistricts(data.districts || []);
+        } catch (error) { console.error(error); }
+    };
+
+    const fetchSubDistricts = async (state: string, district: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}sub-districts?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`);
+            const data = await res.json();
+            setSubDistricts(data.subDistricts || []);
+        } catch (error) { console.error(error); }
+    };
+
+    const fetchCities = async (state: string, district: string, subDistrict: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}cities?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}&subDistrict=${encodeURIComponent(subDistrict)}`);
+            const data = await res.json();
+            setCities(data.cities || []);
+        } catch (error) { console.error(error); }
+    };
+
+    useEffect(() => {
+        if (showEdit && editForm.state) {
+            fetchDistricts(editForm.state);
+        }
+    }, [showEdit, editForm.state]);
+
+    useEffect(() => {
+        if (showEdit && editForm.state && editForm.district) {
+            fetchSubDistricts(editForm.state, editForm.district);
+        }
+    }, [showEdit, editForm.district]);
+
+    useEffect(() => {
+        if (showEdit && editForm.state && editForm.district && editForm.cities) {
+            fetchCities(editForm.state, editForm.district, editForm.cities);
+        }
+    }, [showEdit, editForm.cities]);
 
     const handleEditClick = (def: any) => {
         setSelectedDefaulter(def);
@@ -231,8 +278,6 @@ export default function MemberDefaulterListPage() {
     };
 
 
-    const districtsList = locations.find(s => s.state === editForm.state)?.districts || [];
-
     const handleExportPDF = async () => {
         try {
             const doc = new jsPDF('landscape');
@@ -351,12 +396,11 @@ export default function MemberDefaulterListPage() {
     };
 
     return (
-        <MemberPortalContainer title="My Reported Defaulters">
+        <MemberPortalContainer title="Defaulter Reporting">
             <div className="space-y-6 animate-in fade-in duration-500">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-800">Defaulter Records</h2>
-                        <p className="text-sm text-gray-500">View and manage your filed reports</p>
+                        <h2 className="text-xl font-bold text-gray-800">My Reported Defaulters</h2>
                     </div>
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <div className="relative flex-1 sm:w-72">
@@ -764,26 +808,29 @@ export default function MemberDefaulterListPage() {
                                         <label className="text-xs font-semibold text-gray-600  tracking-wider">State</label>
                                         <select name="state" value={editForm.state} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
                                             <option value="">Select State</option>
-                                            {locations.map(s => <option key={s.state} value={s.state}>{s.state}</option>)}
+                                            {locations.map(s => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-xs font-semibold text-gray-600  tracking-wider">District</label>
                                         <select name="district" value={editForm.district} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
                                             <option value="">Select District</option>
-                                            {districtsList.map((d: any) => <option key={d.district} value={d.district}>{d.district}</option>)}
+                                            {districts.map(d => <option key={d} value={d}>{d}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-xs font-semibold text-gray-600  tracking-wider">Sub District</label>
                                         <select name="cities" value={editForm.cities} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
                                             <option value="">Select Sub-District</option>
-                                            {(districtsList.find((d: any) => d.district === editForm.district)?.subDistricts || []).map((sd: any) => <option key={sd} value={sd}>{sd}</option>)}
+                                            {subDistricts.map(sd => <option key={sd} value={sd}>{sd}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">City</label>
-                                        <input type="text" name="city" value={editForm.city || ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50" />
+                                        <label className="text-xs font-semibold text-gray-600  tracking-wider">City/Village/Town</label>
+                                        <select name="city" value={editForm.city || ''} onChange={handleInputChange} className="w-full border rounded-lg py-2.5 px-4 focus:border-green-600 outline-none text-sm bg-gray-50/50">
+                                            <option value="">Select City</option>
+                                            {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
                                     </div>
                                     <div className="col-span-full space-y-1">
                                         <label className="text-xs font-semibold text-gray-600  tracking-wider">Full Address</label>
