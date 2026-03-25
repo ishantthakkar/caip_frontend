@@ -51,7 +51,7 @@ export default function AddDefaulterPage() {
                 });
                 const data = await res.json();
                 if (data.exists) {
-                    setDuplicateWarning(`System Alert: An entry already exists with matching ${data.field}. Please verify context.`);
+                    setDuplicateWarning(`This ${data.field} has been previously reported by another member. `);
                 } else {
                     setDuplicateWarning(null);
                 }
@@ -148,7 +148,7 @@ export default function AddDefaulterPage() {
 
             if (response.ok) {
                 const { data } = result;
-                
+
                 // Extract PAN from GST if possible
                 let panFromGst = "";
                 if (formData.gst_number.length >= 12) {
@@ -165,9 +165,9 @@ export default function AddDefaulterPage() {
                 if (data.pradr?.addr?.stcd) {
                     const gstState = data.pradr.addr.stcd;
                     const matchedState = states.find(s => s.toLowerCase() === gstState.toLowerCase()) || gstState;
-                    
+
                     setFormData(prev => ({ ...prev, state: matchedState }));
-                    
+
                     if (data.pradr.addr.dst) {
                         setPendingLocation({
                             district: data.pradr.addr.dst,
@@ -299,14 +299,14 @@ export default function AddDefaulterPage() {
         <MemberPortalContainer title="Report New Defaulter">
             <div className="max-w-4xl mx-auto animate-in fade-in duration-500 pb-10">
                 <Link href="/defaulter/list" className="inline-flex items-center gap-2 text-gray-500 hover:text-green-600 transition-all mb-4 group bg-white px-4 py-2 rounded-lg border border-gray-100 shadow-sm">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                    <span className="text-xs font-black uppercase tracking-widest">Back to List</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                    <span className="text-xs font-black tracking-widest">Back</span>
                 </Link>
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
                     <div className="bg-gray-50 px-8 py-6 flex items-center justify-between border-b border-gray-200">
                         <div>
                             <h2 className="text-lg font-bold text-gray-800">
-                                {step === 1 ? 'Step 1: Defaulter Information' : step === 2 ? 'Step 2: Financial Details' : 'Step 3: Legal & Supporting Documents'}
+                                {step === 1 ? 'Step 1: Defaulter Information' : step === 2 ? 'Step 2: Default History' : 'Step 3: Legal Information'}
                             </h2>
                             <p className="text-xs text-gray-500 font-medium mt-1">Progress: {step} of 3</p>
                         </div>
@@ -318,30 +318,21 @@ export default function AddDefaulterPage() {
                     </div>
 
                     <form className="p-8 flex-1 flex flex-col justify-between">
-                        {duplicateWarning && (
-                            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 animate-bounce">
-                                <span className="text-xl">⚠️</span>
-                                <p className="text-xs font-black text-amber-700 tracking-tight">{duplicateWarning}</p>
+                        {step === 1 && duplicateWarning && (
+                            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3">
+                                <p className="text-xs font-semibold text-blue-700 tracking-tight">
+                                    {duplicateWarning}
+                                </p>
                             </div>
                         )}
                         {step === 1 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-1.5 col-span-full md:col-span-1">
-                                    <label className="text-xs font-semibold text-gray-600">Company / Business Name*</label>
-                                    <input type="text" name="defaulter_name" value={formData.defaulter_name} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.defaulter_name ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter name" />
-                                    {errors.defaulter_name && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.defaulter_name}</p>}
-                                </div>
-                                <div className="space-y-1.5 col-span-full md:col-span-1">
-                                    <label className="text-xs font-semibold text-gray-600">Contact Number*</label>
-                                    <input type="text" name="mobile_number" value={formData.mobile_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.mobile_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="10-digit mobile" />
-                                    {errors.mobile_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.mobile_number}</p>}
-                                </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">GST Number*</label>
+                                    <label className="text-xs font-semibold text-gray-600">GST*</label>
                                     <div className="flex gap-2">
                                         <input type="text" name="gst_number" value={formData.gst_number} onChange={handleInputChange} className={`flex-1 border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.gst_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Gst Identification No" />
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             onClick={handleGstFetch}
                                             disabled={isGstFetching}
                                             className="px-4 py-2 bg-[#1b5e20] text-white rounded-lg text-[10px] font-bold hover:bg-green-900 transition-all disabled:opacity-50 shadow-sm"
@@ -351,18 +342,28 @@ export default function AddDefaulterPage() {
                                     </div>
                                     {errors.gst_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.gst_number}</p>}
                                 </div>
+                                <div className="space-y-1.5 col-span-full md:col-span-1">
+                                    <label className="text-xs font-semibold text-gray-600">Defaulter Company Name*</label>
+                                    <input type="text" name="defaulter_name" value={formData.defaulter_name} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.defaulter_name ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter name" />
+                                    {errors.defaulter_name && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.defaulter_name}</p>}
+                                </div>
+                                <div className="space-y-1.5 col-span-full md:col-span-1">
+                                    <label className="text-xs font-semibold text-gray-600">Contact Number*</label>
+                                    <input type="text" name="mobile_number" value={formData.mobile_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.mobile_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="10-digit mobile" />
+                                    {errors.mobile_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.mobile_number}</p>}
+                                </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-semibold text-gray-600">Email Address*</label>
                                     <input type="email" name="email_id" value={formData.email_id} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.email_id ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Email ID" />
                                     {errors.email_id && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.email_id}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">PAN Number*</label>
+                                    <label className="text-xs font-semibold text-gray-600">PAN*</label>
                                     <input type="text" name="pan_number" value={formData.pan_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.pan_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Permanent Account No" />
                                     {errors.pan_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.pan_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">CIN Number*</label>
+                                    <label className="text-xs font-semibold text-gray-600">CIN*</label>
                                     <input type="text" name="cin_number" value={formData.cin_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.cin_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="21-character CIN No" maxLength={21} />
                                     {errors.cin_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.cin_number}</p>}
                                 </div>
@@ -391,7 +392,7 @@ export default function AddDefaulterPage() {
                                     {errors.cities && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.cities}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">City / Village / Town*</label>
+                                    <label className="text-xs font-semibold text-gray-600">City / Town /Village *</label>
                                     <select name="city" value={formData.city} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.city ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
                                         <option value="">Select City</option>
                                         {cities.map(c => <option key={c} value={c}>{c}</option>)}
@@ -399,7 +400,7 @@ export default function AddDefaulterPage() {
                                     {errors.city && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.city}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Aadhar Number*</label>
+                                    <label className="text-xs font-semibold text-gray-600">Aadhar*</label>
                                     <input type="text" name="aadhar_number" value={formData.aadhar_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.aadhar_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="12-digit Aadhar No" maxLength={12} />
                                     {errors.aadhar_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.aadhar_number}</p>}
                                 </div>
@@ -416,7 +417,7 @@ export default function AddDefaulterPage() {
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-semibold text-gray-600">Financial Year</label>
-                                    <select name="financial_year" value={formData.financial_year} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white font-bold border-gray-200`}>
+                                    <select name="financial_year" value={formData.financial_year} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white border-gray-200`}>
                                         <option value="">Select Financial Year</option>
                                         {Array.from({ length: 15 }).map((_, i) => {
                                             const year = 2025 - i;
@@ -426,7 +427,7 @@ export default function AddDefaulterPage() {
                                     </select>
                                 </div>
                                 <div className="col-span-full space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Full Address*</label>
+                                    <label className="text-xs font-semibold text-gray-600">Defaulter Address*</label>
                                     <textarea name="defaulter_address" value={formData.defaulter_address} onChange={handleInputChange} rows={2} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.defaulter_address ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter complete office/home address" />
                                     {errors.defaulter_address && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.defaulter_address}</p>}
                                 </div>
@@ -437,17 +438,17 @@ export default function AddDefaulterPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-right-4 duration-300">
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-semibold text-gray-600">Date of Default*</label>
-                                    <input type="date" name="date_of_default" value={formData.date_of_default} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-red-600 text-sm ${errors.date_of_default ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} />
+                                    <input type="date" name="date_of_default" value={formData.date_of_default} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-red-600 text-sm ${errors.date_of_default ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} max={new Date().toISOString().split('T')[0]} />
                                     {errors.date_of_default && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.date_of_default}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Initial Default Amount (₹)*</label>
+                                    <label className="text-xs font-semibold text-gray-600">Default Amount (₹)*</label>
                                     <input type="number" name="default_amount" value={formData.default_amount} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm font-semibold ${errors.default_amount ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="0.00" />
                                     {errors.default_amount && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.default_amount}</p>}
                                 </div>
                                 <div className="col-span-full space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Describe the Case / Reason*</label>
-                                    <textarea name="reason_description" value={formData.reason_description} onChange={handleInputChange} rows={6} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm leading-relaxed ${errors.reason_description ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Briefly explain the nature of default..." />
+                                    <label className="text-xs font-semibold text-gray-600">Reason/Description*</label>
+                                    <textarea name="reason_description" value={formData.reason_description} onChange={handleInputChange} rows={6} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm leading-relaxed ${errors.reason_description ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter Reason..." />
                                     {errors.reason_description && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.reason_description}</p>}
                                 </div>
                             </div>
@@ -456,20 +457,29 @@ export default function AddDefaulterPage() {
                         {step === 3 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-right-4 duration-300">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Court Name (If filed)</label>
-                                    <input type="text" name="court_complex_name" value={formData.court_complex_name} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="e.g. District Court" />
+                                    <label className="text-xs font-semibold text-gray-600">Court Complex Name</label>
+                                    <input type="text" name="court_complex_name" value={formData.court_complex_name} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="Enter court complex name" />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Case / Suite Number</label>
-                                    <input type="text" name="case_number" value={formData.case_number} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="Case ID" />
+                                    <label className="text-xs font-semibold text-gray-600">Case Type</label>
+                                    <input type="text" name="case_type" value={formData.case_type} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="Enter case type" />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Supporting Documents (Max 3)</label>
-                                    <input type="file" multiple onChange={(e) => setSelectedFiles(e.target.files)} className="w-full border border-dashed border-gray-300 rounded-lg py-6 px-4 text-xs font-bold text-gray-400 bg-gray-50 hover:bg-white transition-all text-center" />
-                                    <p className="text-[10px] text-gray-400 text-center">PDF, JPG, or PNG (Max 5MB each)</p>
+                                    <label className="text-xs font-semibold text-gray-600">Case Number</label>
+                                    <input type="text" name="case_number" value={formData.case_number} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="Enter case number" />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Current Legal Status</label>
+                                    <label className="text-xs font-semibold text-gray-600">Case Year</label>
+                                    <select name="case_year" value={formData.case_year} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white">
+                                        <option value="">Select Year</option>
+                                        {Array.from({ length: 30 }).map((_, i) => {
+                                            const year = new Date().getFullYear() - i;
+                                            return <option key={year} value={year}>{year}</option>
+                                        })}
+                                    </select>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">Case Status</label>
                                     <select name="case_status" value={formData.case_status} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white">
                                         <option value="">Select Status</option>
                                         <option value="Notice Issued">Notice Issued</option>
@@ -477,6 +487,11 @@ export default function AddDefaulterPage() {
                                         <option value="Warrant Issued">Warrant Issued</option>
                                         <option value="Resolved">Resolved</option>
                                     </select>
+                                </div>
+                                <div className="col-span-full space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">Supporting Documents (Max 3)</label>
+                                    <input type="file" multiple onChange={(e) => setSelectedFiles(e.target.files)} className="w-full border border-dashed border-gray-300 rounded-lg py-6 px-4 text-xs font-bold text-gray-400 bg-gray-50 hover:bg-white transition-all text-center" />
+                                    <p className="text-[10px] text-gray-400 text-center">PDF, JPG, or PNG (Max 5MB each)</p>
                                 </div>
                             </div>
                         )}

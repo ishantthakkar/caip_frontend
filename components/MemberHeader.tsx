@@ -35,7 +35,7 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
         const smData = localStorage.getItem('subMember');
         if (smData) setSubMember(JSON.parse(smData));
         fetchNotifications();
-        
+
         // Refresh notifications every minute
         const interval = setInterval(fetchNotifications, 60000);
         return () => clearInterval(interval);
@@ -52,12 +52,12 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
             if (res.ok) {
                 const list = result.data || [];
                 setNotifications(list);
-                
+
                 // Derive unread count (not in read_by array)
                 const storedUser = localStorage.getItem('user');
                 const parsedUser = storedUser ? JSON.parse(storedUser) : null;
                 const uid = parsedUser?._id;
-                
+
                 const unread = list.filter((n: Notification) => !n.read_by.includes(uid)).length;
                 setUnreadCount(unread);
             }
@@ -94,7 +94,7 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
 
     const getHeaderIcon = () => {
         if (pathname === '/dashboard') return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>;
-        if (pathname.includes('/defaulter/search')) return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+        if (pathname.includes('/defaulter/search')) return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>;
         // ... matching logic truncated for brevity ...
         return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>;
     };
@@ -130,16 +130,6 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
     return (
         <header className="h-12 bg-[#ffd600] flex items-center justify-between px-3.5 shadow-md rounded-xl relative z-50">
             <div className="flex items-center gap-3">
-                {isCollapsed && (
-                    <button 
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="p-1.5 hover:bg-black/5 rounded-lg text-black transition-all active:scale-90"
-                    >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/>
-                        </svg>
-                    </button>
-                )}
                 <div className={`flex items-center gap-3 ${isCollapsed ? 'pl-1.5' : 'pl-3'}`}>
                     {getHeaderIcon()}
                     <h1 className="text-[17px] text-black tracking-tight font-bold">{title}</h1>
@@ -149,7 +139,7 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
             <div className="flex items-center gap-6">
                 {/* Notification Bell */}
                 <div className="relative" ref={notifRef}>
-                    <div 
+                    <div
                         onClick={() => setIsNotifOpen(!isNotifOpen)}
                         className="cursor-pointer hover:scale-110 transition-transform relative"
                     >
@@ -169,7 +159,7 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
                         <div className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[100]">
                             <div className="px-6 py-4 flex justify-between items-center border-b border-gray-50 bg-white">
                                 <h3 className="text-sm font-bold text-gray-800">Notifications</h3>
-                                <button 
+                                <button
                                     onClick={markAllRead}
                                     className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline"
                                 >
@@ -184,8 +174,8 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
                                     </div>
                                 ) : (
                                     notifications.map((n) => (
-                                        <div 
-                                            key={n._id} 
+                                        <div
+                                            key={n._id}
                                             className={`px-6 py-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${!n.read_by.includes(user?._id) ? 'bg-blue-50/20' : ''}`}
                                         >
                                             <div className="flex justify-between items-start mb-1">
@@ -200,8 +190,8 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
                                 )}
                             </div>
 
-                            <Link 
-                                href="/notifications" 
+                            <Link
+                                href="/notifications"
                                 className="block w-full text-center py-4 bg-white border-t border-gray-50 text-xs font-bold text-blue-600 hover:bg-gray-50 transition-all font-sans"
                             >
                                 View More...

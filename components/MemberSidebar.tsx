@@ -93,7 +93,7 @@ export default function MemberSidebar({ isCollapsed, setIsCollapsed }: MemberSid
                 hasSub: true,
                 restricted: true,
                 subItems: [
-                    { name: 'Search Defaulters', path: '/defaulter/search', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg> },
+                    { name: 'Defaulters Search', path: '/defaulter/search', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg> },
                     { name: 'Defaulters Management', path: '/defaulter/list', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg> },
                 ]
             },
@@ -127,23 +127,11 @@ export default function MemberSidebar({ isCollapsed, setIsCollapsed }: MemberSid
         <aside className={`${isCollapsed ? 'w-24' : 'w-72'} bg-white border-r border-gray-100 flex flex-col h-full overflow-y-auto no-scrollbar hidden md:flex shrink-0 transition-all duration-300 ease-in-out relative`}>
             {/* Logo Section */}
             <div className={`p-6 border-b border-gray-50 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-                {isCollapsed ? (
-                    <img src="/images/caip_logo.png" alt="CAIP" className="h-10 w-auto object-contain" />
-                ) : (
-                    <>
-                        <div className="flex items-center gap-3">
-                            <img src="/images/caip_logo.png" alt="CAIP Logo" className="h-10 w-auto object-contain" />
-                            <span className="text-xl font-black text-[#1b5e20] tracking-tighter">CAIP</span>
-                        </div>
-                        <button
-                            onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-900"
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
-                            </svg>
-                        </button>
-                    </>
+                {!isCollapsed && (
+                    <div className="flex items-center gap-3">
+                        <img src="/images/caip_logo.png" alt="CAIP Logo" className="h-10 w-auto object-contain" />
+                        <span className="text-xl font-black text-[#1b5e20] tracking-tighter">CAIP</span>
+                    </div>
                 )}
                 {isCollapsed && <img src="/images/caip_logo.png" alt="CAIP" className="h-10 w-auto object-contain" />}
 

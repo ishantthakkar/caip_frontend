@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import MemberPortalContainer from '@/components/MemberPortalContainer';
 import { API_BASE_URL } from '@/config/apiConfig';
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,9 @@ export default function SubMembersPage() {
         email: '',
         phone: ''
     });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     const router = useRouter();
 
     useEffect(() => {
@@ -50,6 +53,21 @@ export default function SubMembersPage() {
         }
     };
 
+    const filteredSubMembers = useMemo(() => {
+        if (!searchTerm) return subMembers;
+        const lowTerm = searchTerm.toLowerCase();
+        return subMembers.filter(m =>
+            m.firstName?.toLowerCase().includes(lowTerm) ||
+            m.email?.toLowerCase().includes(lowTerm) ||
+            m.phone?.toLowerCase().includes(lowTerm)
+        );
+    }, [subMembers, searchTerm]);
+
+    const paginatedData = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return filteredSubMembers.slice(start, start + itemsPerPage);
+    }, [filteredSubMembers, currentPage]);
+
     const fetchSubMembers = async (parentId: string) => {
         try {
             setLoading(true);
@@ -57,6 +75,7 @@ export default function SubMembersPage() {
             const data = await response.json();
             if (response.ok) {
                 setSubMembers(data.data || []);
+                setCurrentPage(1); // Reset to first page
             }
         } catch (error) {
             console.error("Error fetching sub-members:", error);
@@ -145,7 +164,6 @@ export default function SubMembersPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h2 className="text-[20px] font-bold text-gray-900 tracking-tight">Staff management</h2>
-                        <p className="text-[13px] text-gray-500 mt-1">Manage secondary access accounts for your organization.</p>
                     </div>
 
                     <button
@@ -174,7 +192,21 @@ export default function SubMembersPage() {
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Usage status</p>
                         <p className="text-2xl font-black text-[#1b5e20]">{subMembers.length} <span className="text-gray-300 text-lg">/ {user?.subMemberLimit || 0}</span></p>
                     </div>
-                </div>                {/* Table Section */}
+                </div>                {/* Search Bar */}
+                <div className="relative group max-w-md">
+                    <input
+                        type="text"
+                        placeholder="Search by name, email or phone..."
+                        value={searchTerm}
+                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-[#1b5e20] text-sm shadow-sm transition-all focus:ring-1 focus:ring-[#1b5e20]/20"
+                    />
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#1b5e20] transition-colors">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                    </span>
+                </div>
+
+                {/* Table Section */}
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden relative">
                     {loading && (
                         <div className="absolute inset-0 bg-white/80 z-10 flex items-center justify-center">
@@ -187,31 +219,31 @@ export default function SubMembersPage() {
                             <table className="w-full text-center border-collapse">
                                 <thead className="bg-[#051a02] text-white">
                                     <tr className="divide-x divide-white/5">
-                                        <th className="px-6 py-3 text-[12px] font-semibold tracking-tight">Profile</th>
-                                        <th className="px-6 py-3 text-[12px] font-semibold tracking-tight">Contact details</th>
+                                        <th className="px-6 py-3 text-[12px] font-semibold tracking-tight">Name</th>
+                                        <th className="px-6 py-3 text-[12px] font-semibold tracking-tight">Email</th>
+                                        <th className="px-6 py-3 text-[12px] font-semibold tracking-tight">Phone</th>
                                         <th className="px-6 py-3 text-[12px] font-semibold tracking-tight">Status</th>
                                         <th className="px-6 py-3 text-[12px] font-semibold tracking-tight">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
-                                    {subMembers.length > 0 ? subMembers.map((member) => (
+                                    {paginatedData.length > 0 ? paginatedData.map((member) => (
                                         <tr key={member._id} className="hover:bg-gray-50/50 divide-x divide-gray-50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-4 justify-center">
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-sm border ${member.isActive ? 'bg-green-50 text-[#1b5e20] border-green-100' : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
-                                                        {member.firstName[0]}
-                                                    </div>
                                                     <div className="text-left">
                                                         <p className="font-semibold text-gray-900 leading-tight">{member.firstName}</p>
-                                                        <p className="text-[12px] text-gray-400 font-mono mt-0.5">ID: {member._id.slice(-8).toUpperCase()}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col items-center">
                                                     <p className="font-semibold text-gray-800">{member.email}</p>
-                                                    <p className="text-[12px] font-semibold text-[#1b5e20]">{member.phone}</p>
                                                 </div>
+                                            </td>
+                                            <td>
+                                                <p className="text-[12px] font-semibold text-[#1b5e20]">{member.phone}</p>
+
                                             </td>
                                             <td className="px-6 py-4">
                                                 <button
@@ -245,15 +277,59 @@ export default function SubMembersPage() {
                                         </tr>
                                     )) : (
                                         <tr>
-                                            <td colSpan={4} className="py-20 text-center">
+                                            <td colSpan={5} className="py-20 text-center">
                                                 <div className="text-4xl mb-3 opacity-20">👤</div>
-                                                <p className="text-[14px] font-semibold text-gray-400 italic">No sub-members identified in your database.</p>
+                                                <p className="text-[14px] font-semibold text-gray-400 italic">
+                                                    {searchTerm ? 'No matching sub-members found.' : 'No sub-members identified in your database.'}
+                                                </p>
                                             </td>
                                         </tr>
                                     )}
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Pagination Section */}
+                        {filteredSubMembers.length > itemsPerPage && (
+                            <div className="flex flex-col sm:flex-row items-center justify-between px-2 pt-6 gap-4">
+                                <p className="text-[13px] font-medium text-gray-500">
+                                    Showing <span className="text-gray-900 font-bold">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-gray-900 font-bold">{Math.min(currentPage * itemsPerPage, filteredSubMembers.length)}</span> of <span className="text-gray-900 font-bold">{filteredSubMembers.length}</span> entries
+                                </p>
+
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        disabled={currentPage === 1}
+                                        onClick={() => setCurrentPage(p => p - 1)}
+                                        className="px-4 py-2 text-[13px] font-medium text-gray-400 hover:text-[#1b5e20] disabled:opacity-30 transition-all font-sans"
+                                    >
+                                        Previous
+                                    </button>
+
+                                    <div className="flex items-center">
+                                        {Array.from({ length: Math.ceil(filteredSubMembers.length / itemsPerPage) }, (_, i) => i + 1).map((pageNum) => (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                                className={`w-8 h-8 rounded text-[13px] font-bold transition-all ${currentPage === pageNum
+                                                    ? 'bg-[#1b5e20] text-white shadow-md'
+                                                    : 'text-gray-600 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        disabled={currentPage === Math.ceil(filteredSubMembers.length / itemsPerPage)}
+                                        onClick={() => setCurrentPage(p => p + 1)}
+                                        className="px-4 py-2 text-[13px] font-medium text-gray-400 hover:text-[#1b5e20] disabled:opacity-30 transition-all font-sans"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -264,9 +340,6 @@ export default function SubMembersPage() {
                     <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20">
                         {/* Modal Header */}
                         <div className="bg-[#1b5e20] p-6 text-white flex justify-between items-center relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                                <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
-                            </div>
                             <h3 className="text-[18px] font-bold tracking-tight relative z-10">{editingMember ? 'Edit sub-member' : 'Add sub-member'}</h3>
                             <button
                                 onClick={() => setShowModal(false)}
@@ -278,18 +351,18 @@ export default function SubMembersPage() {
 
                         <form onSubmit={handleCreateOrUpdate} className="p-6 space-y-6">
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[13px] font-bold text-gray-700 ml-1">Member name</label>
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Sub-Member name</label>
                                 <input
-                                    type="text" required placeholder="Enter name" value={formData.firstName}
+                                    type="text" required placeholder="Enter sub member name" value={formData.firstName}
                                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                                     className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
                                 />
                             </div>
 
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[13px] font-bold text-gray-700 ml-1">Email address</label>
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Email</label>
                                 <input
-                                    type="email" required placeholder="name@organization.com" value={formData.email}
+                                    type="email" required placeholder="Enter Email" value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
                                 />
