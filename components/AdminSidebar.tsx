@@ -83,25 +83,27 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
     ];
 
     return (
-        <aside className={`${isCollapsed ? 'w-24' : 'w-72'} bg-white border-r border-gray-100 flex flex-col h-full overflow-y-auto no-scrollbar hidden md:flex shrink-0 transition-all duration-300 ease-in-out`}>
+        <aside className={`${isCollapsed ? 'w-24' : 'w-72'} bg-white border-r border-gray-100 flex flex-col h-full overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-200/60 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent hidden md:flex shrink-0 transition-all duration-300 ease-in-out`}>
             {/* Logo Section */}
             <div className={`p-6 border-b border-gray-50 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-                {!isCollapsed && (
-                    <div className="flex items-center gap-3">
-                        <img src="/images/caip_logo.png" alt="CAIP Logo" className="h-10 w-auto object-contain" />
-                        <span className="text-xl font-bold text-[#1b5e20] tracking-tighter uppercase font-sans italic">CAIP</span>
-                    </div>
+                {isCollapsed ? (
+                    <img src="/images/caip_logo.png" alt="CAIP" className="h-10 w-auto object-contain" />
+                ) : (
+                    <>
+                        <div className="flex items-center gap-3">
+                            <img src="/images/caip_logo.png" alt="CAIP Logo" className="h-10 w-auto object-contain" />
+                            <span className="text-xl font-bold text-[#1b5e20] tracking-tighter uppercase font-sans italic">CAIP</span>
+                        </div>
+                        <button
+                            onClick={() => setIsCollapsed(!isCollapsed)}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-900"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black">
+                                <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
+                            </svg>
+                        </button>
+                    </>
                 )}
-                {isCollapsed && <img src="/images/caip_logo.png" alt="CAIP" className="h-10 w-auto object-contain" />}
-
-                <button
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-900"
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black">
-                        <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                </button>
             </div>
 
             <div className={`p-4 ${isCollapsed ? 'px-2' : ''}`}>
@@ -113,7 +115,7 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
                                 key={idx}
                                 href={item.href}
                                 title={isCollapsed ? item.label : ''}
-                                className={`flex items-center gap-4 px-4 py-3 rounded-xl text-base font-bold transition-all ${isActive ? 'text-[#1b5e20] bg-green-50/80 shadow-sm shadow-green-900/5' : 'text-black hover:text-[#1b5e20] hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
+                                className={`flex items-center gap-4 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all ${isActive ? 'text-[#1b5e20] bg-green-50/80 shadow-sm shadow-green-900/5' : 'text-black hover:text-[#1b5e20] hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
                             >
                                 <span className={isActive ? 'text-[#1b5e20]' : 'text-black'}>{item.icon}</span>
                                 {!isCollapsed && (
@@ -125,11 +127,6 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
                                             </span>
                                         )}
                                     </div>
-                                )}
-                                {isCollapsed && item.badge !== undefined && item.badge > 0 && (
-                                    <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-[#1b5e20] text-white text-[8px] font-bold rounded-full">
-                                        {item.badge}
-                                    </span>
                                 )}
                             </Link>
                         );

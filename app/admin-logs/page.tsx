@@ -82,182 +82,182 @@ export default function AdminActivityLogsPage() {
 
     return (
         <AdminPortalContainer title="Activity Log">
-            <div className="space-y-12 animate-in fade-in duration-700">
-                {/* Header Section */}
-                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                    <div>
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Activity Log</h2>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
-                        <select
-                            value={activityFilter}
-                            onChange={(e) => setActivityFilter(e.target.value)}
-                            className="w-full md:w-60 bg-white border-2 border-gray-100 rounded-[1.5rem] px-6 py-4 text-sm font-black text-gray-800 outline-none focus:border-[#1b5e20] transition-all shadow-xl shadow-gray-100 italic"
-                        >
-                            <option value="all">All activities</option>
-                            <option value="Defaulter Search">Defaulter search</option>
-                            <option value="Defaulter Report">Defaulter report</option>
-                            <option value="Recovery Amount Added">Recovery amount added</option>
-                            <option value="Membership Renewal">Membership renewal</option>
-                            <option value="Report Downloaded">Report downloaded</option>
-                            <option value="System Login">System login</option>
-                            <option value="System Logout">System logout</option>
-                            <option value="Sub-Member Added">Sub-member added</option>
-                            <option value="Sub-Member Deactivated">Sub-member deactivated</option>
-                            <option value="Password Change">Password change</option>
-                            <option value="Profile Update">Profile update</option>
-                        </select>
-
-                        <div className="relative flex-1 lg:w-96 group">
-                            <input
-                                type="text"
-                                placeholder="Search by identity, event or terminal IP..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-white border-2 border-gray-100 rounded-[1.5rem] pl-14 pr-6 py-4 text-sm font-black text-gray-800 outline-none focus:border-[#1b5e20] transition-all shadow-xl shadow-gray-100 group-hover:shadow-2xl italic placeholder:text-gray-300 placeholder:not-italic placeholder:lowercase"
-                            />
-                            <div className="absolute left-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-focus-within:bg-[#1b5e20] group-focus-within:text-white transition-all">
-                                🔎
-                            </div>
-                        </div>
-                        <button
-                            onClick={fetchLogs}
-                            className="bg-white p-4 rounded-[1.5rem] border-2 border-gray-100 shadow-lg hover:bg-gray-50 active:scale-95 transition-all text-xl"
-                            title="Force refresh data"
-                        >
-                            🔄
-                        </button>
-                    </div>
-                </div>
-
-                {/* Table Section */}
-                <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 flex flex-col flex-1 overflow-hidden transition-all">
-
-                    <div className="overflow-x-auto flex-1">
-                        <table className="w-full text-left">
-                            <thead className="bg-[#1b5e20] text-white">
-                                <tr className="text-[10px] font-black text-white/90 border-b border-white/10 uppercase tracking-wider">
-                                    <th className="px-4 py-4 min-w-[140px]">Timestamp</th>
-                                    <th className="px-4 py-4 min-w-[120px]">Member</th>
-                                    <th className="px-4 py-4 min-w-[100px]">Member ID</th>
-                                    <th className="px-4 py-4 min-w-[150px]">Company Name</th>
-                                    <th className="px-4 py-4 min-w-[100px]">User Type</th>
-                                    <th className="px-4 py-4 min-w-[120px]">Activity Type</th>
-                                    <th className="px-4 py-4 min-w-[250px]">Details</th>
-                                    <th className="px-4 py-4 text-right">IP Address</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {loading ? (
-                                    Array.from({ length: 8 }).map((_, i) => (
-                                        <tr key={i} className="animate-pulse">
-                                            <td colSpan={8} className="px-4 py-6"><div className="h-12 bg-gray-50 rounded-lg w-full"></div></td>
-                                        </tr>
-                                    ))
-                                ) : paginatedLogs.length > 0 ? (
-                                    paginatedLogs.map((log) => (
-                                        <tr key={log._id} className="hover:bg-gray-50 transition-colors border-b border-gray-50 group">
-                                            <td className="px-4 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[11px] font-bold text-gray-900">
-                                                        {new Date(log.createdAt).toLocaleDateString('en-GB')}
-                                                    </span>
-                                                    <span className="text-[10px] font-bold text-emerald-600 tracking-wider">
-                                                        {new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <span className="text-[11px] font-bold text-gray-800">{log.userName || '-'}</span>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 uppercase tracking-tighter">
-                                                    {log.memberId || '-'}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <span className="text-[11px] font-bold text-gray-700">{log.companyName || '-'}</span>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <span className="text-[11px] font-black text-gray-500 uppercase tracking-tight">{log.userRole || 'Member'}</span>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <span className="text-[11px] font-bold text-gray-900">{log.activityType || '-'}</span>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <p className="text-[11px] font-medium text-gray-600 leading-relaxed" title={log.details}>
-                                                    {log.details}
-                                                </p>
-                                            </td>
-                                            <td className="px-4 py-4 text-right">
-                                                <span className="text-[10px] font-mono font-bold text-gray-400">
-                                                    {log.ipAddress}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={8} className="px-8 py-64 text-center text-gray-400">
-                                            <div className="text-7xl mb-8 opacity-10 animate-pulse">📡</div>
-                                            <p className="text-sm font-black tracking-wider italic">No Record Found</p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Pagination Footer */}
-                    {!loading && filteredLogs.length > 0 && (
-                        <div className="px-10 py-6 border-t border-gray-100 flex items-center justify-between bg-gray-50/50 mt-auto">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                                showing signals {Math.min(filteredLogs.length, (currentPage - 1) * itemsPerPage + 1)} OF {filteredLogs.length}
-                            </span>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}
-                                    className="px-6 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] uppercase tracking-widest text-gray-500 shadow-sm active:scale-95"
+            <div className="space-y-12">
+                <div className="space-y-6">
+                    {/* Search and Filters */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+                            <div className="lg:col-span-3 space-y-1.5">
+                                <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Activity type</label>
+                                <select
+                                    value={activityFilter}
+                                    onChange={(e) => setActivityFilter(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all cursor-pointer"
                                 >
-                                    Previous
-                                </button>
+                                    <option value="all">All activities</option>
+                                    <option value="Defaulter Search">Defaulter search</option>
+                                    <option value="Defaulter Report">Defaulter report</option>
+                                    <option value="Recovery Amount Added">Recovery amount added</option>
+                                    <option value="Membership Renewal">Membership renewal</option>
+                                    <option value="Report Downloaded">Report downloaded</option>
+                                    <option value="System Login">System login</option>
+                                    <option value="System Logout">System logout</option>
+                                    <option value="Sub-Member Added">Sub-member added</option>
+                                    <option value="Sub-Member Deactivated">Sub-member deactivated</option>
+                                    <option value="Password Change">Password change</option>
+                                    <option value="Profile Update">Profile update</option>
+                                </select>
+                            </div>
 
-                                <div className="flex items-center gap-1.5 ">
-                                    {Array.from({ length: Math.min(totalPages, 5) }).map((_, idx) => {
-                                        const pageNum = idx + 1;
-                                        return (
-                                            <button
-                                                key={pageNum}
-                                                onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-10 h-10 rounded-xl text-[10px] font-black transition-all shadow-sm ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-lg shadow-emerald-900/20' : 'bg-white border border-gray-200 hover:bg-gray-100 text-gray-400 hover:text-[#1b5e20]'}`}
-                                            >
-                                                {pageNum}
-                                            </button>
-                                        );
-                                    })}
+                            <div className="lg:col-span-8 space-y-1.5">
+                                <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Search records</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="Search by name, role, event or IP address..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2 text-[15px] font-normal text-black placeholder-gray-400 outline-none focus:border-[#1b5e20] transition-all"
+                                    />
+                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                                 </div>
+                            </div>
 
+                            <div className="lg:col-span-1">
                                 <button
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                    disabled={currentPage === totalPages}
-                                    className="px-6 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-black text-[10px] uppercase tracking-widest text-gray-500 shadow-sm active:scale-95"
+                                    onClick={fetchLogs}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2.5 text-gray-500 hover:text-[#1b5e20] hover:bg-green-50 transition-all flex items-center justify-center shadow-sm active:scale-95"
+                                    title="Refresh Data"
                                 >
-                                    Next
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
                                 </button>
                             </div>
                         </div>
-                    )}
+                    </div>
+
+                    {/* Table Section */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <h3 className="text-sm font-bold tracking-tight">Activity Logs</h3>
+                        </div>
+
+                        <div className="p-4 md:p-5">
+                            <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                                <div className="overflow-x-auto overflow-y-auto max-h-[650px] custom-scrollbar">
+                                    <table className="w-full text-left border-collapse min-w-[1400px]">
+                                        <thead className="sticky top-0 z-10 bg-[#051a02] text-white">
+                                            <tr className="divide-x divide-white/5">
+                                                <th className="px-4 py-3 text-sm font-semibold tracking-tight">Timestamp</th>
+                                                <th className="px-4 py-3 text-sm font-semibold tracking-tight">Member</th>
+                                                <th className="px-4 py-3 text-sm font-semibold tracking-tight">Member Id</th>
+                                                <th className="px-4 py-3 text-sm font-semibold tracking-tight">Company Name</th>
+                                                <th className="px-4 py-3 text-sm font-semibold tracking-tight">User Type</th>
+                                                <th className="px-4 py-3 text-sm font-semibold tracking-tight">Activity Type</th>
+                                                <th className="px-4 py-3 text-sm font-semibold tracking-tight">Details</th>
+                                                <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">IP Address</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50">
+                                            {loading ? (
+                                                <tr>
+                                                    <td colSpan={8} className="py-24 text-center">
+                                                        <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                                        <p className="text-sm font-medium text-gray-500 animate-pulse">Loading Audit Logs...</p>
+                                                    </td>
+                                                </tr>
+                                            ) : paginatedLogs.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={8} className="py-32 text-center text-gray-400">
+                                                        <p className="text-sm font-medium tracking-widest uppercase">No Activities Found</p>
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                paginatedLogs.map((log, i) => (
+                                                    <tr key={log._id || i} className="hover:bg-gray-50/50 transition-colors group">
+                                                        <td className="px-4 py-3.5">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[13px] font-bold text-gray-900 leading-none">
+                                                                    {new Date(log.createdAt).toLocaleDateString('en-GB')}
+                                                                </span>
+                                                                <span className="text-[11px] font-medium text-emerald-600 mt-1">
+                                                                    {new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase()}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3.5 text-[14px] font-normal text-gray-900">{log.userName || '-'}</td>
+                                                        <td className="px-4 py-3.5">
+                                                            <span className="text-[12px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-100">
+                                                                {log.memberId || 'N/A'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3.5 text-[14px] font-normal text-gray-700">{log.companyName || '-'}</td>
+                                                        <td className="px-4 py-3.5">
+                                                            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-tight">{log.userRole || 'Member'}</span>
+                                                        </td>
+                                                        <td className="px-4 py-3.5 text-[14px] font-medium text-gray-900">{log.activityType || '-'}</td>
+                                                        <td className="px-4 py-3.5">
+                                                            <p className="text-[13px] font-normal text-gray-600 line-clamp-1 group-hover:line-clamp-none transition-all duration-300 max-w-md">
+                                                                {log.details}
+                                                            </p>
+                                                        </td>
+                                                        <td className="px-4 py-3.5 text-right font-mono text-[12px] text-gray-400">
+                                                            {log.ipAddress}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        {!loading && filteredLogs.length > 0 && (
+                            <div className="px-6 py-4 border-t border-gray-50 flex items-center justify-between bg-white mt-auto">
+                                <span className="text-[12px] font-medium text-gray-500">
+                                    Showing <span className="font-bold text-gray-900">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-bold text-gray-900">{Math.min(currentPage * itemsPerPage, filteredLogs.length)}</span> of <span className="font-bold text-gray-900">{filteredLogs.length}</span> entries
+                                </span>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
+                                    >
+                                        Previous
+                                    </button>
+                                    <div className="flex items-center gap-1">
+                                        {Array.from({ length: totalPages }).map((_, idx) => {
+                                            const pageNum = idx + 1;
+                                            if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                                                return (
+                                                    <button
+                                                        key={pageNum}
+                                                        onClick={() => setCurrentPage(pageNum)}
+                                                        className={`w-9 h-9 rounded-lg text-[12px] font-bold transition-all ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                                    >
+                                                        {pageNum}
+                                                    </button>
+                                                );
+                                            } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                                                return <span key={pageNum} className="text-gray-300">...</span>;
+                                            }
+                                            return null;
+                                        })}
+                                    </div>
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-
-            <style jsx global>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 10px; height: 10px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; border: 3px solid #f8fafc; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
-            `}</style>
         </AdminPortalContainer>
     );
 }

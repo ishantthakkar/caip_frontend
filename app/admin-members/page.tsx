@@ -11,6 +11,8 @@ export default function AdminMembersPage() {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [modalSearchTerm, setModalSearchTerm] = useState('');
+    const [subSearchTerm, setSubSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [stats, setStats] = useState<any>(null);
     const [selectedUserDefaulters, setSelectedUserDefaulters] = useState<any[]>([]);
@@ -163,49 +165,51 @@ export default function AdminMembersPage() {
 
     return (
         <AdminPortalContainer title="Member Management">
-            <div className="space-y-12">
-
-                {/* Member Listing Table */}
-                <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-800">Members List</h2>
+            <div className="space-y-6">
+                
+                {/* Member Listing Section */}
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
+                    <div className="bg-[#1b5e20] px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 text-white">
+                        <div className="flex items-center gap-3">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <h3 className="text-[16px] font-semibold tracking-tight">Members List</h3>
                         </div>
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
-                            <div className="relative flex-1 sm:w-80">
-                                <input
-                                    type="text"
-                                    placeholder="Search by name, email, city..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-white border border-gray-200 rounded-lg py-2.5 pl-10 pr-4 outline-none focus:border-green-600 text-sm shadow-sm transition-all"
-                                />
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
-                            </div>
+                        <div className="relative w-full md:w-80">
+                            <input
+                                type="text"
+                                placeholder="Search by name, email, city..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-white/10 border border-white/20 rounded-lg py-2 pl-9 pr-4 text-sm font-medium text-white placeholder-white/40 outline-none focus:bg-white focus:text-black focus:border-white transition-all shadow-sm"
+                            />
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="11" y2="11"/></svg>
+                            </span>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar">
-                            <table className="w-full text-left border-collapse min-w-[1800px]">
-                                <thead className="bg-[#1b5e20] text-white sticky top-0 z-10">
-                                    <tr>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Member ID</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Defaulter</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Name</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Email</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Phone</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Company Name</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Membership Type</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Membership Status</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Expiry Date</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Status</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Searches</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90">Sub-Member</th>
-                                        <th className="px-10 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/90 text-right">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 font-medium text-gray-600">
+                    <div className="p-4 md:p-5">
+                        <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                            <div className="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar">
+                                <table className="w-full text-left border-collapse min-w-[1800px]">
+                                    <thead className="bg-[#051a02] text-white sticky top-0 z-10">
+                                        <tr className="divide-x divide-white/5">
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Member ID</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Defaulter</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Name</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Email</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Phone</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Company Name</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Membership Type</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Membership Status</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Expiry Date</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Status</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Searches</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub-Member</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 font-medium text-gray-600 border-b border-gray-100">
                                     {loading ? (
                                         <tr>
                                             <td colSpan={13} className="py-24 text-center">
@@ -214,60 +218,58 @@ export default function AdminMembersPage() {
                                             </td>
                                         </tr>
                                     ) : paginatedUsers.length > 0 ? paginatedUsers.map((user) => (
-                                        <tr key={user._id} className="hover:bg-gray-50 transition-colors group">
-                                            <td className="px-6 py-5 text-sm">
+                                        <tr key={user._id} className="hover:bg-gray-50/50 transition-colors group">
+                                            <td className="px-4 py-3 text-sm">
                                                 {user.memberId || user._id?.slice(-8).toUpperCase()}
                                             </td>
-                                            <td className="px-6 py-5">
+                                            <td className="px-4 py-3">
                                                 <button
                                                     onClick={() => fetchUserDefaulters(user)}
-                                                    className="text-[#1F58C7] hover:text-green-700 text-xs font-bold underline decoration-1 underline-offset-4 transition-colors"
+                                                    className="text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors cursor-pointer"
                                                 >
                                                     View Defaulters
                                                 </button>
                                             </td>
-                                            <td className="px-6 py-5 text-sm text-gray-900">{user.name}</td>
-                                            <td className="px-6 py-5 text-xs lowercase text-gray-500">{user.email}</td>
-                                            <td className="px-6 py-5 text-sm">{user.phone}</td>
-                                            <td className="px-6 py-5 text-sm">{user.companyName || '-'}</td>
-                                            <td className="px-6 py-5">
-                                                <span className="px-2.5 py-1 bg-green-50 text-emerald-700 text-[10px] font-bold uppercase rounded-md border border-green-100">
+                                            <td className="px-4 py-3 text-sm text-gray-900">{user.name}</td>
+                                            <td className="px-4 py-3 text-sm lowercase text-gray-500">{user.email}</td>
+                                            <td className="px-4 py-3 text-sm">{user.phone}</td>
+                                            <td className="px-4 py-3 text-sm">{user.companyName || '-'}</td>
+                                            <td className="px-4 py-3">
+                                                <span className="px-2 py-0.5 bg-green-50 text-emerald-700 text-[11px] font-semibold rounded-full border border-green-100">
                                                     Standard Membership
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-5">
-                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border ${user.status === '1' ? 'bg-green-50 text-emerald-700 border-green-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${user.status === '1' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
                                                     {user.status === '1' ? 'Active' : 'Inactive'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-5 text-sm text-gray-400">{user.membershipExpiry || '12/05/2026'}</td>
-                                            <td className="px-6 py-5">
-                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border ${user.status === '1' ? 'bg-green-50 text-emerald-700 border-green-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                            <td className="px-4 py-3 text-sm text-gray-400">
+                                                {user.membershipExpiry ? new Date(user.membershipExpiry).toLocaleDateString('en-GB') : '12/05/2026'}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${user.status === '1' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
                                                     {user.status === '1' ? 'Active' : 'Inactive'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-5 text-sm text-center">{user.searches || '0'}</td>
-                                            <td className="px-6 py-5">
+                                            <td className="px-4 py-3 text-sm text-center">{user.searches || '0'}</td>
+                                            <td className="px-4 py-3">
                                                 <button
                                                     onClick={() => fetchSubMembers(user)}
-                                                    className="text-[#1F58C7] hover:text-green-700 text-xs font-bold underline decoration-1 underline-offset-4 transition-colors"
+                                                    className="text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors cursor-pointer"
                                                 >
                                                     View
                                                 </button>
                                             </td>
-                                            <td className="px-10 py-5 text-right right-0 bg-white group-hover:bg-gray-50 transition-colors">
+                                            <td className="px-4 py-3 text-right bg-white group-hover:bg-gray-50 transition-colors">
                                                 <div className="flex justify-end gap-2">
                                                     <button
                                                         onClick={() => handleAction(user._id, user.status === '1' ? 'rejected' : 'approved')}
-                                                        className={`px-4 py-2 rounded-lg text-[10px] font-bold transition-all shadow-sm flex items-center gap-2 ${user.status === '1'
+                                                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all shadow-sm active:scale-95 cursor-pointer ${user.status === '1'
                                                             ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white'
                                                             : 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-600 hover:text-white'}`}
                                                     >
-                                                        {user.status === '1' ? (
-                                                            <>🚫 Deactivate</>
-                                                        ) : (
-                                                            <>✅ Activate</>
-                                                        )}
+                                                        {user.status === '1' ? 'Deactivate' : 'Activate'}
                                                     </button>
                                                 </div>
                                             </td>
@@ -334,155 +336,214 @@ export default function AdminMembersPage() {
 
             {/* Defaulter Table Modal */}
             {showModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-6xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white">
-                            <div>
-                                <h3 className="text-xl font-black tracking-tight tracking-widest">Member's defaulters</h3>
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-[95vw] lg:max-w-7xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
+                        {/* Modal Header */}
+                        <div className="bg-[#1b5e20] px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 text-white">
+                            <div className="flex items-center gap-3">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                <h3 className="text-lg font-bold tracking-tight">Defaulter List</h3>
                             </div>
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all"
-                            >
-                                ✕
-                            </button>
+                            
+                            <div className="flex items-center gap-4 flex-1 md:max-w-xl">
+                                <div className="relative w-full">
+                                    <input
+                                        type="text"
+                                        placeholder="Search by company, mobile, GST, PAN..."
+                                        value={modalSearchTerm}
+                                        onChange={(e) => setModalSearchTerm(e.target.value)}
+                                        className="w-full bg-white/10 border border-white/20 rounded-lg py-2 pl-9 pr-4 text-sm font-medium text-white placeholder-white/40 outline-none focus:bg-white focus:text-black focus:border-white transition-all shadow-sm"
+                                    />
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="11" y2="11"/></svg>
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => { setShowModal(false); setModalSearchTerm(''); }}
+                                    className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all flex-shrink-0 cursor-pointer"
+                                >
+                                    ✕
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="p-10 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                            {modalLoading ? (
-                                <div className="py-24 text-center">
-                                    <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
-                                    <p className="text-sm font-black text-gray-400 tracking-wider animate-pulse">Loading records...</p>
+                        {/* Modal Body */}
+                        <div className="p-4 md:p-6 overflow-hidden flex flex-col flex-1">
+                            <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm flex flex-col flex-1">
+                                <div className="overflow-x-auto overflow-y-auto max-h-full custom-scrollbar">
+                                    {modalLoading ? (
+                                        <div className="py-24 text-center">
+                                            <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                            <p className="text-sm font-bold text-gray-400 tracking-wider animate-pulse uppercase">Loading records...</p>
+                                        </div>
+                                    ) : (
+                                        <table className="w-full text-left border-collapse min-w-[2800px]">
+                                            <thead className="bg-[#051a02] text-white sticky top-0 z-10">
+                                                <tr className="divide-x divide-white/5">
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">#</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported By</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Date of Default</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Defaulter Company Name</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Mobile Number</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Email ID</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">GST</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">PAN</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">CIN</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Aadhar</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">State</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">District</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub District</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Industry</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Financial Year</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Default Amount</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Outstanding Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100 font-medium text-gray-600">
+                                                {selectedUserDefaulters.filter(r => 
+                                                    r.defaulter_name?.toLowerCase().includes(modalSearchTerm.toLowerCase()) ||
+                                                    r.gst_number?.toLowerCase().includes(modalSearchTerm.toLowerCase()) ||
+                                                    r.pan_number?.toLowerCase().includes(modalSearchTerm.toLowerCase()) ||
+                                                    r.mobile?.includes(modalSearchTerm)
+                                                ).length > 0 ? (
+                                                    selectedUserDefaulters
+                                                        .filter(r => 
+                                                            r.defaulter_name?.toLowerCase().includes(modalSearchTerm.toLowerCase()) ||
+                                                            r.gst_number?.toLowerCase().includes(modalSearchTerm.toLowerCase()) ||
+                                                            r.pan_number?.toLowerCase().includes(modalSearchTerm.toLowerCase()) ||
+                                                            r.mobile?.includes(modalSearchTerm)
+                                                        )
+                                                        .map((report, i) => (
+                                                            <tr key={report._id} className="hover:bg-gray-50/50 transition-colors divide-x divide-gray-50">
+                                                                <td className="px-4 py-3 text-sm text-gray-400">{i + 1}</td>
+                                                                <td className="px-4 py-3 text-sm text-gray-900">{report.user_id?.name || '---'}</td>
+                                                                <td className="px-4 py-3 text-sm text-gray-500">
+                                                                    {report.date_of_default ? new Date(report.date_of_default).toLocaleDateString('en-GB') : '-'}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm font-bold text-gray-900">{report.defaulter_name}</td>
+                                                                <td className="px-4 py-3 text-sm">{report.mobile || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm lowercase">{report.email || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm font-mono">{report.gst_number || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm font-mono">{report.pan_number || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm font-mono">{report.cin_number || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm font-mono">{report.aadhar_number || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm">{report.state || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm">{report.district || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm">{report.sub_district || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm">
+                                                                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase rounded border border-gray-200">
+                                                                        {report.industry || 'General'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-center">{report.financial_year || '-'}</td>
+                                                                <td className="px-4 py-3 text-sm text-right font-bold text-red-600">
+                                                                    ₹ {report.default_amount?.toLocaleString() || '0'}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-right font-bold text-amber-600">
+                                                                    ₹ {report.outstanding_amount?.toLocaleString() || '0'}
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan={17} className="py-32 text-center text-gray-400">
+                                                            <div className="text-5xl mb-6 opacity-20">📂</div>
+                                                            <p className="text-sm font-bold tracking-widest uppercase">No defaulters found</p>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    )}
                                 </div>
-                            ) : selectedUserDefaulters.length > 0 ? (
-                                <table className="w-full text-left border-separate border-spacing-y-4">
-                                    <thead>
-                                        <tr className="text-[10px] font-black text-black-400 tracking-[0.2em]">
-                                            <th className="px-6 py-2 font-black">Defaulter Company</th>
-                                            <th className="px-6 py-2 font-black">Defaulted Amount</th>
-                                            <th className="px-6 py-2 font-black">Recovered</th>
-                                            <th className="px-6 py-2 font-black">Approval Status</th>
-                                            <th className="px-6 py-2 text-right font-black">Date Reported</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="font-black text-gray-700">
-                                        {selectedUserDefaulters.map((report) => (
-                                            <tr key={report._id} className="bg-gray-50/50 hover:bg-gray-50 transition-all rounded-2xl shadow-sm">
-                                                <td className="px-6 py-5 rounded-l-2xl">
-                                                    <p className="text-sm">{report.defaulter_name}</p>
-                                                    <p className="text-[9px] text-[#000] tracking-wider mt-0.5">{report.industry || 'General'}</p>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <p className="text-sm text-[#000]">₹ {report.default_amount?.toLocaleString()}</p>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <p className="text-sm text-[#000]">₹ {(report.default_amount - (report.outstanding_amount || 0)).toLocaleString()}</p>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <span className={`px-4 py-1.5 rounded-xl text-[9px] border font-black ${report.status === 1 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>
-                                                        {report.status === 1 ? 'Approved' : 'Pending Approval'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-5 text-right rounded-r-2xl text-xs text-gray-400">
-                                                    {new Date(report.createdAt).toLocaleDateString('en-GB')}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            ) : (
-                                <div className="py-24 text-center">
-                                    <div className="text-5xl mb-6 opacity-20">🛡️</div>
-                                    <p className="text-sm font-black text-gray-400 tracking-wider">Zero infractions recorded</p>
-                                </div>
-                            )}
+                            </div>
                         </div>
 
-                        <div className="p-8 border-t border-gray-100 flex justify-end">
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="px-12 py-4 bg-gray-900 text-white text-[10px] font-black tracking-wider rounded-2xl hover:bg-black transition-all shadow-2xl active:scale-95"
-                            >
-                                Secure console
-                            </button>
-                        </div>
                     </div>
                 </div>
             )}
 
             {/* Sub-Member Modal */}
             {showSubModal && (
-                <div className="fixed inset-0 z-[210] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white">
-                            <div>
-                                <h3 className="text-xl font-black tracking-tight tracking-widest">Sub-member registry</h3>
-                                <p className="text-[10px] font-black text-white/60 tracking-wider mt-1">Found {selectedSubMembers.length} linked accounts for {selectedUser?.name}</p>
+                <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-[95vw] lg:max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
+                        {/* Modal Header */}
+                        <div className="bg-[#1b5e20] px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 text-white">
+                            <div className="flex items-center gap-3">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                <h3 className="text-lg font-bold tracking-tight">Sub-member registry</h3>
                             </div>
-                            <button
-                                onClick={() => setShowSubModal(false)}
-                                className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all"
-                            >
-                                ✕
-                            </button>
+                            
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => { setShowSubModal(false); setSubSearchTerm(''); }}
+                                    className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all flex-shrink-0 cursor-pointer"
+                                >
+                                    ✕
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="p-10 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                            {subModalLoading ? (
-                                <div className="py-24 text-center">
-                                    <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
-                                    <p className="text-sm font-black text-gray-400 tracking-wider animate-pulse">Retrieving entities...</p>
+                        {/* Modal Body */}
+                        <div className="p-4 md:p-6 overflow-hidden flex flex-col flex-1">
+                            <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm flex flex-col flex-1">
+                                <div className="overflow-x-auto overflow-y-auto max-h-full custom-scrollbar">
+                                    {subModalLoading ? (
+                                        <div className="py-24 text-center">
+                                            <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                            <p className="text-sm font-bold text-gray-400 tracking-wider animate-pulse uppercase">Retrieving records...</p>
+                                        </div>
+                                    ) : (
+                                        <table className="w-full text-left border-collapse">
+                                            <thead className="bg-[#051a02] text-white sticky top-0 z-10">
+                                                <tr className="divide-x divide-white/5">
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Name</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Email</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Phone</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Status</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Registered On</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100 font-medium text-gray-600">
+                                                {selectedSubMembers.filter(sub => 
+                                                    `${sub.firstName} ${sub.lastName}`.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
+                                                    sub.email?.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
+                                                    sub.phone?.includes(subSearchTerm)
+                                                ).length > 0 ? (
+                                                    selectedSubMembers
+                                                        .filter(sub => 
+                                                            `${sub.firstName} ${sub.lastName}`.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
+                                                            sub.email?.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
+                                                            sub.phone?.includes(subSearchTerm)
+                                                        )
+                                                        .map((sub, i) => (
+                                                            <tr key={sub._id} className="hover:bg-gray-50/50 transition-colors divide-x divide-gray-50">
+                                                                <td className="px-4 py-3 text-sm text-gray-900 font-bold">{sub.firstName} {sub.lastName || ''}</td>
+                                                                <td className="px-4 py-3 text-sm lowercase text-gray-500">{sub.email}</td>
+                                                                <td className="px-4 py-3 text-sm">{sub.phone}</td>
+                                                                <td className="px-4 py-3">
+                                                                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${sub.isActive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-gray-50 text-gray-400 border border-gray-100'}`}>
+                                                                        {sub.isActive ? 'Active' : 'Inactive'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-sm text-right text-gray-400">
+                                                                    {new Date(sub.createdAt).toLocaleDateString('en-GB')}
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan={5} className="py-24 text-center text-gray-400">
+                                                            <div className="text-5xl mb-6 opacity-20">👥</div>
+                                                            <p className="text-sm font-bold tracking-widest uppercase">No sub-members found</p>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    )}
                                 </div>
-                            ) : selectedSubMembers.length > 0 ? (
-                                <table className="w-full text-left border-separate border-spacing-y-4">
-                                    <thead>
-                                        <tr className="text-[10px] font-black text-gray-400 tracking-[0.2em]">
-                                            <th className="px-6 py-2">Name</th>
-                                            <th className="px-6 py-2">Email</th>
-                                            <th className="px-6 py-2">Phone</th>
-                                            <th className="px-6 py-2">Status</th>
-                                            <th className="px-6 py-2 text-right">Registered On</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="font-black text-gray-700">
-                                        {selectedSubMembers.map((sub) => (
-                                            <tr key={sub._id} className="bg-gray-50/50 hover:bg-gray-50 transition-all rounded-2xl shadow-sm italic">
-                                                <td className="px-6 py-5 rounded-l-2xl">
-                                                    <p className="text-sm">{sub.firstName} {sub.lastName || ''}</p>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <p className="text-xs lowercase">{sub.email}</p>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <p className="text-xs">{sub.phone}</p>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <span className={`px-4 py-1.5 rounded-xl text-[9px] border font-black ${sub.isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-gray-50 text-gray-400 border-gray-200'}`}>
-                                                        {sub.isActive ? 'Active' : 'Inactive'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-5 text-right rounded-r-2xl text-xs text-gray-400">
-                                                    {new Date(sub.createdAt).toLocaleDateString('en-GB')}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            ) : (
-                                <div className="py-24 text-center">
-                                    <div className="text-5xl mb-6 opacity-20">👥</div>
-                                    <p className="text-sm font-black text-gray-400 tracking-wider">No linked sub-members found</p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="p-8 border-t border-gray-100 flex justify-end">
-                            <button
-                                onClick={() => setShowSubModal(false)}
-                                className="px-12 py-4 bg-gray-900 text-white text-[10px] font-black tracking-wider rounded-2xl hover:bg-black transition-all shadow-2xl active:scale-95"
-                            >
-                                Close ledger
-                            </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -591,7 +652,7 @@ export default function AdminMembersPage() {
                     </div>
                 </div>
             )}
-
+            </div>
             <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 8px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

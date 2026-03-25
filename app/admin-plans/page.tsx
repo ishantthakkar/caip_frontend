@@ -147,155 +147,163 @@ const MembershipPlansPage = () => {
 
     return (
         <AdminPortalContainer title="Membership Plans">
-            <div className="flex flex-col gap-6 font-sans">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Membership Plan</h1>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="relative group">
-                            <input
-                                type="text"
-                                placeholder="Search plans..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-white border border-gray-200 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 text-xs font-bold text-gray-700 w-full md:w-64 transition-all shadow-sm"
-                            />
-                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            </span>
+            <div className="space-y-8 animate-in fade-in duration-500">
+                {/* Search and Action Toolbar */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+                        <div className="lg:col-span-8 space-y-1.5 flex flex-col">
+                            <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Search plans</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search by plan name or duration..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2 text-[15px] font-normal text-black placeholder-gray-400 outline-none focus:border-[#1b5e20] transition-all focus:bg-white shadow-sm"
+                                />
+                                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            </div>
                         </div>
 
-                        <button
-                            onClick={() => handleOpenModal()}
-                            className="bg-[#1b5e20] hover:bg-[#2e7d32] text-white px-6 py-2.5 rounded-xl font-bold text-[11px] uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-green-900/10 transition-all active:scale-95 shrink-0"
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            Add New Plan
-                        </button>
+                        <div className="lg:col-span-4 flex justify-end">
+                            <button
+                                onClick={() => handleOpenModal()}
+                                className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-[#1b5e20] text-white rounded-lg font-bold text-[13px] shadow-sm hover:bg-[#2e7d32] transition-all active:scale-95"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14" /></svg>
+                                Add New Plan
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* Table Container */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden min-h-[400px] flex flex-col">
-                    <div className="overflow-x-auto flex-1">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-[#1b5e20] text-white">
-                                    <th className="px-6 py-4 text-[10px] font-black text-white/90 border-b border-white/10">Plan Details</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-white/90 border-b border-white/10">Benefits</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-white/90 border-b border-white/10">Pricing</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-white/90 border-b border-white/10">Duration</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-white/90 border-b border-white/10 text-center">Sub-Members</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-white/90 border-b border-white/10">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <tr>
-                                        <td colSpan={6} className="px-6 py-20 text-center text-xs font-bold text-gray-400 uppercase animate-pulse">
-                                            Loading Plan Data...
-                                        </td>
-                                    </tr>
-                                ) : paginatedPlans.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} className="px-6 py-20 text-center text-xs font-bold text-gray-400 uppercase">
-                                            {searchTerm ? "No plans match your search" : "No plans defined"}
-                                        </td>
-                                    </tr>
-                                ) : paginatedPlans.map((plan) => (
-                                    <tr key={plan._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-5">
-                                            <span className="text-sm font-bold text-gray-900">{plan.name}</span>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {(Array.isArray(plan.benefits) ? plan.benefits : [plan.benefits]).map((benefit, i) => (
-                                                    <span key={i} className="px-2.5 py-1 bg-green-50 text-[10px] font-black text-emerald-700 rounded-lg border border-green-100 uppercase whitespace-nowrap">
-                                                        {benefit}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <span className="text-sm font-black text-gray-900 italic">₹{plan.price}</span>
-                                        </td>
-                                        <td className="px-6 py-5 text-center">
-                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200">
-                                                {plan.duration}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-5 text-center">
-                                            <span className="text-sm font-bold text-gray-900">{plan.subMemberLimit}</span>
-                                            <span className="text-[9px] font-bold text-gray-400 block uppercase mt-1">Founding Limit</span>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => handleOpenModal(plan)}
-                                                    className="p-2.5 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all border border-blue-100 shadow-sm active:scale-90"
-                                                    title="Edit Plan"
-                                                >
-                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(plan._id)}
-                                                    className="p-2.5 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all border border-rose-100 shadow-sm active:scale-90"
-                                                    title="Delete Plan"
-                                                >
-                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {/* Table Section */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                    <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="9" x2="9" y1="21" y2="9"/></svg>
+                        <h3 className="text-sm font-bold tracking-tight">Active Membership Plans</h3>
                     </div>
 
-                    {/* Pagination Footer */}
+                    <div className="p-4 md:p-5">
+                        <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
+                            <div className="overflow-x-auto overflow-y-auto max-h-[650px] custom-scrollbar">
+                                <table className="w-full text-left border-collapse min-w-[1000px]">
+                                    <thead className="sticky top-0 z-10 bg-[#051a02] text-white">
+                                        <tr className="divide-x divide-white/5">
+                                            <th className="px-6 py-3 text-sm font-semibold tracking-tight">Plan Details</th>
+                                            <th className="px-6 py-3 text-sm font-semibold tracking-tight">Benefits</th>
+                                            <th className="px-6 py-3 text-sm font-semibold tracking-tight">Pricing</th>
+                                            <th className="px-6 py-3 text-sm font-semibold tracking-tight text-center">Duration</th>
+                                            <th className="px-6 py-3 text-sm font-semibold tracking-tight text-center">Sub-Members</th>
+                                            <th className="px-6 py-3 text-sm font-semibold tracking-tight text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50 border-b border-gray-50 bg-white">
+                                        {loading ? (
+                                            <tr>
+                                                <td colSpan={6} className="py-24 text-center">
+                                                    <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
+                                                    <p className="text-sm font-medium text-gray-500 animate-pulse">Loading Membership Plans...</p>
+                                                </td>
+                                            </tr>
+                                        ) : paginatedPlans.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={6} className="py-24 text-center text-gray-400">
+                                                    <p className="text-sm font-medium tracking-widest uppercase italic">No Plans Identified</p>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            paginatedPlans.map((plan) => (
+                                                <tr key={plan._id} className="hover:bg-gray-50/50 transition-colors group">
+                                                    <td className="px-6 py-4">
+                                                        <span className="text-[14px] font-bold text-gray-900">{plan.name}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {(Array.isArray(plan.benefits) ? plan.benefits : [plan.benefits]).map((benefit, i) => (
+                                                                <span key={i} className="px-2.5 py-0.5 bg-green-50 text-[11px] font-bold text-emerald-700 rounded-lg border border-green-100 uppercase whitespace-nowrap">
+                                                                    {benefit}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="text-[14px] font-bold text-gray-900">₹{plan.price.toLocaleString()}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className="px-3 py-1 bg-gray-50 text-[11px] font-bold text-gray-500 rounded-full border border-gray-100 uppercase">
+                                                            {plan.duration}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <div className="inline-flex flex-col items-center">
+                                                            <span className="text-[14px] font-bold text-gray-900">{plan.subMemberLimit}</span>
+                                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Slots</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex justify-end gap-2">
+                                                            <button
+                                                                onClick={() => handleOpenModal(plan)}
+                                                                className="px-3 py-1.5 bg-green-50 text-[#1b5e20] rounded-lg text-[12px] font-bold hover:bg-[#1b5e20] hover:text-white transition-all shadow-sm active:scale-95 border border-green-100"
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(plan._id)}
+                                                                className="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-lg text-[12px] font-bold hover:bg-rose-600 hover:text-white transition-all shadow-sm active:scale-95 border border-rose-100"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     {!loading && filteredPlans.length > 0 && (
-                        <div className="px-6 py-4 border-t border-gray-50 flex items-center justify-between bg-gray-50/30">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                Page {currentPage} of {totalPages}
+                        <div className="px-6 py-4 border-t border-gray-50 flex items-center justify-between bg-white mt-auto">
+                            <span className="text-[12px] font-medium text-gray-500">
+                                Page <span className="font-bold text-gray-900">{currentPage}</span> of <span className="font-bold text-gray-900">{totalPages}</span>
                             </span>
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                                    className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
                                 >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                    Previous
                                 </button>
-
                                 <div className="flex items-center gap-1">
                                     {Array.from({ length: totalPages }).map((_, idx) => {
                                         const pageNum = idx + 1;
-                                        // Simple logic to show only few pages if many exist
-                                        if (totalPages > 5 && (pageNum > 1 && pageNum < totalPages) && (pageNum < currentPage - 1 || pageNum > currentPage + 1)) {
-                                            if (pageNum === currentPage - 2 || pageNum === currentPage + 2) return <span key={pageNum} className="text-gray-300">...</span>;
-                                            return null;
+                                        if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                                            return (
+                                                <button
+                                                    key={pageNum}
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                    className={`w-9 h-9 rounded-lg text-[12px] font-bold transition-all ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                                >
+                                                    {pageNum}
+                                                </button>
+                                            );
+                                        } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                                            return <span key={pageNum} className="text-gray-300">...</span>;
                                         }
-                                        return (
-                                            <button
-                                                key={pageNum}
-                                                onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-8 h-8 rounded-lg text-[10px] font-bold transition-all ${currentPage === pageNum ? 'bg-[#1b5e20] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
-                                            >
-                                                {pageNum}
-                                            </button>
-                                        );
+                                        return null;
                                     })}
                                 </div>
-
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                                     disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                                    className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-[12px] font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
                                 >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                    Next
                                 </button>
                             </div>
                         </div>
@@ -303,96 +311,99 @@ const MembershipPlansPage = () => {
                 </div>
             </div>
 
-            {/* Plan Modal */}
+            {/* Plan Configuration Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto pt-20 pb-20">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-[#051a02]/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20">
                         {/* Modal Header */}
-                        <div className="bg-[#1b5e20] p-6 text-white relative">
-                            <h2 className="text-xl font-bold">{editingPlan ? 'Update Plan' : 'Create New Plan'}</h2>
-                            <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest mt-1">Membership Configuration Console</p>
+                        <div className="bg-[#1b5e20] p-6 text-white flex justify-between items-center relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                                <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm0 2a8 8 0 100 16 8 8 0 000-16zM13 7v2h-2V7h2zm0 4v6h-2v-6h2z"/></svg>
+                            </div>
+                            <div>
+                                <h3 className="text-[18px] font-bold tracking-tight relative z-10">{editingPlan ? 'Edit Plan' : 'Add New Plan'}</h3>
+                            </div>
                             <button
                                 onClick={() => setIsModalOpen(false)}
-                                className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors"
+                                className="text-white/70 hover:text-white transition-colors relative z-10 p-2"
                             >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
                             </button>
                         </div>
 
-                        {/* Modal Form */}
-                        <form onSubmit={handleSubmit} className="p-8 space-y-5">
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 mb-1.5 block">Plan Name</label>
+                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                            <div className="space-y-1.5 flex flex-col">
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Plan Name</label>
+                                <input
+                                    type="text" required placeholder="e.g. Standard Member" value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5 flex flex-col">
+                                    <label className="text-[13px] font-bold text-gray-700 ml-1">Price (₹)</label>
                                     <input
-                                        type="text"
-                                        required
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
-                                        placeholder="e.g. Standard Member"
+                                        type="number" required placeholder="3000" value={formData.price}
+                                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                        className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
                                     />
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 mb-1.5 block">Price (₹)</label>
-                                        <input
-                                            type="number"
-                                            required
-                                            value={formData.price}
-                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
-                                            placeholder="3000"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 mb-1.5 block">Duration</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.duration}
-                                            onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
-                                            placeholder="e.g. 1 Year"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 mb-1.5 block">Sub-Member Limit</label>
+                                <div className="space-y-1.5 flex flex-col">
+                                    <label className="text-[13px] font-bold text-gray-700 ml-1">Duration</label>
                                     <input
-                                        type="number"
-                                        required
-                                        value={formData.subMemberLimit}
-                                        onChange={(e) => setFormData({ ...formData, subMemberLimit: e.target.value })}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all"
-                                        placeholder="5"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 mb-1.5 block">Benefits (Comma Separated)</label>
-                                    <textarea
-                                        required
-                                        value={formData.benefits}
-                                        onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold text-gray-900 focus:bg-white focus:border-[#1b5e20] focus:ring-4 focus:ring-green-500/5 outline-none transition-all h-24 no-scrollbar"
-                                        placeholder="Feature 1, Feature 2, Feature 3..."
+                                        type="text" required placeholder="e.g. 1 Year" value={formData.duration}
+                                        onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                                        className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
                                     />
                                 </div>
                             </div>
 
-                            <button
-                                type="submit"
-                                className="w-full bg-[#1b5e20] hover:bg-[#2e7d32] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-green-900/10 transition-all active:scale-[0.98] mt-4"
-                            >
-                                {editingPlan ? 'Update Plan' : 'Create Plan'}
-                            </button>
+                            <div className="space-y-1.5 flex flex-col">
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Sub-Member Limit</label>
+                                <input
+                                    type="number" required placeholder="5 slots available" value={formData.subMemberLimit}
+                                    onChange={(e) => setFormData({ ...formData, subMemberLimit: e.target.value })}
+                                    className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5 flex flex-col">
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Benefits (Comma Separated)</label>
+                                <textarea
+                                    required placeholder="Feature 1, Feature 2, Feature 3..." value={formData.benefits}
+                                    onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
+                                    className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm min-h-[100px] resize-none"
+                                />
+                            </div>
+
+                            <div className="pt-4 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="px-6 py-2.5 rounded-xl font-bold text-[13px] text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm active:scale-95"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2.5 rounded-xl font-bold text-[13px] text-white bg-[#1b5e20] hover:bg-[#2e7d32] transition-colors shadow-lg active:scale-95"
+                                >
+                                    {editingPlan ? 'Save Changes' : 'Create Plan'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             )}
+
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 20px; border: 2px solid transparent; background-clip: content-box; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; background-clip: content-box; }
+            `}</style>
         </AdminPortalContainer>
     );
 };
