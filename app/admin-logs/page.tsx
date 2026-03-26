@@ -9,6 +9,7 @@ export default function AdminActivityLogsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activityFilter, setActivityFilter] = useState('all');
+    const [selectedCompany, setSelectedCompany] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15;
 
@@ -34,6 +35,12 @@ export default function AdminActivityLogsPage() {
         }
     };
 
+    const companies = useMemo(() => {
+        const unique = Array.from(new Set(logs.map(log => log.companyName).filter(Boolean)));
+        // Exclude Admin from company filter list
+        return unique.filter(c => c.toUpperCase() !== 'ADMIN').sort();
+    }, [logs]);
+
     const filteredLogs = useMemo(() => {
         let result = logs;
 
@@ -58,6 +65,11 @@ export default function AdminActivityLogsPage() {
             });
         }
 
+        // Filter by Company
+        if (selectedCompany !== 'all') {
+            result = result.filter(log => log.companyName === selectedCompany);
+        }
+
         // Filter by Search Term
         if (searchTerm.trim()) {
             const term = searchTerm.toLowerCase();
@@ -71,11 +83,11 @@ export default function AdminActivityLogsPage() {
         }
 
         return result;
-    }, [searchTerm, activityFilter, logs]);
+    }, [searchTerm, activityFilter, selectedCompany, logs]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, activityFilter]);
+    }, [searchTerm, activityFilter, selectedCompany]);
 
     const totalPages = Math.max(1, Math.ceil(filteredLogs.length / itemsPerPage));
     const paginatedLogs = filteredLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -87,7 +99,7 @@ export default function AdminActivityLogsPage() {
                     {/* Search and Filters */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-                            <div className="lg:col-span-3 space-y-1.5">
+                            <div className="lg:col-span-2 space-y-1.5">
                                 <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Activity type</label>
                                 <select
                                     value={activityFilter}
@@ -99,17 +111,29 @@ export default function AdminActivityLogsPage() {
                                     <option value="Defaulter Report">Defaulter report</option>
                                     <option value="Recovery Amount Added">Recovery amount added</option>
                                     <option value="Membership Renewal">Membership renewal</option>
-                                    <option value="Report Downloaded">Report downloaded</option>
                                     <option value="System Login">System login</option>
                                     <option value="System Logout">System logout</option>
                                     <option value="Sub-Member Added">Sub-member added</option>
                                     <option value="Sub-Member Deactivated">Sub-member deactivated</option>
-                                    <option value="Password Change">Password change</option>
                                     <option value="Profile Update">Profile update</option>
                                 </select>
                             </div>
 
-                            <div className="lg:col-span-8 space-y-1.5">
+                            <div className="lg:col-span-3 space-y-1.5">
+                                <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Company</label>
+                                <select
+                                    value={selectedCompany}
+                                    onChange={(e) => setSelectedCompany(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all cursor-pointer"
+                                >
+                                    <option value="all">All Companies</option>
+                                    {companies.map(company => (
+                                        <option key={company} value={company}>{company}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="lg:col-span-6 space-y-1.5">
                                 <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Search records</label>
                                 <div className="relative">
                                     <input
@@ -119,7 +143,7 @@ export default function AdminActivityLogsPage() {
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2 text-[15px] font-normal text-black placeholder-gray-400 outline-none focus:border-[#1b5e20] transition-all"
                                     />
-                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                                 </div>
                             </div>
 
@@ -129,7 +153,7 @@ export default function AdminActivityLogsPage() {
                                     className="w-full bg-gray-50 border border-gray-100 rounded-lg p-2.5 text-gray-500 hover:text-[#1b5e20] hover:bg-green-50 transition-all flex items-center justify-center shadow-sm active:scale-95"
                                     title="Refresh Data"
                                 >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></svg>
                                 </button>
                             </div>
                         </div>
@@ -138,7 +162,7 @@ export default function AdminActivityLogsPage() {
                     {/* Table Section */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
                         <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
                             <h3 className="text-sm font-bold tracking-tight">Activity Logs</h3>
                         </div>
 

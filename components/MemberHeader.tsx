@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { API_BASE_URL } from '@/config/apiConfig';
+import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
 
 interface MemberHeaderProps {
     user: any;
@@ -207,7 +207,11 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
                         className="flex items-center gap-2 cursor-pointer group py-1 px-1 pr-6 rounded-full transition-all"
                     >
                         <div className="w-10 h-10 rounded-full bg-white border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
-                            <span className="text-gray-400 text-xl">👤</span>
+                            <img 
+                                src={user?.profileImage ? `${ASSETS_BASE_URL}uploads/${user.profileImage}` : "/default-avatar.jpg"} 
+                                alt="Profile" 
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-xs text-black whitespace-nowrap font-serif font-bold">

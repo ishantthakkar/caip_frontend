@@ -26,36 +26,49 @@ export default function MemberPortalContainer({
     const [isCollapsed, setIsCollapsed] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
+        const checkUser = () => {
+            const token = localStorage.getItem('token');
+            const userData = localStorage.getItem('user');
 
-        if (!token || !userData) {
-            router.push('/');
-        } else {
-            // JWT Expiration check
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                if (payload.exp * 1000 < Date.now()) {
+            if (!token || !userData) {
+                router.push('/');
+            } else {
+                // JWT Expiration check
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.exp * 1000 < Date.now()) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        router.push('/');
+                        return;
+                    }
+                } catch (e) {
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
                     router.push('/');
                     return;
                 }
-            } catch (e) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                router.push('/');
-                return;
-            }
 
-            const parsedUser = JSON.parse(userData);
-            setUser(parsedUser);
-            if (!skipMembershipCheck && parsedUser.membership_status === "0") {
-                router.push('/profile');
-            } else {
-                setLoading(false);
+                const parsedUser = JSON.parse(userData);
+                setUser(parsedUser);
+                if (!skipMembershipCheck && parsedUser.membership_status === "0") {
+                    router.push('/profile');
+                } else {
+                    setLoading(false);
+                }
             }
-        }
+        };
+
+        checkUser();
+
+        // Listen for updates (local event or same-origin storage changes)
+        window.addEventListener('user-update', checkUser);
+        window.addEventListener('storage', checkUser);
+
+        return () => {
+            window.removeEventListener('user-update', checkUser);
+            window.removeEventListener('storage', checkUser);
+        };
     }, [router, skipMembershipCheck]);
 
     if (loading || !user) {

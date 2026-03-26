@@ -21,6 +21,9 @@ export default function ProfilePage() {
     const [saving, setSaving] = useState(false);
     const [hasMounted, setHasMounted] = useState(false);
     const [businessDocs, setBusinessDocs] = useState<FileList | null>(null);
+    const [showAvatarEdit, setShowAvatarEdit] = useState(false);
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
     useEffect(() => {
         setHasMounted(true);
@@ -134,16 +137,23 @@ export default function ProfilePage() {
 
             // Append all non-file fields
             Object.keys(formData).forEach(key => {
-                if (key !== 'businessDocuments' && formData[key] !== null && formData[key] !== undefined) {
-                    data.append(key, formData[key]);
+                if (!['businessDocuments', 'profileImage', 'attachment_documents', 'payments', 'user_id', '_id', 'createdAt', 'updatedAt', '__v'].includes(key)) {
+                    if (formData[key] !== null && formData[key] !== undefined) {
+                        data.append(key, formData[key]);
+                    }
                 }
             });
 
-            // Append files if any
+            // Append business documents if any
             if (businessDocs) {
                 Array.from(businessDocs).forEach(file => {
                     data.append('businessDocuments', file);
                 });
+            }
+
+            // Append profile image if any
+            if (avatarFile) {
+                data.append('profileImage', avatarFile);
             }
 
             const response = await fetch(`${API_BASE_URL}update-profile`, {
@@ -159,8 +169,12 @@ export default function ProfilePage() {
                 setUser(resData.data);
                 setFormData(resData.data);
                 localStorage.setItem('user', JSON.stringify(resData.data));
+                window.dispatchEvent(new Event('user-update'));
                 setIsEditing(false);
+                setShowAvatarEdit(false);
                 setBusinessDocs(null);
+                setAvatarFile(null);
+                setAvatarPreview(null);
                 alert('Profile updated successfully!');
             }
         } catch (error) {
@@ -214,19 +228,33 @@ export default function ProfilePage() {
                 <div className="w-full lg:w-[350px] shrink-0">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
                         {/* Header Image section */}
+                        {/* Header Image section */}
                         <div className="h-32 bg-gradient-to-br from-[#4a90e2] to-[#2b5876] relative">
-                            <div className="absolute top-2 right-2 text-white/50 cursor-pointer">
+                            <button
+                                onClick={() => setShowAvatarEdit(true)}
+                                className="absolute top-2 right-2 text-white/50 hover:text-white transition-colors cursor-pointer p-2 rounded-lg"
+                            >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                                 </svg>
-                            </div>
+                            </button>
                         </div>
 
                         {/* Profile Info */}
                         <div className="relative pt-14 pb-8 px-8 flex flex-col items-center flex-1">
                             {/* Avatar */}
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white bg-gray-100 shadow-sm overflow-hidden flex items-center justify-center">
-                                <span className="text-gray-300 text-6xl">👤</span>
+                            <div 
+                                onClick={() => setShowAvatarEdit(true)}
+                                className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white bg-white shadow-sm overflow-hidden flex items-center justify-center cursor-pointer group"
+                            >
+                                <img 
+                                    src={user.profileImage ? `${ASSETS_BASE_URL}uploads/${user.profileImage}` : (avatarPreview || "/default-avatar.jpg")} 
+                                    alt="Profile" 
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                </div>
                             </div>
 
                             <h3 className="text-xl font-bold text-gray-800 mb-8">{user.name || "User Name"}</h3>
@@ -659,6 +687,78 @@ export default function ProfilePage() {
                 )}
             </div>
         </div>
+            {showAvatarEdit && (
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="relative bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300">
+                        <div className="px-6 py-4 bg-[#1b5e20] text-white flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <h3 className="text-lg font-bold">Edit Profile</h3>
+                            </div>
+                            <button onClick={() => setShowAvatarEdit(false)} className="hover:rotate-90 transition-transform">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            </button>
+                        </div>
+                        <form onSubmit={handleUpdate} className="p-8 space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700">Display Name</label>
+                                <input 
+                                    type="text" 
+                                    value={formData.name || ""} 
+                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                    className="w-full border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-green-600 transition-colors bg-gray-50/30"
+                                    placeholder="Enter your name"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700">Profile Image</label>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 rounded-full border-2 border-gray-100 overflow-hidden shrink-0">
+                                        <img 
+                                            src={avatarPreview || (user.profileImage ? `${ASSETS_BASE_URL}uploads/${user.profileImage}` : "/default-avatar.jpg")} 
+                                            alt="Preview" 
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <div className="relative flex-1">
+                                        <input 
+                                            type="file" 
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    setAvatarFile(file);
+                                                    setAvatarPreview(URL.createObjectURL(file));
+                                                }
+                                            }}
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                        />
+                                        <div className="border-2 border-dashed border-gray-200 rounded-xl p-3 text-center text-[11px] font-bold text-gray-400 group-hover:border-green-300">
+                                            {avatarFile ? avatarFile.name : "Choose Profile Image"}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="pt-4 flex items-center justify-end gap-3">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowAvatarEdit(false)}
+                                    className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-500 font-bold text-sm hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={saving}
+                                    className="px-8 py-2.5 rounded-xl bg-[#1b5e20] text-white font-bold text-sm shadow-lg hover:bg-green-800 transition-all disabled:opacity-50"
+                                >
+                                    {saving ? "Saving..." : "Save Changes"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </MemberPortalContainer>
     );
 }

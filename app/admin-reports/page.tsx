@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminPortalContainer from '@/components/AdminPortalContainer';
-import { API_BASE_URL } from '@/config/apiConfig';
+import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
 
 const dateFilterOptions = [
     'All', 'Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days', 'This Month', 'Last Month', 'Custom Range'
@@ -25,7 +25,7 @@ export default function AdminReportsPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    const [selectedMemberCompany, setSelectedMemberCompany] = useState('All');
+    const [selectedDefaulterCompany, setSelectedDefaulterCompany] = useState('All');
     const [selectedDefaulter, setSelectedDefaulter] = useState<any | null>(null);
 
     // Initial load
@@ -74,20 +74,24 @@ export default function AdminReportsPage() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [filterOption, customStart, customEnd, searchTerm, reportType, selectedMemberCompany]);
+    }, [filterOption, customStart, customEnd, searchTerm, reportType, selectedDefaulterCompany]);
 
     // Reset company filter on report type change
     useEffect(() => {
-        setSelectedMemberCompany('All');
+        setSelectedDefaulterCompany('All');
     }, [reportType]);
 
-    const reportingMemberCompanies = useMemo(() => {
-        const comps = defaulters.map(d => d.user_id?.companyName).filter(Boolean);
+    const defaulterCompanies = useMemo(() => {
+        const comps = defaulters.map(d => d.defaulter_name).filter(Boolean);
         return ['All', ...Array.from(new Set(comps)).sort()];
     }, [defaulters]);
 
     const filterByDateAndSearch = (items: any[], type: string) => {
         let filtered = [...items];
+
+        if (type === 'Member Report') {
+            filtered = filtered.filter(item => item.status === '1' || item.status === 1);
+        }
 
         // Date Filtering
         if (filterOption !== 'All') {
@@ -134,9 +138,9 @@ export default function AdminReportsPage() {
             });
         }
 
-        // Member Company Filter (for Defaulter Report)
-        if (type === 'Defaulter Report' && selectedMemberCompany !== 'All') {
-            filtered = filtered.filter(item => item.user_id?.companyName === selectedMemberCompany);
+        // Defaulter Company Filter (for Defaulter Report)
+        if (type === 'Defaulter Report' && selectedDefaulterCompany !== 'All') {
+            filtered = filtered.filter(item => item.defaulter_name === selectedDefaulterCompany);
         }
 
         // Text Search
@@ -173,7 +177,7 @@ export default function AdminReportsPage() {
 
     const activeFilteredData = useMemo(() => {
         return filterByDateAndSearch(reportType === 'Member Report' ? members : defaulters, reportType);
-    }, [members, defaulters, reportType, filterOption, customStart, customEnd, searchTerm, selectedMemberCompany]);
+    }, [members, defaulters, reportType, filterOption, customStart, customEnd, searchTerm, selectedDefaulterCompany]);
 
     const totalPages = Math.max(1, Math.ceil(activeFilteredData.length / itemsPerPage));
     const paginatedData = activeFilteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -199,13 +203,13 @@ export default function AdminReportsPage() {
 
                             {reportType === 'Defaulter Report' && (
                                 <div className="lg:col-span-3 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-300">
-                                    <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Member Company</label>
+                                    <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Defaulter Company</label>
                                     <select
-                                        value={selectedMemberCompany}
-                                        onChange={(e) => setSelectedMemberCompany(e.target.value)}
+                                        value={selectedDefaulterCompany}
+                                        onChange={(e) => setSelectedDefaulterCompany(e.target.value)}
                                         className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-2 text-[15px] font-normal text-gray-700 outline-none focus:border-[#1b5e20] transition-all cursor-pointer"
                                     >
-                                        {reportingMemberCompanies.map(comp => (
+                                        {defaulterCompanies.map(comp => (
                                             <option key={comp} value={comp}>{comp}</option>
                                         ))}
                                     </select>
@@ -256,7 +260,7 @@ export default function AdminReportsPage() {
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2 text-[15px] font-normal text-black placeholder-gray-400 outline-none focus:border-[#1b5e20] transition-all"
                                     />
-                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                                 </div>
                             </div>
                         </div>
@@ -265,7 +269,7 @@ export default function AdminReportsPage() {
                     {/* Table Section */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
                         <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                             <h3 className="text-sm font-bold tracking-tight">{reportType} List</h3>
                         </div>
 
@@ -277,21 +281,22 @@ export default function AdminReportsPage() {
                                             <thead className="sticky top-0 z-10 bg-[#051a02] text-white">
                                                 <tr className="divide-x divide-white/5">
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight">Member Id</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Company Name</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight">Name</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight">Email</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight">Phone</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight">State</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight">District</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub District</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Organization</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">City/Town/Village</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Status</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Type</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Industry Type</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Joined On</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Expiry Date</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Payment</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Method</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Reports</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Searches</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Membership Expiry</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Membership Payment</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Payment Method</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Defaulter Reported</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Defaulter Searches</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-50">
@@ -305,7 +310,7 @@ export default function AdminReportsPage() {
                                                 ) : paginatedData.length === 0 ? (
                                                     <tr>
                                                         <td colSpan={16} className="py-32 text-center text-gray-400">
-                                                            <p className="text-sm font-medium tracking-widest uppercase">No Records Found</p>
+                                                            <p className="text-sm font-medium tracking-widest ">No Records Found</p>
                                                         </td>
                                                     </tr>
                                                 ) : (
@@ -316,13 +321,14 @@ export default function AdminReportsPage() {
                                                                     {item.memberId || 'N/A'}
                                                                 </span>
                                                             </td>
+                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-gray-900">{item.companyName || 'N/A'}</td>
                                                             <td className="px-4 py-3.5 text-[14px] font-normal text-gray-900">{item.name}</td>
                                                             <td className="px-4 py-3.5 text-[14px] font-normal text-gray-600">{item.email}</td>
                                                             <td className="px-4 py-3.5 text-[14px] font-normal text-gray-700">{item.phone}</td>
                                                             <td className="px-4 py-3.5 text-[14px] font-normal text-[#1b5e20]">{item.state || 'N/A'}</td>
                                                             <td className="px-4 py-3.5 text-[14px] font-normal text-gray-700">{item.district || 'N/A'}</td>
+                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-gray-700">{item.city || 'N/A'}</td>
                                                             <td className="px-4 py-3.5 text-[14px] font-normal text-gray-700">{item.subDistrict || 'N/A'}</td>
-                                                            <td className="px-4 py-3.5 text-[14px] font-normal text-gray-900">{item.companyName || 'N/A'}</td>
                                                             <td className="px-4 py-3.5 text-center">
                                                                 <span className={`text-[11px] font-bold px-3 py-1.5 rounded-md inline-block min-w-[90px] ${item.status === '1' || item.status === 1 ? 'bg-green-100 text-green-700 border border-green-200' :
                                                                     item.status === '2' || item.status === 2 ? 'bg-red-100 text-red-700 border border-red-200' :
@@ -331,17 +337,17 @@ export default function AdminReportsPage() {
                                                                     {item.status === '1' || item.status === 1 ? 'ACTIVE' : item.status === '2' || item.status === 2 ? 'DEACTIVATED' : 'PENDING'}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-4 py-3.5 text-center text-[13px] font-normal text-gray-600 uppercase">
+                                                            <td className="px-4 py-3.5 text-center text-[13px] font-normal text-gray-600 ">
                                                                 {item.businessType || 'Member'}
                                                             </td>
                                                             <td className="px-4 py-3.5 text-center text-[13px] font-normal text-gray-600 whitespace-nowrap">
                                                                 {new Date(item.createdAt).toLocaleDateString('en-GB')}
                                                             </td>
                                                             <td className="px-4 py-3.5 text-center text-[13px] font-normal text-gray-600">
-                                                                {item.membershipExpiry === 'Lifetime' 
-                                                                    ? 'Lifetime' 
-                                                                    : (item.membershipExpiry && item.membershipExpiry !== 'N/A' 
-                                                                        ? new Date(item.membershipExpiry).toLocaleDateString('en-GB') 
+                                                                {item.membershipExpiry === 'Lifetime'
+                                                                    ? 'Lifetime'
+                                                                    : (item.membershipExpiry && item.membershipExpiry !== 'N/A'
+                                                                        ? new Date(item.membershipExpiry).toLocaleDateString('en-GB')
                                                                         : 'N/A')}
                                                             </td>
                                                             <td className="px-4 py-3.5 text-center">
@@ -368,61 +374,109 @@ export default function AdminReportsPage() {
                                             </tbody>
                                         </table>
                                     ) : (
-                                        <table className="w-full text-left border-collapse min-w-[800px]">
+                                        <table className="w-full text-left border-collapse min-w-[2200px]">
                                             <thead className="sticky top-0 z-10 bg-[#051a02] text-white">
-                                                <tr className="divide-x divide-white/5">
+                                                <tr className="divide-x divide-white/5 whitespace-nowrap">
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight">Date</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight">Defaulter Company</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Amount</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">GST</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">PAN</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">CIN</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported By Person</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported By Company</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Default Amount</th>
                                                     <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Outstanding</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Status</th>
-                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Action</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Defaulter Status</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Recovery Status</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">State</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">District</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub District</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">City/Town/Village</th>
+                                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Action</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-gray-50">
+                                            <tbody className="divide-y divide-gray-50 whitespace-nowrap text-[13px] font-medium text-gray-700">
                                                 {loading ? (
                                                     <tr>
-                                                        <td colSpan={6} className="py-24 text-center">
+                                                        <td colSpan={16} className="py-24 text-center">
                                                             <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
                                                             <p className="text-sm font-medium text-gray-500 animate-pulse">Loading Defaulter Records...</p>
                                                         </td>
                                                     </tr>
                                                 ) : paginatedData.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan={6} className="py-32 text-center text-gray-400">
-                                                            <p className="text-sm font-medium tracking-widest uppercase">No Records Found</p>
+                                                        <td colSpan={16} className="py-32 text-center text-gray-400">
+                                                            <p className="text-sm font-medium tracking-widest ">No Records Found</p>
                                                         </td>
                                                     </tr>
                                                 ) : (
                                                     paginatedData.map((item, i) => {
                                                         const isPaid = Number(item.outstanding_amount ?? item.default_amount) === 0;
                                                         return (
-                                                            <tr key={item._id || i} className="hover:bg-gray-50/50 transition-colors group">
-                                                                <td className="px-4 py-3.5 text-[14px] font-normal text-gray-600">
+                                                            <tr key={item._id || i} className="hover:bg-gray-50/50 transition-colors group divide-x divide-gray-50/50">
+                                                                <td className="px-4 py-3.5 text-gray-500 font-normal">
                                                                     {new Date(item.createdAt).toLocaleDateString('en-GB')}
                                                                 </td>
-                                                                <td className="px-4 py-3.5">
-                                                                    <p className="text-[14px] font-normal text-gray-900">{item.defaulter_name}</p>
-                                                                    <p className="text-[11px] font-medium text-gray-400 mt-0.5">GST: {item.gst_number || 'N/A'}</p>
+                                                                <td className="px-4 py-3.5 font-bold text-gray-900">
+                                                                    {item.defaulter_name}
                                                                 </td>
-                                                                <td className="px-4 py-3.5 text-right text-[14px] font-bold text-gray-900">
+                                                                <td className="px-4 py-3.5 font-mono text-gray-500  tracking-tighter">
+                                                                    {item.gst_number || '---'}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 font-mono text-gray-500  tracking-tighter">
+                                                                    {item.pan_number || '---'}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 font-mono text-gray-500  tracking-tighter">
+                                                                    {item.cin_number || '---'}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 font-bold">
+                                                                    {item.user_id?.name || '---'}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 font-bold">
+                                                                    {item.user_id?.companyName || '---'}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-right font-bold text-gray-900 font-sans">
                                                                     ₹{Number(item.default_amount || 0).toLocaleString('en-IN')}
                                                                 </td>
-                                                                <td className="px-4 py-3.5 text-right text-[14px] font-bold text-green-700">
+                                                                <td className="px-4 py-3.5 text-right font-bold text-rose-600 font-sans">
                                                                     ₹{Number(item.outstanding_amount ?? item.default_amount).toLocaleString('en-IN')}
                                                                 </td>
-                                                                <td className="px-4 py-3.5 text-center">
-                                                                    <span className={`text-[11px] font-bold px-3 py-1.5 rounded-md inline-block min-w-[90px] ${item.status === 1 ? 'bg-green-100 text-green-700' :
-                                                                        item.status === 2 ? 'bg-red-100 text-red-700' :
-                                                                            'bg-amber-100 text-amber-700'
-                                                                        }`}>
-                                                                        {item.status === 1 ? 'APPROVED' : item.status === 2 ? 'REJECTED' : 'PENDING'}
+                                                                <td className="px-4 py-3.5">
+                                                                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold border ${isPaid ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-50 text-red-600 border-red-100'}`}>
+                                                                        {isPaid ? 'Not Defaulter' : 'Defaulter'}
                                                                     </span>
                                                                 </td>
-                                                                <td className="px-4 py-3.5 text-right">
+                                                                <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                                                                    {(() => {
+                                                                        const dAmount = Number(item.default_amount || 0);
+                                                                        const oAmount = Number(item.outstanding_amount ?? item.default_amount ?? 0);
+                                                                        const rAmount = dAmount - oAmount;
+
+                                                                        if (oAmount === 0) {
+                                                                            return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-emerald-50 text-emerald-600 border-emerald-100">Paid</span>;
+                                                                        } else if (rAmount > 0) {
+                                                                            return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-amber-50 text-amber-600 border-amber-100 ">Partially Paid</span>;
+                                                                        } else {
+                                                                            return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-rose-50 text-rose-600 border-rose-100">Not Paid</span>;
+                                                                        }
+                                                                    })()}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-gray-900">
+                                                                    {item.state || '---'}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-gray-900 ">
+                                                                    {item.district || '---'}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-gray-700">
+                                                                    {item.cities || item.sub_district || '---'}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-gray-700">
+                                                                    {item.city || '---'}
+                                                                </td>
+                                                                <td className="px-4 py-3.5 text-center">
                                                                     <button
                                                                         onClick={() => setSelectedDefaulter(item)}
-                                                                        className="px-4 py-1.5 bg-gray-50 text-gray-700 text-[12px] font-medium rounded-lg hover:bg-[#1b5e20] hover:text-white transition-all border border-gray-200 shadow-sm active:scale-95"
+                                                                        className="px-4 py-1.5 bg-gray-50 text-gray-700 text-[11px] font-bold rounded-lg hover:bg-[#1b5e20] hover:text-white transition-all border border-gray-200 shadow-sm active:scale-95  tracking-wider"
                                                                     >
                                                                         View Details
                                                                     </button>
@@ -487,79 +541,236 @@ export default function AdminReportsPage() {
             {/* View Defaulter Data Modal */}
             {selectedDefaulter && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
-                        <div className="bg-[#1b5e20] px-6 py-4 flex justify-between items-center text-white">
+                    <div className="bg-white w-full max-w-[95vw] lg:max-w-7xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
+                        {/* Modal Header */}
+                        <div className="bg-[#1b5e20] px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 text-white">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">🛡️</div>
-                                <div>
-                                    <h3 className="text-lg font-bold tracking-tight">Defaulter Record</h3>
-                                    <p className="text-[11px] font-medium text-white/60 capitalize mt-0.5">Reported on {new Date(selectedDefaulter.createdAt).toLocaleDateString()}</p>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                <h3 className="text-lg font-bold tracking-tight">Defaulter Record Details</h3>
+                            </div>
+
+                            <button
+                                onClick={() => setSelectedDefaulter(null)}
+                                className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-4 md:p-8 overflow-y-auto custom-scrollbar flex-1 space-y-10 bg-white">
+                            {/* Section 1: Defaulter Company Details */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-[#1b5e20] rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter Company Details</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Defaulter Company name" value={selectedDefaulter.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                    <DetailRow label="Industry" value={selectedDefaulter.industry || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
+                                    <DetailRow label="GST" value={selectedDefaulter.gst_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
+                                    <DetailRow label="Pan" value={selectedDefaulter.pan_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
+                                    <DetailRow label="CIN" value={selectedDefaulter.cin_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
+                                    <DetailRow label="Aadhar" value={selectedDefaulter.aadhar_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
                                 </div>
                             </div>
-                            <button onClick={() => setSelectedDefaulter(null)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">✕</button>
+
+                            {/* Section 2: Contact & Location */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-[#ffcd1e] rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Contact & Address</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Mobile" value={selectedDefaulter.mobile_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>} />
+                                    <DetailRow label="Email" value={selectedDefaulter.email_id} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>} />
+                                    <DetailRow label="State" value={selectedDefaulter.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
+                                    <DetailRow label="District" value={selectedDefaulter.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
+                                    <DetailRow label="Sub District" value={selectedDefaulter.cities || selectedDefaulter.sub_district || '---'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
+                                    <DetailRow label="City/Town/Village" value={selectedDefaulter.city || '---'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
+                                </div>
+                            </div>
+
+                            {/* Section 3: Financial Status */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-[#1b5e20] rounded-full opacity-50"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Financial status</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Default amount" value={`₹${Number(selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={
+                                        <svg
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                        >
+                                            <path d="M6 4h10" />
+                                            <path d="M6 8h10" />
+                                            <path d="M6 12h6a4 4 0 0 0 0-8" />
+                                            <path d="M10 12l5 8" />
+                                        </svg>
+                                    } />
+                                    <DetailRow label="Outstanding" value={`₹${Number(selectedDefaulter.outstanding_amount ?? selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={
+                                        <svg
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                        >
+                                            <path d="M6 4h10" />
+                                            <path d="M6 8h10" />
+                                            <path d="M6 12h6a4 4 0 0 0 0-8" />
+                                            <path d="M10 12l5 8" />
+                                        </svg>
+                                    } />
+                                    <DetailRow label="Date of default" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString('en-GB') : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
+                                    <DetailRow label="Financial year" value={selectedDefaulter.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
+                                    <DetailRow label="Recovery Amount" value={`₹${Number(selectedDefaulter.recovery_amount || 0).toLocaleString()}`} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" /><path d="M12 18V6" /></svg>} />
+                                </div>
+                            </div>
+
+                            {/* Section 4: Legal & Proceedings */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-gray-300 rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & proceedings</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Court name" value={selectedDefaulter.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
+                                    <DetailRow label="Case number" value={selectedDefaulter.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
+                                    <DetailRow label="Case type" value={selectedDefaulter.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
+                                    <DetailRow label="Case year" value={selectedDefaulter.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
+                                    <DetailRow label="Legal status" value={selectedDefaulter.case_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
+                                </div>
+                            </div>
+
+                            {/* Section 5: Report Information */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-emerald-100 rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Report information</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Report by person" value={selectedDefaulter.user_id?.name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+                                    <DetailRow label="Report by company" value={selectedDefaulter.user_id?.companyName || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                </div>
+                            </div>
+
+                            {/* Section 6: Documents */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-slate-200 rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Documents</h4>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {selectedDefaulter.attachment_documents?.length > 0 ? (
+                                        selectedDefaulter.attachment_documents.map((doc: string, idx: number) => {
+                                            const isPdf = doc.toLowerCase().endsWith('.pdf');
+                                            return (
+                                                <a
+                                                    key={idx}
+                                                    href={`${ASSETS_BASE_URL}uploads/${doc}`}
+                                                    target="_blank"
+                                                    className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl hover:border-[#1b5e20] hover:bg-emerald-50/10 transition-all group shadow-sm"
+                                                >
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
+                                                        {isPdf ? (
+                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                                        ) : (
+                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-[13px] font-bold text-gray-900 truncate">Document {idx + 1}</span>
+                                                        <span className="text-[11px] font-medium text-gray-400 capitalize">{doc.split('.').pop()} file</span>
+                                                    </div>
+                                                </a>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="col-span-full py-8 border-2 border-dashed border-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-400 gap-2">
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="16" y2="17" /></svg>
+                                            <p className="text-[13px] font-medium">No verified documents available</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Section 7: Payment Records */}
+                            <div className="space-y-6 pt-4">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-blue-100 rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Payment records</h4>
+                                </div>
+                                <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                                    <table className="w-full text-left font-sans text-[14px]">
+                                        <thead>
+                                            <tr className="bg-gray-50 border-b border-gray-200 text-gray-500  text-[11px] font-bold tracking-wider">
+                                                <th className="px-6 py-4">#</th>
+                                                <th className="px-6 py-4">Payment date</th>
+                                                <th className="px-6 py-4 text-right">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100 font-medium">
+                                            {selectedDefaulter.payments?.length > 0 ? (
+                                                selectedDefaulter.payments.map((p: any, idx: number) => (
+                                                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-6 py-4 font-bold text-gray-400">{(idx + 1).toString().padStart(2, '0')}</td>
+                                                        <td className="px-6 py-4">{new Date(p.date).toLocaleDateString('en-GB')}</td>
+                                                        <td className="px-6 py-4 font-bold text-[#1b5e20] text-right">₹{Number(p.amount).toLocaleString('en-IN')}</td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan={3} className="px-6 py-12 text-center text-[13px] font-medium text-gray-400 italic">No Payments.</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar space-y-8 bg-gray-50/50">
-                            {/* Section 1: Entity Details */}
-                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Company Details
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <DetailItem label="Defaulter Company Name" value={selectedDefaulter.defaulter_name} />
-                                    <DetailItem label="Date of Default" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString() : 'N/A'} />
-                                    <DetailItem label="Mobile Number" value={selectedDefaulter.mobile_number} />
-                                    <DetailItem label="Email ID" value={selectedDefaulter.email_id} />
-                                </div>
-                            </section>
-
-                            {/* Section 2: Identifiers */}
-                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Identifiers
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <DetailItem label="GST" value={selectedDefaulter.gst_number} />
-                                    <DetailItem label="PAN" value={selectedDefaulter.pan_number} />
-                                    <DetailItem label="CIN" value={selectedDefaulter.cin_number} />
-                                    <DetailItem label="AADHAR" value={selectedDefaulter.aadhar_number} />
-                                </div>
-                            </section>
-
-                            {/* Section 3: Geographic Location */}
-                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Location
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <DetailItem label="State" value={selectedDefaulter.state} />
-                                    <DetailItem label="District" value={selectedDefaulter.district} />
-                                    <DetailItem label="Sub District" value={selectedDefaulter.cities || 'Main City'} />
-                                </div>
-                            </section>
-                        </div>
-
-                        <div className="p-6 border-t border-gray-100 bg-white flex justify-end">
-                            <button onClick={() => setSelectedDefaulter(null)} className="px-8 py-2 bg-gray-900 text-white text-[12px] font-bold rounded-lg hover:bg-black transition-all shadow-lg active:scale-95">Close Record</button>
+                        <div className="p-6 border-t border-gray-100 bg-white flex justify-end shadow-[0_-10px_40px_rgba(0,0,0,0.03)] selection:bg-none">
+                            <button onClick={() => setSelectedDefaulter(null)} className="px-10 py-3 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold shadow-xl shadow-[#1b5e20]/20 hover:bg-[#144317] hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3">Close Record</button>
                         </div>
                     </div>
                 </div>
             )}
+
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; border: 2px solid #f8fafc; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+            `}</style>
         </AdminPortalContainer>
     );
 }
 
-const DetailItem = ({ label, value, isBadge = false, status = '0' }: { label: string, value: any, isBadge?: boolean, status?: string }) => (
-    <div className="flex items-start gap-4 py-1">
-        <div className="w-1.5 h-1.5 rounded-full bg-[#1b5e20]/20 mt-1.5 flex-shrink-0" />
-        <div className="min-w-0">
-            <p className="text-[11px] font-medium text-gray-500 capitalize tracking-tight leading-none mb-1.5">{label}</p>
-            {isBadge ? (
-                <span className={`inline-block px-3 py-1 rounded-md text-[11px] font-bold ${status === '1' ? 'bg-green-100 text-green-700' : status === '2' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-                    {value || '-'}
+const DetailRow = ({ label, value, icon, isHighlights = false, isStatus = false }: any) => (
+    <div className={`flex items-start gap-4 p-4 rounded-xl transition-all duration-300 ${isHighlights ? 'bg-emerald-50/40 border border-emerald-100/50' : 'hover:bg-gray-50'}`}>
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${isHighlights ? 'bg-[#1b5e20] text-white' : 'bg-white border border-gray-100 text-[#1b5e20]'}`}>
+            {icon}
+        </div>
+        <div className="flex flex-col min-w-0">
+            <span className="text-[11px] font-bold text-gray-400  tracking-widest mb-1">{label}</span>
+            {isStatus ? (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[12px] font-bold border ${value === 'Approved' ? 'bg-green-50 text-green-700 border-green-100' :
+                    value === 'Rejected' ? 'bg-red-50 text-red-700 border-red-100' :
+                        'bg-amber-50 text-amber-700 border-amber-100'
+                    }`}>
+                    {value}
                 </span>
             ) : (
-                <p className="text-[15px] font-normal text-black break-words leading-tight">{value || '-'}</p>
+                <span className={`text-[15px] font-bold truncate ${isHighlights ? 'text-[#1b5e20]' : 'text-gray-900'}`}>
+                    {value || '---'}
+                </span>
             )}
         </div>
     </div>

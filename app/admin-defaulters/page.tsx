@@ -4,12 +4,16 @@ import React, { useState, useEffect, useMemo } from 'react';
 import AdminPortalContainer from '@/components/AdminPortalContainer';
 import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
 
-const InfoItem = ({ icon, label, value }: { icon: any, label: string, value: any }) => (
-    <div className="flex items-start gap-4 py-1">
-        <div className="w-1.5 h-1.5 rounded-full bg-[#1b5e20]/20 mt-1.5 flex-shrink-0" />
-        <div className="min-w-0">
-            <p className="text-[11px] font-medium text-gray-500 capitalize tracking-tight leading-none mb-1.5">{label}</p>
-            <p className="text-[15px] font-normal text-black break-words">{value || '-'}</p>
+const DetailRow = ({ label, value, icon, isHighlights = false, isStatus = false }: any) => (
+    <div className="flex gap-4 min-w-0 text-left">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isHighlights ? 'bg-emerald-50 text-[#1b5e20]' : 'bg-gray-50 text-gray-400'}`}>
+            {icon}
+        </div>
+        <div className="flex flex-col min-w-0">
+            <label className="text-[14px] font-bold text-gray-400 tracking-tight leading-none mb-1.5">{label}</label>
+            <div className={`text-[15px] font-medium tracking-tight truncate ${isHighlights ? 'text-[#1b5e20] font-bold text-[18px]' : 'text-gray-900'} ${isStatus ? 'bg-emerald-50 text-emerald-700 px-3 py-0.5 rounded-full inline-block w-fit text-[12px] font-bold' : ''}`}>
+                {value || '-'}
+            </div>
         </div>
     </div>
 );
@@ -176,7 +180,7 @@ export default function AdminDefaulterListPage() {
                                     className="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2 text-[15px] font-normal text-black outline-none focus:border-[#1b5e20] focus:bg-white transition-all shadow-sm placeholder:text-gray-400"
                                 />
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30 group-focus-within:opacity-100 transition-opacity">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                                 </span>
                             </div>
                         </div>
@@ -219,7 +223,7 @@ export default function AdminDefaulterListPage() {
                             </select>
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">Location Type</label>
+                            <label className="text-[13px] font-bold text-gray-500 capitalize tracking-tight ml-1">City/Town/Village</label>
                             <select
                                 value={filters.city}
                                 disabled={!filters.subDistrict}
@@ -252,138 +256,156 @@ export default function AdminDefaulterListPage() {
                 {/* Table Section */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
                     <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                         <h3 className="text-[16px] font-semibold tracking-tight">Defaulter List</h3>
                     </div>
                     <div className="p-4 md:p-5">
                         <div className="overflow-hidden rounded-lg border border-gray-100 shadow-sm">
                             <div className="overflow-x-auto overflow-y-hidden custom-scrollbar">
-                        <table className="w-full text-left border-collapse min-w-[2800px]">
-                            <thead className="bg-[#051a02] text-white sticky top-0 z-10">
-                                <tr className="divide-x divide-white/5">
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">#</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Defaulter Company Name</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported Date</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported By</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">GST No</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Pan No</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">CIN No</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Financial Year</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Default Amount</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Outstanding Amount</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Recovery Amount</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Recovery Status</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">State</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">District</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub District</th>
-                                    <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {loading ? (
-                                    Array.from({ length: 8 }).map((_, i) => (
-                                        <tr key={i} className="animate-pulse">
-                                            <td colSpan={8} className="px-4 py-8">
-                                                <div className="h-4 bg-gray-50 rounded w-full"></div>
-                                            </td>
+                                <table className="w-full text-left border-collapse min-w-[2800px]">
+                                    <thead className="bg-[#051a02] text-white sticky top-0 z-10">
+                                        <tr className="divide-x divide-white/5">
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">#</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Defaulter Company Name</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported Date</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported By</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Reported By (Company)</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">GST</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">PAN</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">CIN</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Financial Year</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Default Amount</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Outstanding Amount</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Recovery Amount</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Recovery Status</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">State</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">District</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub District</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">City/Town/Village</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Actions</th>
                                         </tr>
-                                    ))
-                                ) : paginatedItems.length > 0 ? (
-                                    paginatedItems.map((def, i) => (
-                                        <tr key={def._id} className="hover:bg-gray-50/50 transition-colors group divide-x divide-gray-50">
-                                            <td className="px-4 py-3 text-sm text-gray-400 font-medium whitespace-nowrap">
-                                                {(currentPage - 1) * itemsPerPage + i + 1}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm font-bold text-gray-900 whitespace-nowrap uppercase">
-                                                {def.defaulter_name}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
-                                                {new Date(def.createdAt).toLocaleDateString('en-GB')}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm font-semibold text-gray-800 whitespace-nowrap capitalize">
-                                                {def.user_id?.name || 'Unknown'}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap uppercase">
-                                                {def.gst_number || '---'}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap uppercase">
-                                                {def.pan_number || '---'}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap uppercase">
-                                                {def.cin_number || '---'}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap">
-                                                {def.financial_year || '---'}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
-                                                ₹{Number(def.default_amount || 0).toLocaleString('en-IN')}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
-                                                ₹{Number(def.outstanding_amount ?? def.default_amount ?? 0).toLocaleString('en-IN')}
-                                            </td>
-                                            <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
-                                                ₹{Number(def.recovered_amount || def.recovery_amount || def.recovered || 0).toLocaleString('en-IN')}
-                                            </td>
-                                            <td className="px-4 py-3 text-center whitespace-nowrap">
-                                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${def.status === 1 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                    def.status === 2 ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-amber-50 text-amber-600 border-amber-100'
-                                                    }`}>
-                                                    {def.status === 1 ? 'Settled' : def.status === 2 ? 'Rejected' : 'Pending'}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{def.state}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap uppercase">{def.district}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{def.cities || def.sub_district || '---'}</td>
-                                            <td className="px-4 py-3 text-center whitespace-nowrap">
-                                                <button
-                                                    onClick={() => handleViewClick(def)}
-                                                    className="bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-emerald-100 active:scale-95 cursor-pointer"
-                                                >
-                                                    View Details
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={8} className="px-8 py-32 text-center text-gray-400">
-                                            <div className="text-5xl mb-6 opacity-20">📂</div>
-                                            <p className="text-sm font-bold tracking-widest uppercase">No Defaulters Found</p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {loading ? (
+                                            Array.from({ length: 8 }).map((_, i) => (
+                                                <tr key={i} className="animate-pulse">
+                                                    <td colSpan={17} className="px-4 py-8">
+                                                        <div className="h-4 bg-gray-50 rounded w-full"></div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : paginatedItems.length > 0 ? (
+                                            paginatedItems.map((def, i) => {
+                                                const isPaid = Number(def.outstanding_amount ?? def.default_amount ?? 0) === 0;
+                                                return (
+                                                    <tr key={def._id} className={`${isPaid ? 'bg-green-50/50 hover:bg-green-100/50' : 'hover:bg-gray-50/80'} transition-colors group divide-x divide-gray-50`}>
 
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                                Page {currentPage} OF {totalPages}
-                            </span>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    disabled={currentPage === 1}
-                                    className="px-4 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold uppercase tracking-wider hover:bg-gray-100 disabled:opacity-30 transition-all shadow-sm active:scale-95 cursor-pointer"
-                                >
-                                    Prev
-                                </button>
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                    disabled={currentPage === totalPages}
-                                    className="px-4 py-1.5 rounded-lg bg-[#1b5e20] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#1a4a1c] disabled:opacity-30 transition-all shadow-sm active:scale-95 cursor-pointer"
-                                >
-                                    Next
-                                </button>
+                                                        <td className="px-4 py-3 text-sm text-gray-400 font-medium whitespace-nowrap">
+                                                            {(currentPage - 1) * itemsPerPage + i + 1}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm font-bold text-gray-900 whitespace-nowrap uppercase">
+                                                            {def.defaulter_name}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                                                            {new Date(def.createdAt).toLocaleDateString('en-GB')}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm font-semibold text-gray-800 whitespace-nowrap capitalize">
+                                                            {def.user_id?.name || 'Unknown'}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm font-semibold text-gray-800 whitespace-nowrap capitalize">
+                                                            {def.user_id?.companyName || 'Unknown'}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap uppercase">
+                                                            {def.gst_number || '---'}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap uppercase">
+                                                            {def.pan_number || '---'}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap uppercase">
+                                                            {def.cin_number || '---'}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm text-gray-800 font-medium text-center whitespace-nowrap">
+                                                            {def.financial_year || '---'}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
+                                                            ₹{Number(def.default_amount || 0).toLocaleString('en-IN')}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
+                                                            ₹{Number(def.outstanding_amount ?? def.default_amount ?? 0).toLocaleString('en-IN')}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm font-bold text-gray-900 text-right whitespace-nowrap">
+                                                            ₹{((def.default_amount || 0) - (def.outstanding_amount ?? def.default_amount ?? 0)).toLocaleString('en-IN')}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-center whitespace-nowrap">
+                                                            {(() => {
+                                                                const dAmount = Number(def.default_amount || 0);
+                                                                const oAmount = Number(def.outstanding_amount ?? def.default_amount ?? 0);
+                                                                const rAmount = dAmount - oAmount;
+
+                                                                if (oAmount === 0) {
+                                                                    return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-emerald-50 text-emerald-600 border-emerald-100">Paid</span>;
+                                                                } else if (rAmount > 0) {
+                                                                    return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-amber-50 text-amber-600 border-amber-100">Partial Paid</span>;
+                                                                } else {
+                                                                    return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-rose-50 text-rose-600 border-rose-100">Not Paid</span>;
+                                                                }
+                                                            })()}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{def.state}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{def.district}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{def.cities || def.sub_district || '---'}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{def.city || '---'}</td>
+                                                        <td className="px-4 py-3 text-center whitespace-nowrap">
+                                                            <button
+                                                                onClick={() => handleViewClick(def)}
+                                                                className="bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all border border-emerald-100 active:scale-95 cursor-pointer"
+                                                            >
+                                                                View Details
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={8} className="px-8 py-32 text-center text-gray-400">
+                                                    <div className="text-5xl mb-6 opacity-20">📂</div>
+                                                    <p className="text-sm font-bold tracking-widest uppercase">No Defaulters Found</p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                        Page {currentPage} OF {totalPages}
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="px-4 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold uppercase tracking-wider hover:bg-gray-100 disabled:opacity-30 transition-all shadow-sm active:scale-95 cursor-pointer"
+                                        >
+                                            Prev
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="px-4 py-1.5 rounded-lg bg-[#1b5e20] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#1a4a1c] disabled:opacity-30 transition-all shadow-sm active:scale-95 cursor-pointer"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
-                        </div>
-                    </div>
                     </div>
                 </div>
+            </div>
 
             {/* View Modal */}
             {showDetails && selectedDefaulter && (
@@ -392,118 +414,193 @@ export default function AdminDefaulterListPage() {
                         {/* Header */}
                         <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
                             <div className="flex items-center gap-3">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                <h3 className="text-lg font-bold tracking-tight">Defaulter Master Record</h3>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                <h3 className="text-lg font-bold tracking-tight">Defaulter Record</h3>
                             </div>
                             <button onClick={() => setShowDetails(false)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">
                                 ✕
                             </button>
                         </div>
 
-                        <div className="p-4 md:p-8 overflow-y-auto custom-scrollbar bg-gray-50/50">
+                        <div className="p-4 md:p-8 overflow-y-auto custom-scrollbar flex-1 space-y-10 bg-white">
+                            {/* Section 1: Defaulter Company Details */}
                             <div className="space-y-6">
-                                {/* Section 1: Business Profile */}
-                                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                    <h5 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                        <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Business Profile
-                                    </h5>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        <InfoItem icon={null} label="Defaulter Company Name" value={selectedDefaulter.defaulter_name} />
-                                        <InfoItem icon={null} label="Mobile" value={selectedDefaulter.mobile_number} />
-                                        <InfoItem icon={null} label="Email" value={selectedDefaulter.email_id} />
-                                        <InfoItem icon={null} label="State" value={selectedDefaulter.state} />
-                                        <InfoItem icon={null} label="District" value={selectedDefaulter.district} />
-                                        <InfoItem icon={null} label="Sub District" value={selectedDefaulter.cities || selectedDefaulter.sub_district} />
-                                        <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                                            <InfoItem icon={null} label="Defaulter Address" value={selectedDefaulter.defaulter_address} />
-                                        </div>
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-[#1b5e20] rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter Company Details</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Defaulter Company name" value={selectedDefaulter.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                    <DetailRow label="Industry" value={selectedDefaulter.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
+                                    <DetailRow label="GST" value={selectedDefaulter.gst_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
+                                    <DetailRow label="PAN" value={selectedDefaulter.pan_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
+                                    <DetailRow label="CIN" value={selectedDefaulter.cin_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
+                                    <DetailRow label="Aadhar" value={selectedDefaulter.aadhar_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
+                                </div>
+                            </div>
+
+                            {/* Section 2: Contact & Location */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-[#ffcd1e] rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Contact & Address</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Mobile" value={selectedDefaulter.mobile_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>} />
+                                    <DetailRow label="Email" value={selectedDefaulter.email_id} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>} />
+                                    <DetailRow label="State" value={selectedDefaulter.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
+                                    <DetailRow label="District" value={selectedDefaulter.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
+                                    <DetailRow label="Sub district" value={selectedDefaulter.cities || selectedDefaulter.sub_district || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
+                                    <DetailRow label="City" value={selectedDefaulter.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
+                                    <div className="col-span-full pt-2">
+                                        <DetailRow label="Full address" value={selectedDefaulter.defaulter_address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Statutory & Financials */}
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                        <h5 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                            <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Statutory Details
-                                        </h5>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                            <InfoItem icon={null} label="GST" value={selectedDefaulter.gst_number} />
-                                            <InfoItem icon={null} label="PAN" value={selectedDefaulter.pan_number} />
-                                            <InfoItem icon={null} label="CIN" value={selectedDefaulter.cin_number} />
-                                            <InfoItem icon={null} label="Aadhar" value={selectedDefaulter.aadhar_number} />
-                                        </div>
+                            {/* Section 3: Financial Status */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-[#1b5e20] rounded-full opacity-50"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Financial Status</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Default Amount" value={`₹${Number(selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={
+                                        <svg
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                        >
+                                            <path d="M6 4h10" />
+                                            <path d="M6 8h10" />
+                                            <path d="M6 12h6a4 4 0 0 0 0-8" />
+                                            <path d="M10 12l5 8" />
+                                        </svg>
+                                    } />
+                                    <DetailRow label="Outstanding" value={`₹${Number(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={
+                                        <svg
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                        >
+                                            <path d="M6 4h10" />
+                                            <path d="M6 8h10" />
+                                            <path d="M6 12h6a4 4 0 0 0 0-8" />
+                                            <path d="M10 12l5 8" />
+                                        </svg>
+                                    } />
+                                    <DetailRow label="Date of Default" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
+                                    <DetailRow label="Financial Year" value={selectedDefaulter.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
+                                    <div className="col-span-full">
+                                        <DetailRow label="Reason for Default" value={selectedDefaulter.reason_description || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01" /><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" /><path d="M12 9v4" /></svg>} />
                                     </div>
-                                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                        <h5 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                            <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Reporting Context
-                                        </h5>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                            <InfoItem icon={null} label="Industry" value={selectedDefaulter.industry} />
-                                            <InfoItem icon={null} label="Financial Year" value={selectedDefaulter.financial_year} />
-                                            <div className="col-span-1 sm:col-span-2">
-                                                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                                    <div className="w-10 h-10 rounded-full bg-[#1b5e20]/10 text-[#1b5e20] flex items-center justify-center text-lg">👤</div>
-                                                    <div>
-                                                        <p className="text-[11px] font-medium text-gray-500 capitalize tracking-tight">Reported By</p>
-                                                        <p className="text-[15px] font-normal text-black capitalize">{selectedDefaulter.user_id?.name || selectedDefaulter.user_id?.companyName}</p>
+                                </div>
+                            </div>
+
+                            {/* Section 4: Legal & Proceedings */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-gray-300 rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & Proceedings</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Court name" value={selectedDefaulter.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
+                                    <DetailRow label="Case number" value={selectedDefaulter.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
+                                    <DetailRow label="Case type" value={selectedDefaulter.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
+                                    <DetailRow label="Case year" value={selectedDefaulter.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
+                                    <DetailRow label="Legal status" value={selectedDefaulter.case_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
+                                </div>
+                            </div>
+
+                            {/* Section 5: Report Information */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-emerald-100 rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Report Information</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
+                                    <DetailRow label="Report by person name" value={selectedDefaulter.user_id?.name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+                                    <DetailRow label="Report by company name" value={selectedDefaulter.user_id?.companyName || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                </div>
+                            </div>
+
+                            {/* Section 6: Documents */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-slate-200 rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Documents</h4>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {selectedDefaulter.attachment_documents?.length > 0 ? (
+                                        selectedDefaulter.attachment_documents.map((doc: string, idx: number) => {
+                                            const isPdf = doc.toLowerCase().endsWith('.pdf');
+                                            return (
+                                                <a
+                                                    key={idx}
+                                                    href={`${ASSETS_BASE_URL}uploads/${doc}`}
+                                                    target="_blank"
+                                                    className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl hover:border-[#1b5e20] hover:bg-emerald-50/10 transition-all group shadow-sm"
+                                                >
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
+                                                        {isPdf ? (
+                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                                        ) : (
+                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
+                                                        )}
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Financial Abstract */}
-                                <div className="bg-[#1b5e20] p-8 rounded-xl text-white shadow-lg shadow-emerald-900/10">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                        <div className="space-y-2">
-                                            <p className="text-[11px] font-medium text-white/60 capitalize tracking-tight">Original Default</p>
-                                            <h4 className="text-3xl font-light">₹{Number(selectedDefaulter.default_amount).toLocaleString('en-IN')}</h4>
-                                        </div>
-                                        <div className="space-y-2 md:border-x border-white/10 md:px-8">
-                                            <p className="text-[11px] font-medium text-white/60 capitalize tracking-tight">Current Outstanding</p>
-                                            <h4 className="text-3xl font-light text-amber-300">₹{(selectedDefaulter.outstanding_amount ?? selectedDefaulter.default_amount).toLocaleString('en-IN')}</h4>
-                                        </div>
-                                        <div className="space-y-2 text-md-right">
-                                            <p className="text-[11px] font-medium text-white/60 capitalize tracking-tight">Default Date</p>
-                                            <h4 className="text-2xl font-light">{selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString('en-GB') : '-'}</h4>
-                                        </div>
-                                    </div>
-                                    <div className="mt-8 pt-8 border-t border-white/10">
-                                        <p className="text-[11px] font-medium text-white/60 capitalize tracking-tight mb-3">Reason for Default</p>
-                                        <p className="text-[16px] font-normal leading-relaxed italic text-white/90">
-                                            "{selectedDefaulter.reason_description || 'No description provided'}"
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Documents */}
-                                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                    <h5 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                        <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Attached Evidence
-                                    </h5>
-                                    {selectedDefaulter.attachment_documents && selectedDefaulter.attachment_documents.length > 0 ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {selectedDefaulter.attachment_documents.map((doc: string, idx: number) => {
-                                                const isPdf = doc.toLowerCase().endsWith('.pdf');
-                                                return (
-                                                    <a key={idx} href={`${ASSETS_BASE_URL}uploads/${doc}`} target="_blank" className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-[#1b5e20] hover:bg-white transition-all group">
-                                                        <div className={`w-12 h-12 rounded flex items-center justify-center text-xl ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
-                                                            {isPdf ? '📄' : '🖼️'}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-[12px] font-normal text-black truncate uppercase">DOCUMENT_{idx + 1}</p>
-                                                            <p className="text-[10px] font-medium text-gray-400 capitalize group-hover:text-[#1b5e20]">View File →</p>
-                                                        </div>
-                                                    </a>
-                                                );
-                                            })}
-                                        </div>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-[13px] font-bold text-gray-900 truncate">Document {idx + 1}</span>
+                                                        <span className="text-[11px] font-medium text-gray-400 capitalize">{doc.split('.').pop()} file</span>
+                                                    </div>
+                                                </a>
+                                            );
+                                        })
                                     ) : (
-                                        <div className="py-12 text-center border-2 border-dashed border-gray-50 rounded-xl">
-                                            <p className="text-sm font-medium text-gray-400 capitalize tracking-tight">No evidence files provided.</p>
+                                        <div className="col-span-full py-8 border-2 border-dashed border-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-400 gap-2">
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="16" y2="17" /></svg>
+                                            <p className="text-[13px] font-medium">No verified documents available</p>
                                         </div>
                                     )}
+                                </div>
+                            </div>
+
+                            {/* Section 7: Payment Records */}
+                            <div className="space-y-6 pt-4">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <div className="w-1 h-6 bg-blue-100 rounded-full"></div>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Payment Records</h4>
+                                </div>
+                                <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                                    <table className="w-full text-left font-sans text-[14px]">
+                                        <thead>
+                                            <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-[11px] font-bold tracking-wider">
+                                                <th className="px-6 py-4">#</th>
+                                                <th className="px-6 py-4">Payment Date</th>
+                                                <th className="px-6 py-4 text-right">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100 font-medium">
+                                            {selectedDefaulter.payments?.length > 0 ? (
+                                                selectedDefaulter.payments.map((p: any, idx: number) => (
+                                                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-6 py-4 font-bold text-gray-400">{(idx + 1).toString().padStart(2, '0')}</td>
+                                                        <td className="px-6 py-4">{new Date(p.date).toLocaleDateString('en-GB')}</td>
+                                                        <td className="px-6 py-4 font-bold text-[#1b5e20] text-right">₹{Number(p.amount).toLocaleString('en-IN')}</td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr>
+                                                    <td colSpan={3} className="px-6 py-12 text-center text-[13px] font-medium text-gray-400">No Payments.</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>

@@ -10,6 +10,14 @@ interface AdminSidebarProps {
     setIsCollapsed: (val: boolean) => void;
 }
 
+interface NavItem {
+    label: string;
+    href?: string;
+    icon: React.ReactNode;
+    badge?: number;
+    children?: NavItem[];
+}
+
 export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed }: AdminSidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
@@ -33,7 +41,9 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
         router.push('/admin-login');
     };
 
-    const navItems = [
+    const [expandedMenus, setExpandedMenus] = useState<string[]>(['Member Management']);
+
+    const navItems: NavItem[] = [
         {
             label: 'Dashboard',
             href: '/admin-dashboard',
@@ -41,8 +51,20 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
         },
         {
             label: 'Member Management',
-            href: '/admin-members',
-            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+            children: [
+                {
+                    label: 'Member List',
+                    href: '/admin-members',
+                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                },
+                {
+                    label: 'Pending Request',
+                    href: '/member-requests',
+                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" /></svg>,
+                    badge: pendingCount
+                }
+            ]
         },
         {
             label: 'Defaulter List',
@@ -50,13 +72,7 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
         },
         {
-            label: 'Pending Requests',
-            href: '/member-requests',
-            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" /></svg>,
-            badge: pendingCount
-        },
-        {
-            label: 'System Reports',
+            label: 'Reports',
             href: '/admin-reports',
             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
         },
@@ -81,6 +97,14 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /><path d="M2 8c0-2.21 1.79-4 4-4" /><path d="M22 8c0-2.21-1.79-4-4-4" /></svg>
         },
     ];
+
+    const toggleMenu = (label: string) => {
+        setExpandedMenus(prev =>
+            prev.includes(label)
+                ? prev.filter(l => l !== label)
+                : [...prev, label]
+        );
+    };
 
     return (
         <aside className={`${isCollapsed ? 'w-24' : 'w-72'} bg-white border-r border-gray-100 flex flex-col h-full overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-gray-200/60 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent hidden md:flex shrink-0 transition-all duration-300 ease-in-out`}>
@@ -109,11 +133,69 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
             <div className={`p-4 ${isCollapsed ? 'px-2' : ''}`}>
                 <nav className="space-y-2">
                     {navItems.map((item, idx) => {
-                        const isActive = pathname === item.href;
+                        const hasChildren = item.children && item.children.length > 0;
+                        const isExpanded = expandedMenus.includes(item.label);
+                        const isActive = item.href ? pathname === item.href : item.children?.some(child => pathname === child.href);
+
+                        if (hasChildren) {
+                            return (
+                                <div key={idx} className="space-y-1">
+                                    <button
+                                        onClick={() => toggleMenu(item.label)}
+                                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all ${isActive ? 'text-[#1b5e20] bg-green-50/80 shadow-sm' : 'text-black hover:text-[#1b5e20] hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
+                                    >
+                                        <span className={isActive ? 'text-[#1b5e20]' : 'text-black'}>{item.icon}</span>
+                                        {!isCollapsed && (
+                                            <div className="flex items-center justify-between flex-1">
+                                                <span className="text-sm tracking-tight">{item.label}</span>
+                                                <svg
+                                                    width="16"
+                                                    height="16"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                                                >
+                                                    <polyline points="6 9 12 15 18 9" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </button>
+                                    {!isCollapsed && isExpanded && (
+                                        <div className="pl-4 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                                            {item.children?.map((child, cIdx) => {
+                                                const isChildActive = pathname === child.href;
+                                                return (
+                                                    <Link
+                                                        key={cIdx}
+                                                        href={child.href || '#'}
+                                                        className={`flex items-center gap-4 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all ${isChildActive ? 'text-[#1b5e20] bg-green-50/50' : 'text-gray-500 hover:text-[#1b5e20] hover:bg-gray-50'}`}
+                                                    >
+                                                        <span>{child.icon}</span>
+                                                        <div className="flex items-center justify-between flex-1">
+                                                            <span className="tracking-tight">{child.label}</span>
+                                                            {child.badge !== undefined && child.badge > 0 && (
+                                                                <span className="px-2 py-0.5 bg-[#1b5e20] text-white text-[10px] font-bold rounded-full">
+                                                                    {child.badge}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
+
                         return (
                             <Link
                                 key={idx}
-                                href={item.href}
+                                href={item.href || '#'}
                                 title={isCollapsed ? item.label : ''}
                                 className={`flex items-center gap-4 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all ${isActive ? 'text-[#1b5e20] bg-green-50/80 shadow-sm shadow-green-900/5' : 'text-black hover:text-[#1b5e20] hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
                             >

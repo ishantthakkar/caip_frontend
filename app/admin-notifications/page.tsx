@@ -209,9 +209,9 @@ export default function AdminNotificationsPage() {
     );
 
     return (
-        <AdminPortalContainer title="Announcements & Notifications">
+        <AdminPortalContainer title="Notifications">
             <div className="space-y-8 animate-in fade-in duration-500">
-                
+
                 {/* High-Density Action Bar */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 items-end">
@@ -225,7 +225,7 @@ export default function AdminNotificationsPage() {
                                     onChange={(e) => { setTableSearch(e.target.value); setCurrentPage(1); }}
                                     className="w-full bg-gray-50 border border-gray-100 rounded-lg pl-10 pr-4 py-2.5 text-[15px] font-normal text-black placeholder-gray-400 outline-none focus:border-[#1b5e20] transition-all focus:bg-white shadow-sm"
                                 />
-                                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                             </div>
                         </div>
 
@@ -234,7 +234,7 @@ export default function AdminNotificationsPage() {
                                 onClick={() => setShowModal(true)}
                                 className="w-full lg:w-auto px-6 py-2.5 bg-[#1b5e20] text-white text-[13px] font-bold rounded-lg hover:bg-[#2e7d32] transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
                             >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
                                 Add Notification
                             </button>
                         </div>
@@ -244,8 +244,8 @@ export default function AdminNotificationsPage() {
                 {/* Table Section */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
                     <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8Z"/><path d="m22 7-7.1 5a2.5 2.5 0 0 1-2.8 0L5 7"/></svg>
-                        <h3 className="text-sm font-bold tracking-tight">Communication Dispatch Archive</h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8Z" /><path d="m22 7-7.1 5a2.5 2.5 0 0 1-2.8 0L5 7" /></svg>
+                        <h3 className="text-sm font-bold tracking-tight">Notifications List</h3>
                     </div>
 
                     <div className="p-4 md:p-5">
@@ -285,13 +285,7 @@ export default function AdminNotificationsPage() {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-lg border uppercase tracking-tight ${
-                                                            n.member_id === 'All' 
-                                                                ? 'bg-blue-50 text-blue-600 border-blue-100' 
-                                                                : 'bg-emerald-50 text-[#1b5e20] border-emerald-100'
-                                                        }`}>
-                                                            {n.member_id === 'All' ? 'GLOBAL BROADCAST' : 'SELECTIVE GROUP'}
-                                                        </span>
+                                                        {n.member_id === 'All' ? 'All Members' : 'Specific Members'}
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <span className="text-[14px] font-bold text-gray-900 tracking-tight">
@@ -356,16 +350,16 @@ export default function AdminNotificationsPage() {
                         {/* Modal Header */}
                         <div className="bg-[#1b5e20] p-6 text-white flex justify-between items-center relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                                <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm0 2a8 8 0 100 16 8 8 0 000-16zM13 7v2h-2V7h2zm0 4v6h-2v-6h2z"/></svg>
+                                <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm0 2a8 8 0 100 16 8 8 0 000-16zM13 7v2h-2V7h2zm0 4v6h-2v-6h2z" /></svg>
                             </div>
                             <div>
-                                <h3 className="text-[18px] font-bold tracking-tight relative z-10">Create Broadcast Notification</h3>
+                                <h3 className="text-[18px] font-bold tracking-tight relative z-10">Create Notification</h3>
                             </div>
                             <button
                                 onClick={() => setShowModal(false)}
                                 className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all relative z-10"
                             >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
                             </button>
                         </div>
 
@@ -381,7 +375,7 @@ export default function AdminNotificationsPage() {
                                         <span className={selectedMemberIds.length > 0 ? "text-gray-900" : "text-gray-400"}>
                                             {getSelectionText()}
                                         </span>
-                                        <svg className={`text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                                        <svg className={`text-gray-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m6 9 6 6 6-6" /></svg>
                                     </div>
 
                                     {isDropdownOpen && (
@@ -478,8 +472,8 @@ export default function AdminNotificationsPage() {
                                         </>
                                     ) : (
                                         <>
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                                            Send Broadcast
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
+                                            Send
                                         </>
                                     )}
                                 </button>

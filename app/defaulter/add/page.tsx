@@ -26,15 +26,15 @@ export default function AddDefaulterPage() {
     // Duplicate search logic
     useEffect(() => {
         const timer = setTimeout(() => {
-            const { gst_number, pan_number, mobile_number, defaulter_address } = formData;
-            if (gst_number.length > 5 || pan_number.length > 5 || mobile_number.length === 10 || defaulter_address.length > 10) {
+            const { gst_number, pan_number, mobile_number, defaulter_address, defaulter_name } = formData;
+            if (gst_number.length > 5 || pan_number.length > 5 || mobile_number.length === 10 || defaulter_address.length > 10 || defaulter_name.length > 3) {
                 checkDuplicates();
             } else {
                 setDuplicateWarning(null);
             }
         }, 800);
         return () => clearTimeout(timer);
-    }, [formData.gst_number, formData.pan_number, formData.mobile_number, formData.defaulter_address]);
+    }, [formData.gst_number, formData.pan_number, formData.mobile_number, formData.defaulter_address, formData.defaulter_name]);
 
     const checkDuplicates = async () => {
         try {
@@ -44,6 +44,7 @@ export default function AddDefaulterPage() {
             if (formData.pan_number) q.append('pan', formData.pan_number.trim().toUpperCase());
             if (formData.mobile_number) q.append('mobile', formData.mobile_number.trim());
             if (formData.defaulter_address) q.append('address', formData.defaulter_address.trim());
+            if (formData.defaulter_name) q.append('name', formData.defaulter_name.trim());
 
             if (q.toString()) {
                 const res = await fetch(`${API_BASE_URL}defaulter/check-duplicate?${q.toString()}`, {
@@ -51,7 +52,7 @@ export default function AddDefaulterPage() {
                 });
                 const data = await res.json();
                 if (data.exists) {
-                    setDuplicateWarning(`This ${data.field} has been previously reported by another member. `);
+                    setDuplicateWarning(`This ${data.field} has been previously reported by another member.`);
                 } else {
                     setDuplicateWarning(null);
                 }

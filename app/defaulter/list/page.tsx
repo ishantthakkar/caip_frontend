@@ -204,8 +204,18 @@ export default function MemberDefaulterListPage() {
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // If not on the last tab, just go to next tab after validation
+        if (editTab === 'general') {
+            if (validateTab('general')) setEditTab('history');
+            return;
+        }
+        if (editTab === 'history') {
+            if (validateTab('history')) setEditTab('legal');
+            return;
+        }
+
+        // We are on 'legal' tab, ensure previous tabs are still valid
         if (!validateTab('general') || !validateTab('history')) {
-            // Re-validate everything just in case
             if (!validateTab('general')) setEditTab('general');
             else if (!validateTab('history')) setEditTab('history');
             return;
@@ -266,11 +276,9 @@ export default function MemberDefaulterListPage() {
     const getRecoveryStatus = (def: any) => {
         const defaultAmt = Number(def.default_amount) || 0;
         const outstandingAmt = def.outstanding_amount !== undefined ? Number(def.outstanding_amount) : defaultAmt;
-        const totalPaid = (def.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount), 0);
 
-        if (outstandingAmt === 0) return { label: 'Paid', color: 'bg-green-100 text-[#1b5e20]' };
-        if (totalPaid > 0) return { label: 'Partially Paid', color: 'bg-blue-50 text-blue-600' };
-        return { label: 'Not Paid', color: 'bg-red-50 text-red-600' };
+        if (outstandingAmt === 0) return { label: 'Not Defaulter', color: 'bg-green-100 text-[#1b5e20]' };
+        return { label: 'Defaulter', color: 'bg-red-50 text-red-600' };
     };
 
     const isWithin24Hours = (date: string) => {
@@ -373,8 +381,9 @@ export default function MemberDefaulterListPage() {
                 "CIN",
                 "Aadhar",
                 "State",
-                "City",
-                "District"
+                "District",
+                "Sub-District",
+                "City/Town/Village",
             ];
 
             const tableRows = processedData.map((def, idx) => [
@@ -388,9 +397,9 @@ export default function MemberDefaulterListPage() {
                 def.cin_number || '-',
                 def.aadhar_number || '-',
                 def.state || '-',
-                def.sub_district || def.cities || '-', // Backward compatibility
+                def.district || '-',
+                def.cities || '-',
                 def.city || '-',
-                def.district || '-'
             ]);
 
             autoTable(doc, {
@@ -527,14 +536,9 @@ export default function MemberDefaulterListPage() {
                                                     Outstanding Amount <div className="flex flex-col"><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[4px] border-b-white"></div><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white/40 mt-0.5"></div></div>
                                                 </div>
                                             </th>
-                                            <th className="px-5 py-4 text-[13px] font-bold tracking-tight text-center">
-                                                <div className="flex items-center justify-center gap-1.5">
-                                                    Status <div className="flex flex-col"><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[4px] border-b-white"></div><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white/40 mt-0.5"></div></div>
-                                                </div>
-                                            </th>
                                             <th className="px-5 py-4 text-[13px] font-bold tracking-tight">
                                                 <div className="flex items-center justify-center gap-1.5">
-                                                    Recovery Status <div className="flex flex-col"><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[4px] border-b-white"></div><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white/40 mt-0.5"></div></div>
+                                                    Defaulter Status <div className="flex flex-col"><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[4px] border-b-white"></div><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white/40 mt-0.5"></div></div>
                                                 </div>
                                             </th>
                                             <th className="px-5 py-4 text-[13px] font-bold tracking-tight">
@@ -556,7 +560,7 @@ export default function MemberDefaulterListPage() {
                                             const isPaid = Number(def.outstanding_amount === undefined ? def.default_amount : def.outstanding_amount) === 0;
                                             const totalPaid = (def.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount), 0);
                                             return (
-                                                <tr key={def._id} className="hover:bg-gray-50/80 divide-x divide-gray-200 transition-colors">
+                                                <tr key={def._id} className={`${isPaid ? 'bg-green-50/50 hover:bg-green-100/50' : 'hover:bg-gray-50/80'} divide-x divide-gray-200 transition-colors`}>
                                                     <td className="px-3 py-4 text-gray-600">{(currentPage - 1) * itemsPerPage + i + 1}</td>
                                                     <td className="px-5 py-4 text-left">
                                                         <span className="font-semibold text-gray-900">{def.defaulter_name}</span>
@@ -564,16 +568,8 @@ export default function MemberDefaulterListPage() {
                                                     <td className="px-5 py-4 text-gray-500">{new Date(def.createdAt).toLocaleDateString('en-GB')}</td>
                                                     <td className="px-5 py-4 font-semibold text-gray-900 font-sans">₹{Number(def.default_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                                     <td className="px-5 py-4 font-semibold text-gray-900 font-sans">₹{Number(def.outstanding_amount === undefined ? def.default_amount : def.outstanding_amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                                    <td className="px-5 py-4 text-center">
-                                                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold border ${def.status === 1 ? 'bg-green-50 text-green-600 border-green-100' :
-                                                            def.status === 2 ? 'bg-red-50 text-red-600 border-red-100' :
-                                                                'bg-yellow-50 text-yellow-600 border-yellow-100'
-                                                            }`}>
-                                                            {def.status === 1 ? 'Approved' : def.status === 2 ? 'Rejected' : 'Pending'}
-                                                        </span>
-                                                    </td>
                                                     <td className="px-5 py-4">
-                                                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${recovery.label === 'Paid' ? 'bg-green-50 text-green-600 border border-green-100' : recovery.label === 'Partially Paid' ? 'bg-blue-50 text-blue-400 border border-blue-100' : 'bg-red-50 text-red-400 border border-red-100'}`}>
+                                                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${recovery.label === 'Not Defaulter' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
                                                             {recovery.label}
                                                         </span>
                                                     </td>
@@ -689,7 +685,7 @@ export default function MemberDefaulterListPage() {
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
                                 </div>
                                 <div>
-                                    <h3 className="text-[18px] font-bold tracking-tight">Defaulter record details</h3>
+                                    <h3 className="text-[18px] font-bold tracking-tight">Defaulter Record Details</h3>
                                 </div>
                             </div>
                             <button onClick={() => setShowDetails(false)} className="text-white/40 hover:text-white transition-all bg-white/10 p-2 rounded-xl">
@@ -702,15 +698,15 @@ export default function MemberDefaulterListPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                                     <div className="w-1 h-6 bg-[#1b5e20] rounded-full"></div>
-                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter company details</h4>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter Company Details</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
                                     <DetailRow label="Defaulter Company name" value={selectedDefaulter.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
                                     <DetailRow label="Industry" value={selectedDefaulter.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
-                                    <DetailRow label="Gst number" value={selectedDefaulter.gst_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
-                                    <DetailRow label="Pan number" value={selectedDefaulter.pan_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
-                                    <DetailRow label="Cin number" value={selectedDefaulter.cin_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
-                                    <DetailRow label="Aadhar number" value={selectedDefaulter.aadhar_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
+                                    <DetailRow label="GST" value={selectedDefaulter.gst_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
+                                    <DetailRow label="PAN" value={selectedDefaulter.pan_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
+                                    <DetailRow label="CIN" value={selectedDefaulter.cin_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
+                                    <DetailRow label="Aadhar" value={selectedDefaulter.aadhar_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
                                 </div>
                             </div>
 
@@ -737,11 +733,39 @@ export default function MemberDefaulterListPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                                     <div className="w-1 h-6 bg-[#1b5e20] rounded-full opacity-50"></div>
-                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Financial status</h4>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Financial Status</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Default amount" value={`₹${Number(selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><path d="M12 8v8" /><path d="M8 12h8" /></svg>} />
-                                    <DetailRow label="Outstanding" value={`₹${Number(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>} />
+                                    <DetailRow label="Default amount" value={`₹${Number(selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={
+                                        <svg
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                        >
+                                            <path d="M6 4h10" />
+                                            <path d="M6 8h10" />
+                                            <path d="M6 12h6a4 4 0 0 0 0-8" />
+                                            <path d="M10 12l5 8" />
+                                        </svg>
+                                    } />
+                                    <DetailRow label="Outstanding" value={`₹${Number(selectedDefaulter.outstanding_amount || selectedDefaulter.default_amount).toLocaleString()}`} isHighlights icon={
+                                        <svg
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                        >
+                                            <path d="M6 4h10" />
+                                            <path d="M6 8h10" />
+                                            <path d="M6 12h6a4 4 0 0 0 0-8" />
+                                            <path d="M10 12l5 8" />
+                                        </svg>
+                                    } />
                                     <DetailRow label="Date of default" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
                                     <DetailRow label="Financial year" value={selectedDefaulter.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
                                     <div className="col-span-full">
@@ -754,7 +778,7 @@ export default function MemberDefaulterListPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                                     <div className="w-1 h-6 bg-gray-300 rounded-full"></div>
-                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & proceedings</h4>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & Proceedings</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
                                     <DetailRow label="Court name" value={selectedDefaulter.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
@@ -769,17 +793,11 @@ export default function MemberDefaulterListPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                                     <div className="w-1 h-6 bg-emerald-100 rounded-full"></div>
-                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Report information</h4>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Report Information</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
                                     <DetailRow label="Report by person name" value={selectedDefaulter.user_id?.name || user?.name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
                                     <DetailRow label="Report by company name" value={selectedDefaulter.user_id?.companyName || user?.companyName || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
-                                    <DetailRow
-                                        label="Verification status"
-                                        value={selectedDefaulter.status === 1 ? 'Approved' : selectedDefaulter.status === 2 ? 'Rejected' : 'Pending'}
-                                        isStatus
-                                        icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" /><path d="m9 12 2 2 4-4" /></svg>}
-                                    />
                                 </div>
                             </div>
 
@@ -817,7 +835,7 @@ export default function MemberDefaulterListPage() {
                                     ) : (
                                         <div className="col-span-full py-8 border-2 border-dashed border-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-400 gap-2">
                                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="16" y2="17" /></svg>
-                                            <p className="text-[13px] font-medium">No verified documents available</p>
+                                            <p className="text-[13px] font-medium">No Documents.</p>
                                         </div>
                                     )}
                                 </div>
@@ -827,14 +845,14 @@ export default function MemberDefaulterListPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
                                     <div className="w-1 h-6 bg-blue-100 rounded-full"></div>
-                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Payment records</h4>
+                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Payment Records</h4>
                                 </div>
                                 <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
                                     <table className="w-full text-left">
                                         <thead>
                                             <tr className="bg-gray-50 border-b border-gray-200">
                                                 <th className="px-6 py-4 text-[12px] font-bold tracking-widest">#</th>
-                                                <th className="px-6 py-4 text-[12px] font-bold tracking-widest">Payment date</th>
+                                                <th className="px-6 py-4 text-[12px] font-bold tracking-widest">Payment Date</th>
                                                 <th className="px-6 py-4 text-[12px] font-bold tracking-widest text-right">Amount</th>
                                             </tr>
                                         </thead>
@@ -941,7 +959,7 @@ export default function MemberDefaulterListPage() {
                                 {editTab === 'history' && (
                                     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <FormInput label="Date of Default" name="date_of_default" value={editForm.date_of_default} onChange={handleInputChange} type="date" error={editErrors.date_of_default} required />
+                                            <FormInput label="Date of Default" name="date_of_default" value={editForm.date_of_default} onChange={handleInputChange} type="date" max={new Date().toISOString().split('T')[0]} error={editErrors.date_of_default} required />
                                             <FormInput label="Default Amount (₹)" name="default_amount" value={editForm.default_amount} onChange={handleInputChange} type="number" error={editErrors.default_amount} required />
                                         </div>
                                         <FormInput label="Reason / Description" name="reason_description" value={editForm.reason_description} onChange={handleInputChange} isTextArea error={editErrors.reason_description} required />
@@ -1000,54 +1018,43 @@ export default function MemberDefaulterListPage() {
                                 <div className="flex items-center gap-3">
                                     {editTab !== 'legal' ? (
                                         <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (editTab === 'general' && validateTab('general')) setEditTab('history');
-                                                else if (editTab === 'history' && validateTab('history')) setEditTab('legal');
-                                            }}
-                                            className="px-8 py-2.5 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold hover:bg-[#144317] transition-all flex items-center gap-2"
+                                            type="submit"
+                                            className="px-10 py-3 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold shadow-xl shadow-[#1b5e20]/20 hover:bg-[#144317] hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
                                         >
-                                            Next
+                                            Next Step
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
                                         </button>
                                     ) : (
-                                        <>
-                                            <button
-                                                type="submit"
-                                                disabled={saving}
-                                                className="px-8 py-2.5 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold shadow-xl shadow-[#1b5e20]/20 hover:bg-[#144317] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
-                                            >
-                                                {saving ? 'Updating...' : 'Update'}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowEdit(false)}
-                                                className="px-8 py-2.5 bg-gray-400 text-white rounded-xl text-[14px] font-bold hover:bg-gray-500 transition-all shadow-lg shadow-gray-400/10"
-                                            >
-                                                Close
-                                            </button>
-                                        </>
+                                        <button
+                                            type="submit"
+                                            disabled={saving}
+                                            className="px-10 py-3 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold shadow-xl shadow-[#1b5e20]/20 hover:bg-[#144317] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
+                                        >
+                                            {saving ? (
+                                                <>
+                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                    Updating...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+                                                    Submit Update
+                                                </>
+                                            )}
+                                        </button>
                                     )}
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowEdit(false)}
+                                        className="px-8 py-3 bg-white border border-gray-200 text-gray-500 rounded-xl text-[14px] font-bold hover:bg-gray-50 hover:text-gray-900 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
                         </form>
 
                         {/* Modal Footer */}
-                        <div className="px-8 py-5 bg-white border-t border-gray-100 flex justify-end gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] selection:bg-none">
-                            <button type="button" onClick={() => setShowEdit(false)} className="px-6 py-3 text-[14px] font-bold text-gray-400 hover:text-gray-900 transition-all">Close</button>
-                            <button onClick={handleUpdate} disabled={saving} className="px-8 py-3 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold shadow-xl shadow-[#1b5e20]/20 hover:bg-[#144317] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3">
-                                {saving ? (
-                                    <>
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        Synchronizing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
-                                        Updates
-                                    </>
-                                )}
-                            </button>
-                        </div>
                     </div>
                 </div>
             )}
@@ -1096,6 +1103,7 @@ export default function MemberDefaulterListPage() {
                                             <input
                                                 type="date"
                                                 value={row.date}
+                                                max={new Date().toISOString().split('T')[0]}
                                                 onChange={(e) => handlePaymentRowChange(idx, 'date', e.target.value)}
                                                 className="w-full bg-[#f8fafc] border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-[#1b5e20] focus:bg-white text-[15px] font-medium transition-all"
                                                 required
@@ -1158,7 +1166,7 @@ export default function MemberDefaulterListPage() {
     );
 }
 
-const FormInput = ({ label, name, value, onChange, type = 'text', isTextArea = false, isSelect = false, options = [], disabled = false, required = false, error = '' }: any) => {
+const FormInput = ({ label, name, value, onChange, type = 'text', isTextArea = false, isSelect = false, options = [], disabled = false, required = false, error = '', max = '' }: any) => {
     return (
         <div className="space-y-1.5 flex flex-col">
             <label className="text-[14px] font-medium text-gray-500 tracking-tight px-1">
@@ -1197,6 +1205,7 @@ const FormInput = ({ label, name, value, onChange, type = 'text', isTextArea = f
                     name={name}
                     value={value || ''}
                     onChange={onChange}
+                    max={max}
                     disabled={disabled}
                     required={required}
                     className={`w-full bg-[#f8fafc] border ${error ? 'border-red-500 bg-red-50/10' : 'border-gray-200'} rounded-xl px-5 py-3.5 text-[15px] font-medium focus:border-[#1b5e20] focus:bg-white outline-none transition-all shadow-sm disabled:opacity-50`}

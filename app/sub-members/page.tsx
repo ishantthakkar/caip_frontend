@@ -163,7 +163,7 @@ export default function SubMembersPage() {
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h2 className="text-[20px] font-bold text-gray-900 tracking-tight">Staff management</h2>
+                        <h2 className="text-[20px] font-bold text-gray-900 tracking-tight">Sub Member Details</h2>
                     </div>
 
                     <button
@@ -187,10 +187,6 @@ export default function SubMembersPage() {
                             Your current membership plan allows for up to <strong>{user?.subMemberLimit || 0} sub-member slots</strong>.
                             {(user?.subMemberLimit || 0) === 0 && <span className="text-red-500 font-bold ml-1 italic"> (Please purchase a membership to add staff)</span>}
                         </p>
-                    </div>
-                    <div className="md:ml-auto text-left md:text-right bg-[#f8fafc] p-4 rounded-xl border border-gray-100 w-full md:w-auto min-w-[160px]">
-                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Usage status</p>
-                        <p className="text-2xl font-black text-[#1b5e20]">{subMembers.length} <span className="text-gray-300 text-lg">/ {user?.subMemberLimit || 0}</span></p>
                     </div>
                 </div>                {/* Search Bar */}
                 <div className="relative group max-w-md">
@@ -246,15 +242,23 @@ export default function SubMembersPage() {
 
                                             </td>
                                             <td className="px-6 py-4">
-                                                <button
-                                                    onClick={() => toggleStatus(member._id)}
-                                                    className={`px-3 py-0.5 rounded-full text-[11px] font-semibold transition-all border ${member.isActive
-                                                        ? 'bg-green-50 text-[#1b5e20] border-green-100 shadow-sm'
-                                                        : 'bg-red-50 text-red-600 border-red-100'
+                                                <div className="flex flex-col items-center gap-1.5">
+                                                    <button
+                                                        onClick={() => toggleStatus(member._id)}
+                                                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-all focus:outline-none ${
+                                                            member.isActive ? 'bg-[#1b5e20]' : 'bg-gray-300'
                                                         }`}
-                                                >
-                                                    {member.isActive ? 'Active' : 'Disabled'}
-                                                </button>
+                                                    >
+                                                        <span
+                                                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                                                member.isActive ? 'translate-x-[1.125rem]' : 'translate-x-0.5'
+                                                            }`}
+                                                        />
+                                                    </button>
+                                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${member.isActive ? 'text-[#1b5e20]' : 'text-gray-400'}`}>
+                                                        {member.isActive ? 'Active' : 'Disabled'}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-center gap-2">

@@ -304,7 +304,7 @@ export default function RegisterPage() {
                 setIsRegistered(true);
                 setMessage({ type: 'success', text: 'Registration successful! Proceeding...' });
                 setTimeout(() => {
-                    router.replace('/login?message=registered');
+                    router.replace('/login');
                 }, 1500);
             } else {
                 if (data.msg === "Phone number already exists") {
@@ -449,18 +449,29 @@ export default function RegisterPage() {
                                         </div>
 
                                         <div className="mt-4 mb-6">
-                                            <div className="flex items-start group cursor-pointer" onClick={() => setTermsAgreed(!termsAgreed)}>
+                                            <div className="flex items-start group">
                                                 <input
                                                     type="checkbox"
                                                     id="terms"
                                                     checked={termsAgreed}
-                                                    onChange={() => { }}
+                                                    onChange={(e) => setTermsAgreed(e.target.checked)}
                                                     className={`mt-1 flex-shrink-0 w-4 h-4 text-agri-green-primary bg-gray-100 border-gray-300 rounded focus:ring-agri-green-primary focus:ring-2 cursor-pointer ${errors.terms ? 'border-red-400' : ''}`}
                                                 />
                                                 <div className="ml-3">
-                                                    <label htmlFor="terms" className="text-sm font-semibold text-gray-800 cursor-pointer group-hover:text-agri-green-800 transition-colors uppercase tracking-tight">
-                                                        I agree to the <span className="text-agri-green-700 underline">Terms and Conditions</span>
-                                                    </label>
+                                                    <div className="inline-flex items-center flex-wrap">
+                                                        <label htmlFor="terms" className="text-sm font-semibold text-gray-800 cursor-pointer group-hover:text-agri-green-800 transition-colors uppercase tracking-tight">
+                                                            I agree to the&nbsp;
+                                                        </label>
+                                                        <a
+                                                            href="/terms-and-condition/Term & Condition  CAIP - Business Credit Reporting Agency, Report Defaulter, Settlement, Company CIR.pdf"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-agri-green-700 underline text-sm font-semibold uppercase tracking-tight hover:text-agri-green-900 transition-colors"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            Terms and Conditions
+                                                        </a>
+                                                    </div>
                                                     <p className="text-[11px] text-gray-500 mt-1 font-medium leading-relaxed">
                                                         CAIP is a platform dedicated to protecting the interests of the agri-input industry. All data is provided by members and subject to our privacy guidelines.
                                                     </p>

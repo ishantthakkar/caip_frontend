@@ -30,6 +30,9 @@ export default function AdminDashboardPage() {
     const [showModal, setShowModal] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [cardTimeframes, setCardTimeframes] = useState(['all', 'all', 'all', 'all', 'all', 'all']); // box1, box2, box3, box4, trend, industry
+    const [activeMenu, setActiveMenu] = useState<string | number | null>(null);
+    const [summaryData, setSummaryData] = useState<any>(null);
 
     useEffect(() => {
         const initialFetch = async () => {
@@ -37,6 +40,39 @@ export default function AdminDashboardPage() {
         };
         initialFetch();
     }, []);
+
+    const updateCardTimeframe = async (index: number, tf: string) => {
+        const newTfs = [...cardTimeframes];
+        newTfs[index] = tf;
+        setCardTimeframes(newTfs);
+        setActiveMenu(null);
+
+        const token = localStorage.getItem('adminToken');
+        if (!token) return;
+
+        try {
+            const res = await fetch(`${API_BASE_URL}admin/dashboard-stats?timeframe=${tf}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (index <= 3) {
+                    setSummaryData((prev: any) => {
+                        const updated = { ...prev };
+                        if (index === 0) updated.totalReported = data.summary.totalReported;
+                        if (index === 1) updated.totalAmount = data.summary.totalAmount;
+                        if (index === 2) updated.totalRecovered = data.summary.totalRecovered;
+                        if (index === 3) updated.totalMembers = data.summary.totalMembers;
+                        return updated;
+                    });
+                } else if (index === 4) {
+                    setStats((prev: any) => ({ ...prev, searchTrend: data.searchTrend }));
+                } else if (index === 5) {
+                    setStats((prev: any) => ({ ...prev, industryDist: data.industryDist }));
+                }
+            }
+        } catch (error) { console.error(error); }
+    };
 
     const fetchAdminStats = async () => {
         try {
@@ -46,6 +82,7 @@ export default function AdminDashboardPage() {
             });
             const data = await res.json();
             setStats(data);
+            setSummaryData(data.summary);
         } catch (error) {
             console.error("Error fetching admin stats:", error);
         }
@@ -153,7 +190,7 @@ export default function AdminDashboardPage() {
                     {[
                         {
                             title: 'Total defaulters',
-                            val: stats.summary.totalReported,
+                            val: summaryData?.totalReported || 0,
                             icon: (
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="17" y1="8" x2="17" y2="12" /><line x1="17" y1="16" x2="17.01" y2="16" />
@@ -162,7 +199,7 @@ export default function AdminDashboardPage() {
                         },
                         {
                             title: 'Total defaulters amount',
-                            val: `₹ ${stats.summary.totalAmount.toLocaleString()}`,
+                            val: `₹ ${(summaryData?.totalAmount || 0).toLocaleString()}`,
                             icon: (
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M6 3h12" /><path d="M6 8h12" /><path d="m6 13 8.5 8" /><path d="M6 13h3" /><path d="M9 13c6.667 0 6.667-10 0-10" />
@@ -171,7 +208,7 @@ export default function AdminDashboardPage() {
                         },
                         {
                             title: 'Total recovery amount',
-                            val: `₹ ${stats.summary.totalRecovered.toLocaleString()}`,
+                            val: `₹ ${(summaryData?.totalRecovered || 0).toLocaleString()}`,
                             icon: (
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <polyline points="20 6 9 17 4 12" />
@@ -180,7 +217,7 @@ export default function AdminDashboardPage() {
                         },
                         {
                             title: 'Total members',
-                            val: users.length,
+                            val: summaryData?.totalMembers ?? users.length,
                             icon: (
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
@@ -188,31 +225,91 @@ export default function AdminDashboardPage() {
                             ),
                         }
                     ].map((s, i) => (
-                        <div key={i} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden group hover:shadow-lg transition-all">
-                            <div className="bg-[#1b5e20] px-5 py-3 flex items-center justify-between text-white">
+                        <div key={i} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-visible group hover:shadow-lg transition-all relative">
+                            <div className="bg-[#1b5e20] px-5 py-3 flex items-center justify-between text-white rounded-t-xl">
                                 <h4 className="text-[15px] font-semibold tracking-tight flex items-center gap-2.5 capitalize">
                                     {s.icon}
                                     {s.title}
                                 </h4>
-                                <button className="opacity-40 hover:opacity-100 transition-all text-xs">•••</button>
+                                {i < 4 && (
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setActiveMenu(activeMenu === i ? null : i)}
+                                            className="w-8 h-7 flex items-center justify-center border border-white/20 rounded-md hover:bg-white/10 transition-all text-xs"
+                                        >
+                                            •••
+                                        </button>
+                                        {activeMenu === i && (
+                                            <>
+                                                <div className="fixed inset-0 z-30" onClick={() => setActiveMenu(null)}></div>
+                                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-2xl border border-gray-100 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-200 origin-top-right text-gray-800">
+                                                    {[
+                                                        { label: 'All', value: 'all' },
+                                                        { label: 'Today', value: 'today' },
+                                                        { label: 'Last 7 Days', value: 'last7days' },
+                                                        { label: 'This Month', value: 'thisMonth' },
+                                                        { label: 'Last Month', value: 'lastMonth' }
+                                                    ].map((opt) => (
+                                                        <button
+                                                            key={opt.value}
+                                                            onClick={() => updateCardTimeframe(i, opt.value)}
+                                                            className={`w-full text-left px-4 py-2 text-[13px] hover:bg-gray-50 transition-colors ${cardTimeframes[i] === opt.value ? 'text-[#1b5e20] font-black bg-green-50/50' : 'text-gray-600 font-medium'}`}
+                                                        >
+                                                            {opt.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             <div className="p-5">
-                                <p className="text-[20px] font-bold text-gray-900 tracking-tight">{s.val}</p>
+                                <p className="text-[20px] font-bold text-gray-900 tracking-tight leading-none">{s.val}</p>
                             </div>
                         </div>
                     ))}
                 </div>
 
                 {/* Bar Graph: Search Trend */}
-                <div className="bg-white rounded-xl shadow-lg border border-gray-100/50 overflow-hidden flex flex-col">
-                    <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100/50 overflow-visible flex flex-col">
+                    <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white rounded-t-xl">
                         <h3 className="text-[16px] font-semibold tracking-tight flex items-center gap-3">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
                             </svg>
-                            Global Search Trend ({new Date().getFullYear()})
+                            {cardTimeframes[4] === 'all' ? `Defaulter Search Trend (${new Date().getFullYear()})` : `Searching Activity (${cardTimeframes[4].toUpperCase()})`}
                         </h3>
-                        <div className="text-white/40 text-xs font-black tracking-widest cursor-pointer hover:text-white transition-colors">•••</div>
+                        <div className="relative">
+                            <button
+                                onClick={() => setActiveMenu(activeMenu === 'trend' ? null : 'trend')}
+                                className="w-8 h-7 flex items-center justify-center border border-white/20 rounded-md hover:bg-white/10 transition-all text-xs"
+                            >
+                                •••
+                            </button>
+                            {activeMenu === 'trend' && (
+                                <>
+                                    <div className="fixed inset-0 z-30" onClick={() => setActiveMenu(null)}></div>
+                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-2xl border border-gray-100 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-200 origin-top-right text-gray-800">
+                                        {[
+                                            { label: 'All', value: 'all' },
+                                            { label: 'Today', value: 'today' },
+                                            { label: 'Last 7 Days', value: 'last7days' },
+                                            { label: 'This Month', value: 'thisMonth' },
+                                            { label: 'Last Month', value: 'lastMonth' }
+                                        ].map((opt) => (
+                                            <button
+                                                key={opt.value}
+                                                onClick={() => updateCardTimeframe(4, opt.value)}
+                                                className={`w-full text-left px-4 py-2 text-[13px] hover:bg-gray-50 transition-colors ${cardTimeframes[4] === opt.value ? 'text-[#1b5e20] font-black bg-green-50/50' : 'text-gray-600 font-medium'}`}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                     <div className="pl-16 p-8 pb-10 flex-1 flex flex-col min-h-[350px]">
                         <div className="flex-1 flex items-end gap-1 relative border-b border-gray-100 pb-10">
@@ -250,7 +347,7 @@ export default function AdminDashboardPage() {
                                                         <div className="h-2 w-px bg-gray-100 mb-2"></div>
                                                         <span className="text-[13px] font-medium text-gray-400">{data.label}</span>
                                                     </div>
-                                                    
+
                                                     {/* Tooltip */}
                                                     <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all bg-gray-900 text-white text-[10px] font-bold py-1.5 px-3 rounded-lg z-20 shadow-2xl whitespace-nowrap pointer-events-none">
                                                         {data.count} Global Searches
@@ -268,11 +365,11 @@ export default function AdminDashboardPage() {
 
                 {/* Row: Latest Defaulters & Industry Chart */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
+
                     {/* Latest Reported Defaulters Table */}
                     <div className="lg:col-span-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
                         <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></svg>
                             <h3 className="text-[16px] font-semibold tracking-tight">Latest Reported Defaulters</h3>
                         </div>
                         <div className="p-4 md:p-5">
@@ -283,7 +380,7 @@ export default function AdminDashboardPage() {
                                             <th className="px-4 py-3 text-[13px] font-semibold tracking-tight">#</th>
                                             <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-left">Defaulter Company Name</th>
                                             <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-left">Reported By</th>
-                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-center">Defaulted Amount</th>
+                                            <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-center">Default Amount</th>
                                             <th className="px-4 py-3 text-[13px] font-semibold tracking-tight text-right">Recovered Amount</th>
                                         </tr>
                                     </thead>
@@ -295,7 +392,8 @@ export default function AdminDashboardPage() {
                                                     <p className="font-semibold text-gray-900 leading-tight truncate max-w-[150px]">{report.defaulter_name}</p>
                                                 </td>
                                                 <td className="px-4 py-3 text-left">
-                                                    <p className="font-semibold text-gray-900">{report.user_id?.name || '---'}</p>
+                                                    <p className="font-semibold text-gray-900 leading-tight">{report.user_id?.name || '---'}</p>
+                                                    {report.user_id?.companyName && <p className="text-[10px] text-gray-400 italic">({report.user_id.companyName})</p>}
                                                 </td>
                                                 <td className="px-4 py-3 font-semibold text-red-600">₹ {report.default_amount?.toLocaleString()}</td>
                                                 <td className="px-4 py-3 text-right font-semibold text-emerald-600 italic">₹ {(report.default_amount - (report.outstanding_amount || 0)).toLocaleString()}</td>
@@ -310,10 +408,42 @@ export default function AdminDashboardPage() {
                     </div>
 
                     {/* Defaulter Industry Types Chart */}
-                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
-                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                            <h3 className="text-[16px] font-semibold tracking-tight">Defaulter Industry Types</h3>
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-visible flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white rounded-t-xl">
+                            <h3 className="text-[16px] font-semibold tracking-tight flex items-center gap-3">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                {cardTimeframes[5] === 'all' ? 'Defaulter Industry Types' : `Industry Distribution (${cardTimeframes[5].toUpperCase()})`}
+                            </h3>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setActiveMenu(activeMenu === 'industry' ? null : 'industry')}
+                                    className="w-8 h-7 flex items-center justify-center border border-white/20 rounded-md hover:bg-white/10 transition-all text-xs"
+                                >
+                                    •••
+                                </button>
+                                {activeMenu === 'industry' && (
+                                    <>
+                                        <div className="fixed inset-0 z-30" onClick={() => setActiveMenu(null)}></div>
+                                        <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-2xl border border-gray-100 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-200 origin-top-right text-gray-800">
+                                            {[
+                                                { label: 'All', value: 'all' },
+                                                { label: 'Today', value: 'today' },
+                                                { label: 'Last 7 Days', value: 'last7days' },
+                                                { label: 'This Month', value: 'thisMonth' },
+                                                { label: 'Last Month', value: 'lastMonth' }
+                                            ].map((opt) => (
+                                                <button
+                                                    key={opt.value}
+                                                    onClick={() => updateCardTimeframe(5, opt.value)}
+                                                    className={`w-full text-left px-4 py-2 text-[13px] hover:bg-gray-50 transition-colors ${cardTimeframes[5] === opt.value ? 'text-[#1b5e20] font-black bg-green-50/50' : 'text-gray-600 font-medium'}`}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                         <div className="p-6 md:p-8 flex flex-col items-center justify-center">
                             {(() => {
@@ -377,10 +507,9 @@ export default function AdminDashboardPage() {
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col">
                     <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
                         <h3 className="text-[16px] font-semibold tracking-tight flex items-center gap-3">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
                             State-Wise Defaulter Insights
                         </h3>
-                        <div className="opacity-40 hover:opacity-100 transition-all text-xs cursor-pointer">•••</div>
                     </div>
                     <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
                         <div className="lg:w-1/2 p-6 min-h-[450px] bg-[#fbfcfd]">
@@ -414,7 +543,7 @@ export default function AdminDashboardPage() {
                 {/* Transaction History */}
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                     <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
                         <h3 className="text-[16px] font-semibold tracking-tight">Transaction History</h3>
                     </div>
                     <div className="p-4 md:p-5">
@@ -436,7 +565,7 @@ export default function AdminDashboardPage() {
                                             <td className="px-4 py-3 text-gray-400">{i + 1}</td>
                                             <td className="px-4 py-3 font-mono text-[11px] text-gray-500">{tx.txNo}</td>
                                             <td className="px-4 py-3 font-semibold text-gray-900">{tx.member}</td>
-                                            <td className="px-4 py-3 text-gray-800">{tx.company}</td>
+                                            <td className="px-4 py-3 text-gray-800">{tx.companyName}</td>
                                             <td className="px-4 py-3 font-bold text-gray-900">₹ {tx.amount.toLocaleString()}.00</td>
                                             <td className="px-4 py-3 text-right">
                                                 <span className={`px-3 py-1 rounded-full text-[10px] font-bold ${tx.type.includes('New') ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
@@ -450,98 +579,7 @@ export default function AdminDashboardPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* Master Member Registry Table */}
-                {/* <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
-                    <div className="bg-[#1b5e20] px-10 py-8 flex flex-col md:flex-row justify-between md:items-center gap-6 text-white">
-                        <div className="flex flex-col">
-                            <h3 className="text-xl font-black tracking-tight">Master Member Registry</h3>
-                            <div className="flex items-center gap-4 mt-1 font-bold">
-                                <p className="text-xs text-white/60 tracking-wider">Full compliance management</p>
-                                <div className="w-1 h-1 rounded-full bg-white/40"></div>
-                                <Link href="/admin-members" className="text-xs text-[#ffd600] hover:text-white transition-colors tracking-wider underline decoration-2 underline-offset-4">View all registry</Link>
-                            </div>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="relative group">
-                                <input
-                                    type="text"
-                                    placeholder="Search entities..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="bg-white/10 border border-white/20 rounded-2xl px-12 py-3 text-sm font-black text-white placeholder-white/40 outline-none focus:bg-white focus:text-black focus:border-white transition-all w-72"
-                                />
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 group-focus-within:opacity-100 transition-opacity">🔎</span>
-                            </div>
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="bg-white/10 border border-white/20 rounded-2xl px-6 py-3 text-sm font-black text-white outline-none focus:bg-white focus:text-black transition-all cursor-pointer"
-                            >
-                                <option className="text-black" value="all">All profiles</option>
-                                <option className="text-black" value="0">Review needed</option>
-                                <option className="text-black" value="1">Verified</option>
-                                <option className="text-black" value="2">Blacklisted</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="overflow-x-auto p-4">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="text-[10px] font-black text-black tracking-wider bg-gray-50/50 border-b border-gray-100">
-                                    <th className="px-10 py-6">Entity credentials</th>
-                                    <th className="px-10 py-6">Geographic jurisdiction</th>
-                                    <th className="px-10 py-6 text-center">Reporting count</th>
-                                    <th className="px-10 py-6 text-right">Master actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50">
-                                {filteredUsers.map((user) => (
-                                    <tr key={user._id} className="hover:bg-gray-50 transition-all group">
-                                        <td className="px-10 py-6">
-                                            <div className="flex items-center gap-5">
-                                                <div className="w-12 h-12 rounded-2xl bg-[#f0f9f0] flex items-center justify-center text-[#1b5e20] font-black text-lg border border-[#1b5e20]/10 group-hover:bg-[#1b5e20] group-hover:text-white transition-all">
-                                                    {user.name?.[0]}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-black text-black truncate max-w-[250px] italic">{user.name}</p>
-                                                    <p className="text-[10px] font-bold text-black lowercase">{user.email}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-10 py-6">
-                                            <p className="text-sm font-bold text-black">{user.district}, {user.state}</p>
-                                            <p className="text-[10px] text-black font-black mt-1 tracking-wider">{user.subDistrict || 'Global'}</p>
-                                        </td>
-                                        <td className="px-10 py-6 text-center">
-                                            <span className="text-sm font-black text-[#1b5e20] bg-green-50 px-4 py-2 rounded-xl border border-green-100">
-                                                {user.reportCount || 0} Reports
-                                            </span>
-                                        </td>
-                                        <td className="px-10 py-6 text-right">
-                                            <div className="flex justify-end gap-3 items-center">
-                                                {user.status === '0' ? (
-                                                    <button onClick={() => handleAction(user._id, 'approved')} className="px-6 py-2 bg-[#1b5e20] text-white text-[10px] font-black rounded-xl hover:bg-black transition-all shadow-lg active:scale-95">Verify entity</button>
-                                                ) : (
-                                                    <>
-                                                        <button
-                                                            onClick={() => fetchUserDefaulters(user)}
-                                                            className="px-6 py-2 bg-[#1b5e20] text-white text-[10px] font-black rounded-xl hover:bg-black transition-all shadow-lg active:scale-95"
-                                                        >
-                                                            Inspect ledger
-                                                        </button>
-                                                        <Link href={`/admin-members`} className="px-6 py-2 bg-gray-50 text-black text-[10px] font-black rounded-xl border border-gray-200 hover:bg-gray-200 hover:text-black transition-all">Audit</Link>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div> */}
+                <br />
             </div>
 
             {/* Defaulter Table Modal */}

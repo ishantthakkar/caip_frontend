@@ -66,22 +66,22 @@ export default function AdminAlertsPage() {
     };
 
     return (
-        <AdminPortalContainer title="Admin Alerts">
+        <AdminPortalContainer title="Admin Notifications">
             <div className="space-y-6">
                 {/* Search Header */}
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h2 className="text-xl font-bold text-gray-800 tracking-tight uppercase">Incoming Alerts History</h2>
-                    
+                    <h2 className="text-xl font-bold text-gray-800 tracking-tight">Notifications</h2>
+
                     <div className="relative w-full md:w-80">
                         <input
                             type="text"
-                            placeholder="Search alerts..."
+                            placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-12 pr-6 py-3 bg-gray-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#ffd600] transition-all"
                         />
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
                     </div>
                 </div>
@@ -91,21 +91,21 @@ export default function AdminAlertsPage() {
                     <div className="overflow-x-auto no-scrollbar">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-black text-[#ffd600]">
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10 w-16">#</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Title</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest border-r border-white/10">Message</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest w-48 whitespace-nowrap">Time</th>
+                                <tr className="bg-black text-[#eee]">
+                                    <th className="px-6 py-4 text-[10px] font-black tracking-widest border-r border-white/10 w-16">#</th>
+                                    <th className="px-6 py-4 text-[10px] font-black tracking-widest border-r border-white/10">Title</th>
+                                    <th className="px-6 py-4 text-[10px] font-black tracking-widest border-r border-white/10">Message</th>
+                                    <th className="px-6 py-4 text-[10px] font-black tracking-widest w-48 whitespace-nowrap">Time</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50 font-sans">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-gray-400 font-bold animate-pulse uppercase tracking-widest text-xs">Fetching system alerts...</td>
+                                        <td colSpan={4} className="px-6 py-12 text-center text-gray-400 font-bold animate-pulse tracking-widest text-xs">Loading Records...</td>
                                     </tr>
                                 ) : paginatedAlerts.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-gray-400 font-bold italic uppercase tracking-widest text-[10px]">No alerts found</td>
+                                        <td colSpan={4} className="px-6 py-12 text-center text-gray-400 font-bold italic tracking-widest text-[10px]">No Notification found</td>
                                     </tr>
                                 ) : (
                                     paginatedAlerts.map((a, idx) => (
@@ -118,19 +118,19 @@ export default function AdminAlertsPage() {
                                                     {!a.read_by.includes(admin?.id) && (
                                                         <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse shrink-0" />
                                                     )}
-                                                    <span className={`text-sm font-bold tracking-tight ${!a.read_by.includes(admin?.id) ? 'text-black' : 'text-gray-500'}`}>
+                                                    <span className={`text-sm font-bold  tracking-tight ${!a.read_by.includes(admin?.id) ? 'text-black' : 'text-black'}`}>
                                                         {a.message_title}
                                                     </span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 border-r border-gray-50">
-                                                <p className="text-xs text-gray-500 font-bold leading-relaxed line-clamp-2 italic tracking-tight group-hover:line-clamp-none transition-all">
+                                                <p className="text-xs font-bold leading-relaxed line-clamp-2 tracking-tight group-hover:line-clamp-none transition-all">
                                                     {a.message_content}
                                                 </p>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center gap-2">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-black opacity-30"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-black opacity-30"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                                                     <span className="text-[11px] font-black text-gray-700 font-sans">
                                                         {formatDateTime(a.createdAt)}
                                                     </span>
@@ -155,7 +155,7 @@ export default function AdminAlertsPage() {
                                     onClick={() => setCurrentPage(prev => prev - 1)}
                                     className="p-2 rounded-2xl bg-white border border-gray-100 text-gray-500 disabled:opacity-30 hover:bg-black hover:text-[#ffd600] transition-all font-bold shadow-sm"
                                 >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="15 18 9 12 15 6"/></svg>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="15 18 9 12 15 6" /></svg>
                                 </button>
                                 {[...Array(totalPages)].map((_, i) => (
                                     <button
@@ -171,7 +171,7 @@ export default function AdminAlertsPage() {
                                     onClick={() => setCurrentPage(prev => prev + 1)}
                                     className="p-2 rounded-2xl bg-white border border-gray-100 text-gray-500 disabled:opacity-30 hover:bg-black hover:text-[#ffd600] transition-all font-bold shadow-sm"
                                 >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="9 18 15 12 9 6"/></svg>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="9 18 15 12 9 6" /></svg>
                                 </button>
                             </div>
                         </div>

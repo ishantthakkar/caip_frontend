@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
             />
             {/* Light Overlay to ensure contrast */}
             <div className="absolute inset-0 bg-white opacity-50" />
-            
+
             {/* Carbon Fiber Texture Overlay */}
             <div
                 className="absolute inset-0 bg-repeat opacity-20 pointer-events-none"
@@ -64,7 +64,7 @@ export default function AdminLoginPage() {
 
             <div className="container mx-auto px-4 flex-1 flex flex-col pt-12 pb-10 relative z-10">
                 <div className="flex-1 flex flex-col items-center justify-center -mt-10">
-                    
+
                     <div className="w-full max-w-md relative z-10">
                         {/* Error Toast */}
                         {error && (
@@ -78,7 +78,7 @@ export default function AdminLoginPage() {
                             <div className="inline-block mb-4">
                                 <img src="/images/caip_logo.png" alt="CAIP Logo" className="mx-auto h-[70px] drop-shadow-sm" />
                             </div>
-                            
+
                             <div className="bg-agri-green-primary text-center px-4 py-3.5 rounded-2xl shadow-sm">
                                 <h4 className="text-white m-0 font-bold text-lg tracking-wide">Chamber for Agri Input Protection</h4>
                             </div>
@@ -89,7 +89,7 @@ export default function AdminLoginPage() {
                             {/* Card Header */}
                             <div className="bg-agri-green-primary p-5 text-center">
                                 <h5 className="text-white text-xl font-semibold mb-1">Admin Login</h5>
-                                <p className="text-white/80 text-sm m-0">Authorized personnel access for CAIP administration.</p>
+                                <p className="text-white/80 text-sm m-0">Sign in to continue to Chamber for Agri Input Protection.</p>
                             </div>
 
                             {/* Card Body */}
@@ -130,16 +130,6 @@ export default function AdminLoginPage() {
                                             <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                         ) : 'Sign In'}
                                     </button>
-
-                                    <div className="text-center pt-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => router.push('/login')}
-                                            className="text-xs font-semibold text-agri-green-primary hover:underline uppercase tracking-wider"
-                                        >
-                                            Go to Member Login
-                                        </button>
-                                    </div>
                                 </form>
                             </div>
                         </div>

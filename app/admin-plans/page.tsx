@@ -12,6 +12,7 @@ interface MembershipPlan {
     benefits: string[];
     subMemberLimit: number;
     createdAt?: string;
+    isActive: boolean;
 }
 
 const MembershipPlansPage = () => {
@@ -26,6 +27,8 @@ const MembershipPlansPage = () => {
         benefits: '',
         subMemberLimit: ''
     });
+    const [errors, setErrors] = useState<any>({});
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     // Search and Pagination State
     const [searchTerm, setSearchTerm] = useState('');
@@ -34,7 +37,10 @@ const MembershipPlansPage = () => {
 
     const fetchPlans = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}membership-plans`);
+            const token = localStorage.getItem('adminToken');
+            const response = await fetch(`${API_BASE_URL}admin/all-membership-plans`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const data = await response.json();
             if (response.ok) {
                 setPlans(data.data || []);
@@ -78,21 +84,32 @@ const MembershipPlansPage = () => {
                 benefits: Array.isArray(plan.benefits) ? plan.benefits.join(', ') : plan.benefits,
                 subMemberLimit: plan.subMemberLimit.toString()
             });
-        } else {
-            setEditingPlan(null);
-            setFormData({
-                name: '',
-                price: '',
-                duration: '',
-                benefits: '',
-                subMemberLimit: ''
-            });
         }
+        setErrors({});
+        setIsSubmitted(false);
         setIsModalOpen(true);
+    };
+
+    const validate = () => {
+        const newErrors: any = {};
+        if (!formData.name.trim()) newErrors.name = "Plan name is required";
+        if (!formData.price) newErrors.price = "Price is required";
+        if (!formData.duration.trim()) newErrors.duration = "Duration is required";
+        if (!formData.subMemberLimit) newErrors.subMemberLimit = "Limit is required";
+        if (!formData.benefits.trim()) newErrors.benefits = "Benefits are required";
+
+        if (formData.price && Number(formData.price) < 0) newErrors.price = "Price cannot be negative";
+        if (formData.subMemberLimit && Number(formData.subMemberLimit) < 0) newErrors.subMemberLimit = "Limit cannot be negative";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitted(true);
+        if (!validate()) return;
+
         const token = localStorage.getItem('adminToken');
 
         const method = editingPlan ? 'PUT' : 'POST';
@@ -122,6 +139,27 @@ const MembershipPlansPage = () => {
             }
         } catch (error) {
             console.error("Error submitting plan:", error);
+        }
+    };
+
+    const handleToggleStatus = async (id: string, currentIsActive: boolean) => {
+        const newStatus = !currentIsActive;
+        const token = localStorage.getItem('adminToken');
+        try {
+            const response = await fetch(`${API_BASE_URL}admin/membership-plans/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ isActive: newStatus })
+            });
+
+            if (response.ok) {
+                fetchPlans();
+            }
+        } catch (error) {
+            console.error("Error toggling status:", error);
         }
     };
 
@@ -195,20 +233,21 @@ const MembershipPlansPage = () => {
                                             <th className="px-6 py-3 text-sm font-semibold tracking-tight">Pricing</th>
                                             <th className="px-6 py-3 text-sm font-semibold tracking-tight text-center">Duration</th>
                                             <th className="px-6 py-3 text-sm font-semibold tracking-tight text-center">Sub-Members</th>
+                                            <th className="px-6 py-3 text-sm font-semibold tracking-tight text-center">Status</th>
                                             <th className="px-6 py-3 text-sm font-semibold tracking-tight text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50 border-b border-gray-50 bg-white">
                                         {loading ? (
                                             <tr>
-                                                <td colSpan={6} className="py-24 text-center">
+                                                <td colSpan={7} className="py-24 text-center">
                                                     <div className="animate-spin h-10 w-10 border-4 border-[#1b5e20] border-t-transparent rounded-full mx-auto mb-4"></div>
                                                     <p className="text-sm font-medium text-gray-500 animate-pulse">Loading Membership Plans...</p>
                                                 </td>
                                             </tr>
                                         ) : paginatedPlans.length === 0 ? (
                                             <tr>
-                                                <td colSpan={6} className="py-24 text-center text-gray-400">
+                                                <td colSpan={7} className="py-24 text-center text-gray-400">
                                                     <p className="text-sm font-medium tracking-widest uppercase italic">No Plans Identified</p>
                                                 </td>
                                             </tr>
@@ -240,6 +279,14 @@ const MembershipPlansPage = () => {
                                                             <span className="text-[14px] font-bold text-gray-900">{plan.subMemberLimit}</span>
                                                             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Slots</span>
                                                         </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <button
+                                                            onClick={() => handleToggleStatus(plan._id, plan.isActive)}
+                                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${plan.isActive ? 'bg-[#1b5e20]' : 'bg-gray-200'}`}
+                                                        >
+                                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${plan.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
+                                                        </button>
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <div className="flex justify-end gap-2">
@@ -331,51 +378,56 @@ const MembershipPlansPage = () => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                        <form onSubmit={handleSubmit} noValidate className="p-6 space-y-5">
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[13px] font-bold text-gray-700 ml-1">Plan Name</label>
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Plan Name <span className="text-red-500">*</span></label>
                                 <input
-                                    type="text" required placeholder="e.g. Standard Member" value={formData.name}
+                                    type="text" placeholder="e.g. Standard Member" value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
+                                    className={`w-full bg-gray-50/50 border rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:bg-white shadow-sm ${errors.name ? 'border-red-500' : 'border-gray-100 focus:border-[#1b5e20]'}`}
                                 />
+                                {errors.name && <span className="text-red-500 text-[11px] font-bold ml-1">{errors.name}</span>}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5 flex flex-col">
-                                    <label className="text-[13px] font-bold text-gray-700 ml-1">Price (₹)</label>
+                                    <label className="text-[13px] font-bold text-gray-700 ml-1">Price (₹) <span className="text-red-500">*</span></label>
                                     <input
-                                        type="number" required placeholder="3000" value={formData.price}
+                                        type="number" placeholder="3000" value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                        className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
+                                        className={`w-full bg-gray-50/50 border rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:bg-white shadow-sm ${errors.price ? 'border-red-500' : 'border-gray-100 focus:border-[#1b5e20]'}`}
                                     />
+                                    {errors.price && <span className="text-red-500 text-[11px] font-bold ml-1">{errors.price}</span>}
                                 </div>
                                 <div className="space-y-1.5 flex flex-col">
-                                    <label className="text-[13px] font-bold text-gray-700 ml-1">Duration</label>
+                                    <label className="text-[13px] font-bold text-gray-700 ml-1">Duration <span className="text-red-500">*</span></label>
                                     <input
-                                        type="text" required placeholder="e.g. 1 Year" value={formData.duration}
+                                        type="text" placeholder="e.g. 1 Year" value={formData.duration}
                                         onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                        className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
+                                        className={`w-full bg-gray-50/50 border rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:bg-white shadow-sm ${errors.duration ? 'border-red-500' : 'border-gray-100 focus:border-[#1b5e20]'}`}
                                     />
+                                    {errors.duration && <span className="text-red-500 text-[11px] font-bold ml-1">{errors.duration}</span>}
                                 </div>
                             </div>
 
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[13px] font-bold text-gray-700 ml-1">Sub-Member Limit</label>
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Sub-Member Limit <span className="text-red-500">*</span></label>
                                 <input
-                                    type="number" required placeholder="5 slots available" value={formData.subMemberLimit}
+                                    type="number" placeholder="5 slots available" value={formData.subMemberLimit}
                                     onChange={(e) => setFormData({ ...formData, subMemberLimit: e.target.value })}
-                                    className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
+                                    className={`w-full bg-gray-50/50 border rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:bg-white shadow-sm ${errors.subMemberLimit ? 'border-red-500' : 'border-gray-100 focus:border-[#1b5e20]'}`}
                                 />
+                                {errors.subMemberLimit && <span className="text-red-500 text-[11px] font-bold ml-1">{errors.subMemberLimit}</span>}
                             </div>
 
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[13px] font-bold text-gray-700 ml-1">Benefits (Comma Separated)</label>
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Benefits <span className="text-red-500">*</span></label>
                                 <textarea
-                                    required placeholder="Feature 1, Feature 2, Feature 3..." value={formData.benefits}
+                                    placeholder="Feature 1, Feature 2, Feature 3..." value={formData.benefits}
                                     onChange={(e) => setFormData({ ...formData, benefits: e.target.value })}
-                                    className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm min-h-[100px] resize-none"
+                                    className={`w-full bg-gray-50/50 border rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:bg-white shadow-sm min-h-[100px] resize-none ${errors.benefits ? 'border-red-500' : 'border-gray-100 focus:border-[#1b5e20]'}`}
                                 />
+                                {errors.benefits && <span className="text-red-500 text-[11px] font-bold ml-1">{errors.benefits}</span>}
                             </div>
 
                             <div className="pt-4 flex justify-end gap-3">
