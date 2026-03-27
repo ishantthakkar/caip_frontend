@@ -234,7 +234,7 @@ export default function SubMembersPage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col items-center">
-                                                    <p className="font-semibold text-gray-800">{member.email}</p>
+                                                    <p className="font-semibold text-gray-800">{member.email || '-'}</p>
                                                 </div>
                                             </td>
                                             <td>
@@ -245,14 +245,12 @@ export default function SubMembersPage() {
                                                 <div className="flex flex-col items-center gap-1.5">
                                                     <button
                                                         onClick={() => toggleStatus(member._id)}
-                                                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-all focus:outline-none ${
-                                                            member.isActive ? 'bg-[#1b5e20]' : 'bg-gray-300'
-                                                        }`}
+                                                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-all focus:outline-none ${member.isActive ? 'bg-[#1b5e20]' : 'bg-gray-300'
+                                                            }`}
                                                     >
                                                         <span
-                                                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                                                                member.isActive ? 'translate-x-[1.125rem]' : 'translate-x-0.5'
-                                                            }`}
+                                                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${member.isActive ? 'translate-x-[1.125rem]' : 'translate-x-0.5'
+                                                                }`}
                                                         />
                                                     </button>
                                                     <span className={`text-[10px] font-bold uppercase tracking-wider ${member.isActive ? 'text-[#1b5e20]' : 'text-gray-400'}`}>
@@ -355,7 +353,7 @@ export default function SubMembersPage() {
 
                         <form onSubmit={handleCreateOrUpdate} className="p-6 space-y-6">
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[13px] font-bold text-gray-700 ml-1">Sub-Member name</label>
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Sub-Member name <span className="text-red-500">*</span> </label>
                                 <input
                                     type="text" required placeholder="Enter sub member name" value={formData.firstName}
                                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
@@ -366,14 +364,14 @@ export default function SubMembersPage() {
                             <div className="space-y-1.5 flex flex-col">
                                 <label className="text-[13px] font-bold text-gray-700 ml-1">Email</label>
                                 <input
-                                    type="email" required placeholder="Enter Email" value={formData.email}
+                                    type="email" placeholder="Enter Email" value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     className="w-full bg-gray-50/50 border border-gray-100 rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:border-[#1b5e20] focus:bg-white shadow-sm"
                                 />
                             </div>
 
                             <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[13px] font-bold text-gray-700 ml-1">Phone number</label>
+                                <label className="text-[13px] font-bold text-gray-700 ml-1">Phone number <span className="text-red-500">*</span></label>
                                 <input
                                     type="text" required placeholder="+91 XXXXX XXXXX" value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
