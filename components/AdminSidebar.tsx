@@ -47,7 +47,7 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
         {
             label: 'Dashboard',
             href: '/admin-dashboard',
-            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" /></svg>
         },
         {
             label: 'Member Management',
@@ -69,7 +69,7 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
         {
             label: 'Defaulter List',
             href: '/admin-defaulters',
-            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="17" y1="8" x2="22" y2="13" /><line x1="22" y1="8" x2="17" y2="13" /></svg>
         },
         {
             label: 'Reports',
@@ -142,12 +142,12 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
                                 <div key={idx} className="space-y-1">
                                     <button
                                         onClick={() => toggleMenu(item.label)}
-                                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all ${isActive ? 'text-[#1b5e20] bg-green-50/80 shadow-sm' : 'text-black hover:text-[#1b5e20] hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
+                                        className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-[17px] font-semibold transition-all ${isActive ? 'text-[#1b5e20] bg-green-50/80 shadow-sm' : 'text-black hover:text-[#1b5e20] hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
                                     >
                                         <span className={isActive ? 'text-[#1b5e20]' : 'text-black'}>{item.icon}</span>
                                         {!isCollapsed && (
                                             <div className="flex items-center justify-between flex-1">
-                                                <span className="text-sm tracking-tight">{item.label}</span>
+                                                <span className="tracking-tight">{item.label}</span>
                                                 <svg
                                                     width="16"
                                                     height="16"
@@ -172,7 +172,7 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
                                                     <Link
                                                         key={cIdx}
                                                         href={child.href || '#'}
-                                                        className={`flex items-center gap-4 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-all ${isChildActive ? 'text-[#1b5e20] bg-green-50/50' : 'text-gray-500 hover:text-[#1b5e20] hover:bg-gray-50'}`}
+                                                        className={`flex items-center gap-4 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all ${isChildActive ? 'text-[#1b5e20] bg-green-50/50' : 'text-gray-500 hover:text-[#1b5e20] hover:bg-gray-50'}`}
                                                     >
                                                         <span>{child.icon}</span>
                                                         <div className="flex items-center justify-between flex-1">
@@ -197,12 +197,12 @@ export default function AdminSidebar({ pendingCount, isCollapsed, setIsCollapsed
                                 key={idx}
                                 href={item.href || '#'}
                                 title={isCollapsed ? item.label : ''}
-                                className={`flex items-center gap-4 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all ${isActive ? 'text-[#1b5e20] bg-green-50/80 shadow-sm shadow-green-900/5' : 'text-black hover:text-[#1b5e20] hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
+                                className={`flex items-center gap-4 px-4 py-3 rounded-xl text-[17px] font-semibold transition-all ${isActive ? 'text-[#1b5e20] bg-green-50/80 shadow-sm shadow-green-900/5' : 'text-black hover:text-[#1b5e20] hover:bg-gray-50'} ${isCollapsed ? 'justify-center px-0' : ''}`}
                             >
                                 <span className={isActive ? 'text-[#1b5e20]' : 'text-black'}>{item.icon}</span>
                                 {!isCollapsed && (
                                     <div className="flex items-center justify-between flex-1">
-                                        <span className="text-sm tracking-tight">{item.label}</span>
+                                        <span className="tracking-tight">{item.label}</span>
                                         {item.badge !== undefined && item.badge > 0 && (
                                             <span className="px-2 py-0.5 bg-[#1b5e20] text-white text-[10px] font-bold rounded-full min-w-[20px] text-center">
                                                 {item.badge}
