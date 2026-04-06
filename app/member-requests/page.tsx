@@ -370,9 +370,11 @@ export default function MemberRequestsPage() {
                                     <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Company Details
                                 </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <DetailItem label="Industry" value={selectedUser.industry} />
                                     <DetailItem label="Company Name" value={selectedUser.companyName} />
+                                    <DetailItem label="Company Email" value={selectedUser.companyEmail} />
                                     <DetailItem label="GST" value={selectedUser.gst} />
-                                    <DetailItem label="PAN" value={selectedUser.pan} />
+                                    <DetailItem label="CIN Number" value={selectedUser.cinNumber} />
                                     <DetailItem label="Register Date" value={new Date(selectedUser.createdAt).toLocaleDateString('en-GB')} />
                                 </div>
                             </section>
@@ -385,7 +387,9 @@ export default function MemberRequestsPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <DetailItem label="Full Name" value={selectedUser.name} />
                                     <DetailItem label="Email Address" value={selectedUser.email} />
+                                    <DetailItem label="Pan" value={selectedUser.pan} />
                                     <DetailItem label="Contact Number" value={selectedUser.phone} />
+                                    <DetailItem label="Alt Contact Number" value={selectedUser.alternateContactNumber} />
                                     <DetailItem label="Membership Status" value={selectedUser.status === '1' ? 'ACTIVE' : selectedUser.status === '2' ? 'REJECTED' : 'PENDING'} isBadge status={selectedUser.status} />
                                 </div>
                             </section>
@@ -400,6 +404,7 @@ export default function MemberRequestsPage() {
                                     <DetailItem label="District" value={selectedUser.district} />
                                     <DetailItem label="Sub District" value={selectedUser.subDistrict} />
                                     <DetailItem label="City" value={selectedUser.city} />
+                                    <DetailItem label="Pin Code" value={selectedUser.pinCode} />
                                     <div className="col-span-full">
                                         <DetailItem label="Registered Address" value={selectedUser.businessAddress} />
                                     </div>

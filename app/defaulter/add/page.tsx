@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import MemberPortalContainer from '@/components/MemberPortalContainer';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/config/apiConfig';
+import Swal from 'sweetalert2';
 
 export default function AddDefaulterPage() {
     const router = useRouter();
-    const [step, setStep] = useState(1);
     const [saving, setSaving] = useState(false);
     const [states, setStates] = useState<string[]>([]);
     const [districts, setDistricts] = useState<string[]>([]);
@@ -18,7 +18,9 @@ export default function AddDefaulterPage() {
     const [errors, setErrors] = useState<any>({});
 
     const [formData, setFormData] = useState({
-        defaulter_name: '', mobile_number: '', email_id: '', gst_number: '', pan_number: '', cin_number: '', aadhar_number: '', state: '', district: '', cities: '', city: '', financial_year: '2025-2026', default_amount: '', industry: '', date_of_default: '', reason_description: '', defaulter_address: '', court_complex_name: '', case_type: '', case_number: '', case_year: '', case_status: ''
+        defaulter_name: '', mobile_number: '', email_id: '', gst_number: '', pan_number: '', cin_number: '', aadhar_number: '', state: '', district: '', cities: '', city: '', financial_year: '2025-2026', default_amount: '', industry: '', date_of_default: '', reason_description: '', defaulter_address: '', court_complex_name: '', case_type: '', case_number: '', case_year: '', case_status: '',
+        defaulter_persons: [{ name: '', pan: '', aadhar: '' }],
+        legal_status_taken: false
     });
 
     const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
@@ -138,7 +140,12 @@ export default function AddDefaulterPage() {
 
     const handleGstFetch = async () => {
         if (!formData.gst_number) {
-            alert("Please enter a GST number first");
+            Swal.fire({
+                title: "Action Required",
+                text: "Please enter a GST number first",
+                icon: "warning",
+                confirmButtonColor: "#1b5e20"
+            });
             return;
         }
 
@@ -166,11 +173,11 @@ export default function AddDefaulterPage() {
                     defaulter_name: data.lgnm || data.tradeNam || prev.defaulter_name,
                     defaulter_address: data.pradr?.adr || prev.defaulter_address,
                     pan_number: panFromGst || prev.pan_number,
-                    ...(matchedState ? { 
+                    ...(matchedState ? {
                         state: matchedState,
-                        district: '', 
-                        cities: '', 
-                        city: '' 
+                        district: '',
+                        cities: '',
+                        city: ''
                     } : {})
                 }));
 
@@ -182,11 +189,21 @@ export default function AddDefaulterPage() {
                     });
                 }
             } else {
-                alert(result.msg || "Invalid GST number");
+                Swal.fire({
+                    title: "Registration Failed",
+                    text: result.msg || "Invalid GST number",
+                    icon: "error",
+                    confirmButtonColor: "#1b5e20"
+                });
             }
         } catch (error) {
             console.error("GST Fetch error:", error);
-            alert("Error connecting to GST service");
+            Swal.fire({
+                title: "Connection Error",
+                text: "Error connecting to GST service",
+                icon: "error",
+                confirmButtonColor: "#1b5e20"
+            });
         } finally {
             setIsGstFetching(false);
         }
@@ -223,57 +240,105 @@ export default function AddDefaulterPage() {
         }
     }, [cities, pendingLocation]);
 
-    const validateStep1 = () => {
+    const validateAll = () => {
         const newErrors: any = {};
         if (!formData.defaulter_name) newErrors.defaulter_name = "Required";
         if (!formData.mobile_number || !validateMobile(formData.mobile_number)) newErrors.mobile_number = "Enter 10-digit mobile";
         if (!formData.gst_number || !validateGst(formData.gst_number)) newErrors.gst_number = "Valid GST required";
-        if (!formData.pan_number || !validatePan(formData.pan_number)) newErrors.pan_number = "Valid PAN required";
         if (!formData.state) newErrors.state = "Required";
         if (!formData.district) newErrors.district = "Required";
         if (!formData.cities) newErrors.cities = "Required";
         if (!formData.city) newErrors.city = "Required";
         if (!formData.defaulter_address) newErrors.defaulter_address = "Required";
         if (!formData.financial_year) newErrors.financial_year = "Required";
-        if (!formData.aadhar_number || !validateAadhar(formData.aadhar_number)) newErrors.aadhar_number = "Valid 12-digit Aadhar required";
         if (!formData.email_id || !validateEmail(formData.email_id)) newErrors.email_id = "Valid email required";
-        if (!formData.cin_number || !validateCin(formData.cin_number)) newErrors.cin_number = "CIN must be 21 characters";
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+        // CIN Number Validation (Optional, but must be 21 chars if filled)
+        if (formData.cin_number && !validateCin(formData.cin_number)) {
+            newErrors.cin_number = "CIN must be 21 characters";
+        }
 
-    const validateStep2 = () => {
-        const newErrors: any = {};
         if (!formData.date_of_default) newErrors.date_of_default = "Required";
         if (!formData.default_amount || parseFloat(formData.default_amount) <= 0) newErrors.default_amount = "Valid amount required";
         if (!formData.reason_description) newErrors.reason_description = "Reason is required";
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleNextStep = () => {
-        if (step === 1 && validateStep1()) setStep(2);
-        else if (step === 2 && validateStep2()) setStep(3);
-    };
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+        const { name, value, type } = e.target as any;
+        const finalValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
         setFormData(prev => ({
             ...prev,
-            [name]: value,
+            [name]: finalValue,
             ...(name === 'state' ? { district: '', cities: '', city: '' } : {}),
             ...(name === 'district' ? { cities: '', city: '' } : {}),
             ...(name === 'cities' ? { city: '' } : {})
         }));
     };
 
+    const handlePersonChange = (index: number, field: string, value: string) => {
+        const updatedPersons = [...formData.defaulter_persons];
+        (updatedPersons[index] as any)[field] = value;
+        setFormData(prev => ({ ...prev, defaulter_persons: updatedPersons }));
+    };
+
+    const addPerson = () => {
+        setFormData(prev => ({
+            ...prev,
+            defaulter_persons: [...prev.defaulter_persons, { name: '', pan: '', aadhar: '' }]
+        }));
+    };
+
+    const removePerson = (index: number) => {
+        if (formData.defaulter_persons.length > 1) {
+            const updatedPersons = formData.defaulter_persons.filter((_, i) => i !== index);
+            setFormData(prev => ({ ...prev, defaulter_persons: updatedPersons }));
+        } else {
+            // Just clear the first person instead of removing
+            setFormData(prev => ({ ...prev, defaulter_persons: [{ name: '', pan: '', aadhar: '' }] }));
+        }
+    };
+
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
+        if (!validateAll()) {
+            Swal.fire({
+                title: "Incomplete Form",
+                text: "Please fill all required fields correctly before submitting.",
+                icon: "warning",
+                confirmButtonColor: "#1b5e20"
+            });
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: "Report Defaulter?",
+            text: "Are you sure you want to report this defaulter?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#1b5e20",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, report it!"
+        });
+
+        if (result.isConfirmed) {
+            performSubmission();
+        }
+    };
+
+    const performSubmission = async () => {
         setSaving(true);
         try {
             const data = new FormData();
-            Object.keys(formData).forEach(key => data.append(key, (formData as any)[key]));
+            Object.keys(formData).forEach(key => {
+                if (key === 'defaulter_persons') {
+                    data.append(key, JSON.stringify(formData.defaulter_persons));
+                } else {
+                    data.append(key, (formData as any)[key]);
+                }
+            });
             if (selectedFiles) Array.from(selectedFiles).forEach(file => data.append('attachment_documents', file));
 
             const token = localStorage.getItem('token');
@@ -284,58 +349,65 @@ export default function AddDefaulterPage() {
             });
 
             if (response.ok) {
-                alert("Defaulter reported successfully!");
-                router.push('/defaulter/list');
+                Swal.fire({
+                    title: "Success!",
+                    text: "Defaulter reported successfully.",
+                    icon: "success",
+                    confirmButtonColor: "#1b5e20"
+                }).then(() => {
+                    router.push('/defaulter/list');
+                });
+            } else {
+                const resData = await response.json();
+                Swal.fire({
+                    title: "Submission Failed",
+                    text: resData.msg || "Failed to report defaulter. Please check your data.",
+                    icon: "error",
+                    confirmButtonColor: "#1b5e20"
+                });
             }
         } catch (error) {
             console.error("Submission error:", error);
+            Swal.fire({
+                title: "Process Error",
+                text: "An unexpected error occurred during submission. Please try again.",
+                icon: "error",
+                confirmButtonColor: "#1b5e20"
+            });
         } finally {
             setSaving(false);
         }
     };
-
-    // In AddDefaulterPage, the original code used 'cities' for sub-district selection.
-    // I'll keep the same field name 'cities' to avoid breaking the backend POST, 
-    // but I'll add a fourth level for the actual 'city' if needed. 
-    // The user explicitly asked for: state, district, sub-district and city field with dependency
-    // So I will update the formData and the UI to show all 4.
 
     return (
         <MemberPortalContainer title="Report New Defaulter">
             <div className="max-w-4xl mx-auto animate-in fade-in duration-500 pb-10">
                 <Link href="/defaulter/list" className="inline-flex items-center gap-2 text-gray-500 hover:text-green-600 transition-all mb-4 group bg-white px-4 py-2 rounded-lg border border-gray-100 shadow-sm">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
-                    <span className="text-xs font-black tracking-widest">Back</span>
+                    <span className="text-xs font-black tracking-widest ">Back</span>
                 </Link>
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
-                    <div className="bg-gray-50 px-8 py-6 flex items-center justify-between border-b border-gray-200">
-                        <div>
-                            <h2 className="text-lg font-bold text-gray-800">
-                                {step === 1 ? 'Step 1: Defaulter Information' : step === 2 ? 'Step 2: Default History' : 'Step 3: Legal Information'}
-                            </h2>
-                            <p className="text-xs text-gray-500 font-medium mt-1">Progress: {step} of 3</p>
-                        </div>
-                        <div className="flex gap-1">
-                            {[1, 2, 3].map(s => (
-                                <div key={s} className={`w-8 h-1.5 rounded-full ${step >= s ? 'bg-green-600' : 'bg-gray-200'}`}></div>
-                            ))}
-                        </div>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                    <div className="bg-gray-50 px-8 py-6 border-b border-gray-200">
+                        <h2 className="text-xl font-bold text-gray-800  tracking-tight">Add Defaulter</h2>
                     </div>
 
-                    <form className="p-8 flex-1 flex flex-col justify-between">
-                        {step === 1 && duplicateWarning && (
-                            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3">
+                    <form onSubmit={handleSubmit} className="p-8 space-y-10">
+                        {duplicateWarning && (
+                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3">
                                 <p className="text-xs font-semibold text-blue-700 tracking-tight">
                                     {duplicateWarning}
                                 </p>
                             </div>
                         )}
-                        {step === 1 && (
+
+                        {/* Section 1: Defaulter Information */}
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-bold text-gray-800  tracking-tight">1. Defaulter Firm Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">GST*</label>
+                                    <label className="text-xs font-semibold text-gray-600">GST<span className="text-red-500">*</span></label>
                                     <div className="flex gap-2">
-                                        <input type="text" name="gst_number" value={formData.gst_number} onChange={handleInputChange} className={`flex-1 border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.gst_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Gst Identification No" />
+                                        <input type="text" name="gst_number" value={formData.gst_number} onChange={handleInputChange} className={`flex-1 border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm font-medium ${errors.gst_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Gst Identification No" />
                                         <button
                                             type="button"
                                             onClick={handleGstFetch}
@@ -348,81 +420,36 @@ export default function AddDefaulterPage() {
                                     {errors.gst_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.gst_number}</p>}
                                 </div>
                                 <div className="space-y-1.5 col-span-full md:col-span-1">
-                                    <label className="text-xs font-semibold text-gray-600">Defaulter Company Name*</label>
-                                    <input type="text" name="defaulter_name" value={formData.defaulter_name} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.defaulter_name ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter name" />
+                                    <label className="text-xs font-semibold text-gray-600">Defaulter Firm Name<span className="text-red-500">*</span></label>
+                                    <input type="text" name="defaulter_name" value={formData.defaulter_name} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm font-medium ${errors.defaulter_name ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter name" />
                                     {errors.defaulter_name && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.defaulter_name}</p>}
                                 </div>
-                                <div className="space-y-1.5 col-span-full md:col-span-1">
-                                    <label className="text-xs font-semibold text-gray-600">Contact Number*</label>
-                                    <input type="text" name="mobile_number" value={formData.mobile_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.mobile_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="10-digit mobile" />
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">Mobile<span className="text-red-500">*</span></label>
+                                    <input type="text" name="mobile_number" value={formData.mobile_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm font-medium ${errors.mobile_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="10-digit mobile" maxLength={10} />
                                     {errors.mobile_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.mobile_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Email Address*</label>
-                                    <input type="email" name="email_id" value={formData.email_id} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.email_id ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Email ID" />
+                                    <label className="text-xs font-semibold text-gray-600">Email Address<span className="text-red-500">*</span></label>
+                                    <input type="email" name="email_id" value={formData.email_id} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm font-medium ${errors.email_id ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Email ID" />
                                     {errors.email_id && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.email_id}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">PAN*</label>
-                                    <input type="text" name="pan_number" value={formData.pan_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.pan_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Permanent Account No" />
-                                    {errors.pan_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.pan_number}</p>}
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">CIN*</label>
-                                    <input type="text" name="cin_number" value={formData.cin_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.cin_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="21-character CIN No" maxLength={21} />
+                                    <label className="text-xs font-semibold text-gray-600">CIN</label>
+                                    <input type="text" name="cin_number" value={formData.cin_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm font-medium ${errors.cin_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="21-character CIN No" maxLength={21} />
                                     {errors.cin_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.cin_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">State*</label>
-                                    <select name="state" value={formData.state} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.state ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
-                                        <option value="">Select State</option>
-                                        {states.map(s => <option key={s} value={s}>{s}</option>)}
-                                    </select>
-                                    {errors.state && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.state}</p>}
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">District*</label>
-                                    <select name="district" value={formData.district} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.district ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
-                                        <option value="">Select District</option>
-                                        {districts.map(d => <option key={d} value={d}>{d}</option>)}
-                                    </select>
-                                    {errors.district && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.district}</p>}
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Sub-District*</label>
-                                    <select name="cities" value={formData.cities} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.cities ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
-                                        <option value="">Select Sub-District</option>
-                                        {subDistricts.map(sd => <option key={sd} value={sd}>{sd}</option>)}
-                                    </select>
-                                    {errors.cities && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.cities}</p>}
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">City / Town /Village *</label>
-                                    <select name="city" value={formData.city} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.city ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
-                                        <option value="">Select City</option>
-                                        {cities.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                    {errors.city && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.city}</p>}
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Aadhar*</label>
-                                    <input type="text" name="aadhar_number" value={formData.aadhar_number} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.aadhar_number ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="12-digit Aadhar No" maxLength={12} />
-                                    {errors.aadhar_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.aadhar_number}</p>}
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Industry Sector</label>
-                                    <select name="industry" value={formData.industry} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white border-gray-200`}>
-                                        <option value="">Select Industry</option>
-                                        <option value="Agriculture">Agriculture</option>
-                                        <option value="Agrochemicals & Fertilizers">Agrochemicals & Fertilizers</option>
-                                        <option value="Seed Suppliers">Seed Suppliers</option>
-                                        <option value="Farming Equipment">Farming Equipment</option>
-                                        <option value="Others">Others</option>
+                                    <label className="text-xs font-semibold text-gray-600">Type of Defaulter</label>
+                                    <select name="industry" value={formData.industry} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white">
+                                        <option value="">Select Type of Defaulter</option>
+                                        <option value="Dealer / Distributor">Dealer / Distributor</option>
+                                        <option value="Company">Company</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Financial Year</label>
-                                    <select name="financial_year" value={formData.financial_year} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white border-gray-200`}>
+                                    <label className="text-xs font-semibold text-gray-600">Financial Year of Default<span className="text-red-500">*</span></label>
+                                    <select name="financial_year" value={formData.financial_year} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.financial_year ? 'border-red-500' : 'border-gray-200'}`}>
                                         <option value="">Select Financial Year</option>
                                         {Array.from({ length: 15 }).map((_, i) => {
                                             const year = 2025 - i;
@@ -430,92 +457,180 @@ export default function AddDefaulterPage() {
                                             return <option key={label} value={label}>{label}</option>
                                         })}
                                     </select>
+                                    {errors.financial_year && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.financial_year}</p>}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">State<span className="text-red-500">*</span></label>
+                                    <select name="state" value={formData.state} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.state ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
+                                        <option value="">Select State</option>
+                                        {states.map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                    {errors.state && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.state}</p>}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">District<span className="text-red-500">*</span></label>
+                                    <select name="district" value={formData.district} onChange={handleInputChange} disabled={!formData.state} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.district ? 'border-red-500 bg-red-50' : 'border-gray-200'} disabled:opacity-50`}>
+                                        <option value="">Select District</option>
+                                        {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                                    </select>
+                                    {errors.district && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.district}</p>}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">Sub-District<span className="text-red-500">*</span></label>
+                                    <select name="cities" value={formData.cities} onChange={handleInputChange} disabled={!formData.district} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.cities ? 'border-red-500 bg-red-50' : 'border-gray-200'} disabled:opacity-50`}>
+                                        <option value="">Select Sub-District</option>
+                                        {subDistricts.map(sd => <option key={sd} value={sd}>{sd}</option>)}
+                                    </select>
+                                    {errors.cities && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.cities}</p>}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-gray-600">City / Town /Village<span className="text-red-500">*</span></label>
+                                    <select name="city" value={formData.city} onChange={handleInputChange} disabled={!formData.cities} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.city ? 'border-red-500 bg-red-50' : 'border-gray-200'} disabled:opacity-50`}>
+                                        <option value="">Select City</option>
+                                        {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                    {errors.city && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.city}</p>}
                                 </div>
                                 <div className="col-span-full space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Defaulter Address*</label>
-                                    <textarea name="defaulter_address" value={formData.defaulter_address} onChange={handleInputChange} rows={2} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.defaulter_address ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter complete office/home address" />
+                                    <label className="text-xs font-semibold text-gray-600">Defaulter Address<span className="text-red-500">*</span></label>
+                                    <textarea name="defaulter_address" value={formData.defaulter_address} onChange={handleInputChange} rows={2} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm font-medium ${errors.defaulter_address ? 'border-red-500 bg-red-50' : 'border-gray-100'}`} placeholder="Enter complete office/home address" />
                                     {errors.defaulter_address && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.defaulter_address}</p>}
                                 </div>
                             </div>
-                        )}
 
-                        {step === 2 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-right-4 duration-300">
+                            {/* Multiple Persons Segment */}
+                            <div className="mt-8 pt-8 border-t border-gray-100 space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-sm font-bold text-gray-700">Defaulter Personal Information</h4>
+                                    <button
+                                        type="button"
+                                        onClick={addPerson}
+                                        className="text-[10px] font-black text-green-700 bg-green-50 px-3 py-1.5 rounded-full hover:bg-green-100 transition-all flex items-center gap-1.5"
+                                    >
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                        ADD PERSON
+                                    </button>
+                                </div>
+
+                                {formData.defaulter_persons.map((person, index) => (
+                                    <div key={index} className="bg-gray-50/50 p-6 rounded-xl border border-gray-100 relative group animate-in slide-in-from-top-2 duration-300">
+                                        {formData.defaulter_persons.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removePerson(index)}
+                                                className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+                                            >
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                            </button>
+                                        )}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold text-gray-500 tracking-wider">Person Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={person.name}
+                                                    onChange={(e) => handlePersonChange(index, 'name', e.target.value)}
+                                                    className="w-full border border-gray-200 rounded-lg py-2 px-3 outline-none focus:border-green-600 text-sm bg-white"
+                                                    placeholder="Full Name"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold text-gray-500 tracking-wider">Person PAN</label>
+                                                <input
+                                                    type="text"
+                                                    value={person.pan}
+                                                    onChange={(e) => handlePersonChange(index, 'pan', e.target.value.toUpperCase())}
+                                                    className="w-full border border-gray-200 rounded-lg py-2 px-3 outline-none focus:border-green-600 text-sm bg-white"
+                                                    placeholder="PAN Number"
+                                                    maxLength={10}
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold text-gray-500 tracking-wider">Person Aadhar</label>
+                                                <input
+                                                    type="text"
+                                                    value={person.aadhar}
+                                                    onChange={(e) => handlePersonChange(index, 'aadhar', e.target.value.replace(/\D/g, ''))}
+                                                    className="w-full border border-gray-200 rounded-lg py-2 px-3 outline-none focus:border-green-600 text-sm bg-white"
+                                                    placeholder="12-digit Aadhar"
+                                                    maxLength={12}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Section 2: Default Details */}
+                        <div className="space-y-6">
+                            <h3 className="text-sm font-black text-green-700  tracking-widest border-b border-green-100 pb-2">2. Default Amount Information</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Date of Default*</label>
+                                    <label className="text-xs font-semibold text-gray-600">Date of Default<span className="text-red-500">*</span></label>
                                     <input type="date" name="date_of_default" value={formData.date_of_default} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-red-600 text-sm ${errors.date_of_default ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} max={new Date().toISOString().split('T')[0]} />
                                     {errors.date_of_default && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.date_of_default}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Default Amount (₹)*</label>
-                                    <input type="number" name="default_amount" value={formData.default_amount} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm font-semibold ${errors.default_amount ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="0.00" />
+                                    <label className="text-xs font-semibold text-gray-600">Default Amount (₹)<span className="text-red-500">*</span></label>
+                                    <input type="number" name="default_amount" value={formData.default_amount} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm ${errors.default_amount ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="0.00" />
                                     {errors.default_amount && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.default_amount}</p>}
                                 </div>
                                 <div className="col-span-full space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Reason/Description*</label>
-                                    <textarea name="reason_description" value={formData.reason_description} onChange={handleInputChange} rows={6} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm leading-relaxed ${errors.reason_description ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Enter Reason..." />
+                                    <label className="text-xs font-semibold text-gray-600">Reason/Description<span className="text-red-500">*</span></label>
+                                    <textarea name="reason_description" value={formData.reason_description} onChange={handleInputChange} rows={5} className={`w-full border rounded-lg py-3 px-4 outline-none focus:border-green-600 text-sm font-medium leading-relaxed ${errors.reason_description ? 'border-red-500 bg-red-50' : 'border-gray-200'}`} placeholder="Explain the default incident..." />
                                     {errors.reason_description && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.reason_description}</p>}
                                 </div>
                             </div>
-                        )}
-
-                        {step === 3 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-right-4 duration-300">
+                        </div>
+                        {/* Section 3: Supporting Documents */}
+                        <div className="space-y-6">
+                            <h3 className="text-sm font-black text-green-700 tracking-widest border-b border-green-100 pb-2">3. Supporting Documents</h3>
+                            <div className="grid grid-cols-1 gap-8">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Court Complex Name</label>
-                                    <input type="text" name="court_complex_name" value={formData.court_complex_name} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="Enter court complex name" />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Case Type</label>
-                                    <input type="text" name="case_type" value={formData.case_type} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="Enter case type" />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Case Number</label>
-                                    <input type="text" name="case_number" value={formData.case_number} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm" placeholder="Enter case number" />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Case Year</label>
-                                    <select name="case_year" value={formData.case_year} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white">
-                                        <option value="">Select Year</option>
-                                        {Array.from({ length: 30 }).map((_, i) => {
-                                            const year = new Date().getFullYear() - i;
-                                            return <option key={year} value={year}>{year}</option>
-                                        })}
-                                    </select>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Case Status</label>
-                                    <select name="case_status" value={formData.case_status} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white">
-                                        <option value="">Select Status</option>
-                                        <option value="Notice Issued">Notice Issued</option>
-                                        <option value="Under Review">Under Review</option>
-                                        <option value="Warrant Issued">Warrant Issued</option>
-                                        <option value="Resolved">Resolved</option>
-                                    </select>
-                                </div>
-                                <div className="col-span-full space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Supporting Documents (Max 3)</label>
-                                    <input type="file" multiple onChange={(e) => setSelectedFiles(e.target.files)} className="w-full border border-dashed border-gray-300 rounded-lg py-6 px-4 text-xs font-bold text-gray-400 bg-gray-50 hover:bg-white transition-all text-center" />
-                                    <p className="text-[10px] text-gray-400 text-center">PDF, JPG, or PNG (Max 5MB each)</p>
+                                    <label className="text-xs font-semibold text-gray-600 font-black">Supporting Evidence (Max 3 files)</label>
+                                    <input
+                                        type="file"
+                                        multiple
+                                        onChange={(e) => setSelectedFiles(e.target.files)}
+                                        className="w-full border border-dashed border-gray-300 rounded-xl py-8 px-4 text-xs font-bold text-gray-400 bg-gray-50 hover:bg-white hover:border-green-300 transition-all text-center cursor-pointer"
+                                    />
+                                    <p className="text-[10px] text-gray-400 text-center tracking-widest font-black">PDF, JPG, or PNG (Max 5MB each)</p>
                                 </div>
                             </div>
-                        )}
+                        </div>
 
-                        <div className="pt-8 flex flex-col sm:flex-row items-center gap-4">
-                            {step > 1 && (
-                                <button type="button" onClick={() => setStep(s => s - 1)} className="w-full sm:w-auto px-8 py-2.5 border border-gray-200 text-gray-500 font-semibold rounded-lg hover:bg-gray-50 transition-colors text-sm">
-                                    Back
-                                </button>
-                            )}
-                            {step < 3 ? (
-                                <button type="button" onClick={handleNextStep} className="w-full sm:w-auto flex-1 bg-green-600 text-white font-bold py-2.5 rounded-lg shadow-sm hover:bg-green-700 transition-colors text-sm">
-                                    Continue
-                                </button>
-                            ) : (
-                                <button type="button" onClick={() => handleSubmit()} disabled={saving} className="w-full flex-1 bg-green-600 text-white font-bold py-2.5 rounded-lg shadow-lg hover:bg-green-700 transition-colors text-sm flex items-center justify-center gap-2">
-                                    {saving ? "Submitting..." : "Report Defaulter"}
-                                </button>
-                            )}
+
+                        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-gray-100">
+                            <div className="flex items-center gap-3 group cursor-pointer">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        name="legal_status_taken"
+                                        id="legal_status_taken"
+                                        checked={formData.legal_status_taken}
+                                        onChange={handleInputChange}
+                                        className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 bg-white checked:border-green-600 checked:bg-green-600 transition-all"
+                                    />
+                                    <svg className="absolute h-3.5 w-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 stroke-current stroke-[4]" viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                                <label htmlFor="legal_status_taken" className="text-sm font-bold text-gray-500 group-hover:text-gray-800 transition-colors cursor-pointer select-none">
+                                    Legal action taken
+                                </label>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                className="w-full sm:w-auto min-w-[200px] bg-[#1b5e20] text-white font-black py-3.5 px-10 rounded-xl shadow-xl shadow-green-900/20 hover:bg-green-800 hover:scale-[1.02] active:scale-95 transition-all text-xs  tracking-[0.2em] flex items-center justify-center gap-3 disabled:opacity-50"
+                            >
+                                {saving ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                        <span>Saving...</span>
+                                    </>
+                                ) : "Save"}
+                            </button>
                         </div>
                     </form>
                 </div>

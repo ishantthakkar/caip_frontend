@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { API_BASE_URL } from '@/config/apiConfig';
 
-const FormInput = ({ label, name, type = "text", placeholder, required = false, className = "", onChange, value, error }: any) => {
+const FormInput = ({ label, name, type = "text", placeholder, required = false, className = "", onChange, value, error, readOnly = false }: any) => {
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === "password";
     const inputType = isPassword ? (showPassword ? "text" : "password") : type;
@@ -23,8 +23,8 @@ const FormInput = ({ label, name, type = "text", placeholder, required = false, 
                     value={value || ''}
                     onChange={onChange}
                     placeholder={placeholder}
-                    required={required}
-                    className={`w-full px-4 py-2.5 text-sm border ${error ? 'border-red-400' : 'border-gray-200'} rounded-md focus:outline-none focus:ring-2 focus:ring-agri-green-primary/20 focus:border-agri-green-primary transition-all text-gray-700 placeholder:text-gray-300 bg-white shadow-sm`}
+                    readOnly={readOnly}
+                    className={`w-full px-4 py-2.5 text-sm border ${error ? 'border-red-400' : 'border-gray-200'} rounded-md focus:outline-none focus:ring-2 focus:ring-agri-green-primary/20 focus:border-agri-green-primary transition-all text-gray-700 placeholder:text-gray-300 ${readOnly ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'} shadow-sm`}
                 />
                 {isPassword && (
                     <button
@@ -52,7 +52,6 @@ const FormSelect = ({ label, name, options, required = false, className = "", va
         </label>
         <select
             name={name}
-            required={required}
             value={value || ''}
             onChange={onChange}
             className={`w-full px-4 py-2.5 text-sm border ${error ? 'border-red-400' : 'border-gray-200'} rounded-md focus:outline-none focus:ring-2 focus:ring-agri-green-primary/20 focus:border-agri-green-primary transition-all text-gray-700 bg-white shadow-sm appearance-none`}
@@ -79,6 +78,8 @@ export default function RegisterPage() {
     const [selectedDistrict, setSelectedDistrict] = useState("");
     const [selectedSubDistrict, setSelectedSubDistrict] = useState("");
     const [selectedCity, setSelectedCity] = useState("");
+    const [selectedIndustry, setSelectedIndustry] = useState("");
+    const [isGstVerified, setIsGstVerified] = useState(false);
     const [termsAgreed, setTermsAgreed] = useState(false);
     const [errors, setErrors] = useState<any>({});
     const [formData, setFormData] = useState({
@@ -88,10 +89,58 @@ export default function RegisterPage() {
         gst: '',
         pan: '',
         email: '',
-        businessAddress: ''
+        businessAddress: '',
+        companyEmail: '',
+        alternateContactNumber: '',
+        pinCode: '',
+        businessType: '',
+        yearsInBusiness: '',
+        cinNumber: '',
+        companyPhoneNumber: '',
+        otp: ''
     });
     const [isGstFetching, setIsGstFetching] = useState(false);
     const [pendingLocation, setPendingLocation] = useState<any>(null);
+
+    useEffect(() => {
+        const savedDataStr = sessionStorage.getItem('pendingRegistration');
+        if (savedDataStr) {
+            try {
+                const savedData = JSON.parse(savedDataStr);
+                if (savedData && savedData.fields) {
+                    const fields = savedData.fields;
+                    setFormData(prev => ({
+                        ...prev,
+                        name: fields.name || '',
+                        phone: fields.phone || '',
+                        companyName: fields.companyName || '',
+                        gst: fields.gst || '',
+                        pan: fields.pan || '',
+                        email: fields.email || '',
+                        businessAddress: fields.businessAddress || '',
+                        companyEmail: fields.companyEmail || '',
+                        alternateContactNumber: fields.alternateContactNumber || '',
+                        pinCode: fields.pinCode || '',
+                        businessType: fields.businessType || '',
+                        yearsInBusiness: fields.yearsInBusiness || '',
+                        cinNumber: fields.cinNumber || '',
+                        companyPhoneNumber: fields.companyPhoneNumber || ''
+                    }));
+                    if (fields.industry) setSelectedIndustry(fields.industry);
+                    if (fields.state) setSelectedState(fields.state);
+                    if (fields.district) {
+                        setPendingLocation({
+                            district: fields.district,
+                            subDistrict: fields.subDistrict,
+                            city: fields.city
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to parse saved registration data", e);
+            }
+        }
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -111,11 +160,15 @@ export default function RegisterPage() {
 
             if (response.ok) {
                 const { data } = result;
+                const extractedPan = formData.gst.length >= 12 ? formData.gst.substring(2, 12).toUpperCase() : '';
+
                 setFormData(prev => ({
                     ...prev,
-                    companyName: data.lgnm || data.tradeNam || prev.companyName,
+                    companyName: data.lgnm || data.tradeNames?.[0] || data.tradenames?.[0] || data.tradeName || prev.companyName,
                     businessAddress: data.pradr?.adr || prev.businessAddress,
+                    pan: extractedPan || prev.pan,
                 }));
+                setIsGstVerified(true);
 
                 if (data.pradr?.addr?.stcd) {
                     const gstState = data.pradr.addr.stcd;
@@ -249,21 +302,47 @@ export default function RegisterPage() {
 
     const validateForm = (formData: FormData) => {
         const newErrors: any = {};
+        if (!selectedIndustry) newErrors.industry = "Industry is required";
         if (!formData.get('name')) newErrors.name = "Full Name is required";
         if (!formData.get('email')) newErrors.email = "Email is required";
         if (!formData.get('companyName')) newErrors.companyName = "Company Name is required";
-        if (!formData.get('gst')) newErrors.gst = "GST is required";
-        if (!formData.get('pan')) newErrors.pan = "PAN is required";
+
+        const gst = formData.get('gst') as string;
+        if (selectedIndustry !== 'Seed Company') {
+            if (!gst) {
+                newErrors.gst = "GST is required";
+            } else if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gst)) {
+                newErrors.gst = "Invalid GST Number format";
+            }
+        } else if (gst && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gst)) {
+            newErrors.gst = "Invalid GST Number format";
+        }
+
+        const pan = formData.get('pan') as string;
+        if (!pan) {
+            newErrors.pan = "PAN is required";
+        } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan)) {
+            newErrors.pan = "Invalid PAN Number format";
+        }
+
+        const cin = formData.get('cinNumber') as string;
+        if (cin && !/^[UL]{1}[0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}$/.test(cin)) {
+            newErrors.cinNumber = "Invalid CIN Number format";
+        }
+
         if (!selectedState) newErrors.state = "State is required";
         if (!selectedDistrict) newErrors.district = "District is required";
         if (!selectedSubDistrict) newErrors.subDistrict = "Sub District is required";
         if (!selectedCity) newErrors.city = "City is required";
+        if (!formData.get('businessAddress')) newErrors.businessAddress = "Business Address is required";
+
         const phone = formData.get('phone') as string;
         if (!phone) {
             newErrors.phone = "Phone Number is required";
         } else if (!/^\d{10}$/.test(phone)) {
             newErrors.phone = "Enter a valid 10-digit mobile number";
         }
+
         if (!termsAgreed) newErrors.terms = "You must agree to the Terms";
 
         return newErrors;
@@ -274,7 +353,8 @@ export default function RegisterPage() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const formData = new FormData(e.currentTarget);
+        const formElement = e.currentTarget;
+        const formData = new FormData(formElement);
         const validationErrors = validateForm(formData);
 
         if (Object.keys(validationErrors).length > 0) {
@@ -287,35 +367,81 @@ export default function RegisterPage() {
         setMessage(null);
         setErrors({});
 
-        formData.set('state', selectedState);
-        formData.set('district', selectedDistrict);
-        formData.set('subDistrict', selectedSubDistrict);
-        formData.set('city', selectedCity);
-
         try {
-            const response = await fetch(`${API_BASE_URL}register`, {
+            const checkRes = await fetch(`${API_BASE_URL}send-register-otp`, {
                 method: 'POST',
-                body: formData,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.get('email'),
+                    phone: formData.get('phone')
+                })
             });
+            const checkData = await checkRes.json();
+            if (checkRes.ok) {
+                setMessage({ type: 'success', text: 'OTP sent successfully. Redirecting...' });
 
-            const data = await response.json();
+                // Prepare form data for session storage
+                const dataToSave: any = {
+                    fields: {
+                        name: formData.get('name'),
+                        phone: formData.get('phone'),
+                        companyName: formData.get('companyName'),
+                        gst: formData.get('gst'),
+                        pan: formData.get('pan'),
+                        email: formData.get('email'),
+                        businessAddress: formData.get('businessAddress'),
+                        companyEmail: formData.get('companyEmail'),
+                        alternateContactNumber: formData.get('alternateContactNumber'),
+                        pinCode: formData.get('pinCode'),
+                        businessType: formData.get('businessType'),
+                        yearsInBusiness: formData.get('yearsInBusiness'),
+                        cinNumber: formData.get('cinNumber'),
+                        companyPhoneNumber: formData.get('companyPhoneNumber'),
+                        industry: selectedIndustry,
+                        state: selectedState,
+                        district: selectedDistrict,
+                        subDistrict: selectedSubDistrict,
+                        city: selectedCity,
+                    },
+                    files: []
+                };
 
-            if (response.ok) {
-                setIsRegistered(true);
-                setMessage({ type: 'success', text: 'Registration successful! Proceeding...' });
-                setTimeout(() => {
-                    router.replace('/login');
-                }, 1500);
-            } else {
-                if (data.msg === "Phone number already exists") {
-                    setErrors({ ...errors, phone: "This mobile number is already registered" });
-                } else if (data.msg === "Email already exists") {
-                    setErrors({ ...errors, email: "This email is already registered" });
+                // Handle files using FileReader
+                const files = formData.getAll('businessDocuments') as File[];
+                const validFiles = files.filter(f => f.name && f.size > 0);
+
+                if (validFiles.length > 0) {
+                    const filePromises = validFiles.map(file => {
+                        return new Promise<{ name: string, type: string, data: string }>((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => resolve({
+                                name: file.name,
+                                type: file.type,
+                                data: e.target?.result as string
+                            });
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file);
+                        });
+                    });
+
+                    dataToSave.files = await Promise.all(filePromises);
                 }
-                setMessage({ type: 'error', text: data.msg || 'Registration failed.' });
+
+                sessionStorage.setItem('pendingRegistration', JSON.stringify(dataToSave));
+
+                setTimeout(() => {
+                    router.push('/verify-otp');
+                }, 1000);
+            } else {
+                if (checkData.msg === "Phone number already exists") {
+                    setErrors((prev: any) => ({ ...prev, phone: "This mobile number is already registered" }));
+                } else if (checkData.msg === "Email already exists") {
+                    setErrors((prev: any) => ({ ...prev, email: "This email is already registered" }));
+                }
+                setMessage({ type: 'error', text: checkData.msg || 'Failed to send OTP.' });
                 setLoading(false);
             }
-        } catch (error) {
+        } catch (e) {
             setMessage({ type: 'error', text: 'A network error occurred.' });
             setLoading(false);
         }
@@ -385,19 +511,28 @@ export default function RegisterPage() {
                                     <form onSubmit={handleSubmit}>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
                                             <FormInput label="Full Name" name="name" placeholder="John Doe" required error={errors.name} value={formData.name} onChange={handleInputChange} />
-                                            <FormInput label="Phone Number" name="phone" placeholder="Enter 10-digit number" required error={errors.phone} value={formData.phone} onChange={handleInputChange} />
+                                            <FormSelect
+                                                label="Industry"
+                                                name="industry"
+                                                value={selectedIndustry}
+                                                onChange={(e: any) => setSelectedIndustry(e.target.value)}
+                                                options={["Pesticide Company", "Fertiliser Company", "Seed Company"]}
+                                                placeholder="Select Industry"
+                                                required
+                                                error={errors.industry}
+                                            />
+
                                             <div className="mb-4">
                                                 <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
-                                                    GST <span className="text-red-500">*</span>
+                                                    GST {selectedIndustry !== 'Seed Company' && <span className="text-red-500">*</span>}
                                                 </label>
-                                                <div className="flex bg-white rounded-lg relative shadow-sm overflow-hidden border border-gray-200 focus-within:ring-2 focus-within:ring-agri-green-primary/20 focus-within:border-agri-green-primary transition-all">
+                                                <div className={`flex bg-white rounded-lg relative shadow-sm overflow-hidden border ${errors.gst ? 'border-red-400' : 'border-gray-200'} focus-within:ring-2 focus-within:ring-agri-green-primary/20 focus-within:border-agri-green-primary transition-all`}>
                                                     <input
                                                         type="text"
                                                         name="gst"
                                                         value={formData.gst}
                                                         onChange={handleInputChange}
                                                         placeholder="Enter GST Number"
-                                                        required
                                                         className={`w-full px-4 py-2.5 text-xs focus:outline-none text-gray-700 placeholder:text-gray-300`}
                                                     />
                                                     <button
@@ -411,18 +546,26 @@ export default function RegisterPage() {
                                                 </div>
                                                 {errors.gst && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.gst}</p>}
                                             </div>
-                                            <FormInput label="Company Name" name="companyName" placeholder="Business Name" required error={errors.companyName} value={formData.companyName} onChange={handleInputChange} />
 
+                                            <FormInput label="Company Name" name="companyName" placeholder="Business Name" required error={errors.companyName} value={formData.companyName} onChange={handleInputChange} readOnly={isGstVerified} />
+                                            <FormInput label="PAN" name="pan" placeholder="PAN Number" required error={errors.pan} value={formData.pan} onChange={handleInputChange} readOnly={isGstVerified} />
 
+                                            <FormInput label="CIN" name="cinNumber" placeholder="CIN Number" value={(formData as any).cinNumber} onChange={handleInputChange} error={errors.cinNumber} />
+                                            <FormInput label="Phone Number" name="phone" placeholder="Enter 10-digit number" required error={errors.phone} value={formData.phone} onChange={handleInputChange} />
+                                            <FormInput label="Alternate Contact Number" name="alternateContactNumber" placeholder="Optional" value={formData.alternateContactNumber} onChange={handleInputChange} />
 
-                                            <FormInput label="PAN" name="pan" placeholder="PAN Number" required error={errors.pan} value={formData.pan} onChange={handleInputChange} />
-                                            <FormInput label="Email Address" name="email" type="email" placeholder="john@example.com" required error={errors.email} value={formData.email} onChange={handleInputChange} />
+                                            <FormInput label="Email" name="email" type="email" placeholder="john@example.com" required error={errors.email} value={formData.email} onChange={handleInputChange} />
+
+                                            <FormInput label="Company Email" name="companyEmail" type="email" placeholder="Optional" value={formData.companyEmail} onChange={handleInputChange} />
+                                            <FormInput label="Pincode" name="pinCode" placeholder="Enter Pincode" value={formData.pinCode} onChange={handleInputChange} />
 
                                             <FormSelect label="State" name="state" value={selectedState} onChange={(e: any) => setSelectedState(e.target.value)} options={states} placeholder="Select State" required error={errors.state} />
                                             <FormSelect label="District" name="district" value={selectedDistrict} onChange={(e: any) => { setSelectedDistrict(e.target.value); setSelectedSubDistrict(""); }} options={districts} placeholder="Select District" required error={errors.district} />
                                             <FormSelect label="Sub District" name="subDistrict" value={selectedSubDistrict} onChange={(e: any) => { setSelectedSubDistrict(e.target.value); setSelectedCity(""); }} options={subDistricts} placeholder="Select Sub District" required error={errors.subDistrict} />
-                                            <FormSelect label="City/Town/Village" name="city" value={selectedCity} onChange={(e: any) => setSelectedCity(e.target.value)} options={cities.length > 0 ? cities : []} placeholder="Select City" required error={errors.city} />
+                                            <div className="md:col-span-2">
 
+                                                <FormSelect label="City/Town/Village" name="city" value={selectedCity} onChange={(e: any) => setSelectedCity(e.target.value)} options={cities.length > 0 ? cities : []} placeholder="Select City" required error={errors.city} />
+                                            </div>
                                             <div className="md:col-span-2">
                                                 <FormInput
                                                     label="Business Address"
@@ -430,6 +573,9 @@ export default function RegisterPage() {
                                                     placeholder="Full address (autofilled via GST optionally)"
                                                     value={formData.businessAddress}
                                                     onChange={handleInputChange}
+                                                    readOnly={isGstVerified}
+                                                    required
+                                                    error={errors.businessAddress}
                                                 />
                                             </div>
 
@@ -480,6 +626,8 @@ export default function RegisterPage() {
                                             </div>
                                         </div>
 
+
+
                                         <button
                                             type="submit"
                                             disabled={loading}
@@ -487,7 +635,7 @@ export default function RegisterPage() {
                                         >
                                             {loading ? (
                                                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                            ) : 'Create My Account'}
+                                            ) : 'Proceed to Verify'}
                                         </button>
 
                                         <div className="mt-8 text-center">

@@ -22,6 +22,32 @@ const DetailRow = ({ label, value, icon, isHighlights = false, isStatus = false 
     </div>
 );
 
+const getSearchField = (filters: any): string => {
+    if (!filters) return '-';
+    const fields: string[] = [];
+    const filterMap: Record<string, string[]> = {
+        'Company Name': ['name', 'defaulter_name'],
+        'GST': ['gst', 'gst_number'],
+        'PAN': ['pan', 'pan_number'],
+        'CIN': ['cin', 'cin_number'],
+        'Aadhar': ['aadhar', 'aadhar_number'],
+        'Mobile': ['mobile', 'mobile_number'],
+        'State': ['state'],
+        'District': ['district'],
+        'Sub-District': ['subDistrict'],
+        'City': ['city', 'cities'],
+        'Address': ['address', 'defaulter_address']
+    };
+
+    Object.entries(filterMap).forEach(([label, keys]: [string, string[]]) => {
+        if (keys.some((key: string) => filters[key] && filters[key].toString().trim() !== '')) {
+            fields.push(label);
+        }
+    });
+
+    return fields.length > 0 ? fields.join(', ') : '-';
+};
+
 export default function CombinedReportsPage() {
     const [reportType, setReportType] = useState('My Defaulter Report');
     const [reports, setReports] = useState<any[]>([]);
@@ -362,6 +388,7 @@ export default function CombinedReportsPage() {
                                         <thead className="bg-[#051a02] text-white">
                                             <tr className="divide-x divide-white/5">
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Search Date</th>
+                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Search Field</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Defaulter Company Name</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">GST</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">PAN</th>
@@ -394,6 +421,9 @@ export default function CombinedReportsPage() {
                                                         <tr key={i} className="hover:bg-gray-50/50 divide-x divide-gray-50 transition-colors">
                                                             <td className="px-4 py-3">
                                                                 {new Date(item.createdAt).toLocaleDateString('en-GB')}
+                                                            </td>
+                                                            <td className="px-4 py-3 font-bold text-green-700 bg-green-50/20">
+                                                                {getSearchField(item.filters)}
                                                             </td>
                                                             <td className="px-4 py-3 font-semibold text-gray-900">
                                                                 {f.name || f.defaulter_name || '-'}
@@ -512,7 +542,7 @@ export default function CombinedReportsPage() {
                             </button>
                         </div>
 
-                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-10">
+                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-10 text-left">
                             {/* Section 1: Defaulter Company Details */}
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
@@ -520,12 +550,12 @@ export default function CombinedReportsPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter company details</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Defaulter Company name" value={selectedReport.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
-                                    <DetailRow label="Industry" value={selectedReport.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
-                                    <DetailRow label="Gst number" value={selectedReport.gst_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
-                                    <DetailRow label="Pan number" value={selectedReport.pan_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
-                                    <DetailRow label="Cin number" value={selectedReport.cin_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
-                                    <DetailRow label="Aadhar number" value={selectedReport.aadhar_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
+                                    <DetailRow label="Defaulter Company name" value={selectedReport.resultData?.name || selectedReport.filters?.name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                    <DetailRow label="Industry" value={selectedReport.resultData?.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
+                                    <DetailRow label="Gst number" value={selectedReport.resultData?.gst || selectedReport.filters?.gst || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
+                                    <DetailRow label="Pan number" value={selectedReport.resultData?.pan || selectedReport.filters?.pan || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
+                                    <DetailRow label="Cin number" value={selectedReport.resultData?.cin || selectedReport.filters?.cin || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
+                                    <DetailRow label="Aadhar number" value={selectedReport.resultData?.aadhar || selectedReport.filters?.aadhar || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
                                 </div>
                             </div>
 
@@ -536,14 +566,14 @@ export default function CombinedReportsPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Contact & Address</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Mobile" value={selectedReport.mobile_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>} />
-                                    <DetailRow label="Email" value={selectedReport.email_id} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>} />
-                                    <DetailRow label="State" value={selectedReport.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
-                                    <DetailRow label="District" value={selectedReport.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
-                                    <DetailRow label="Sub district" value={selectedReport.cities || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
-                                    <DetailRow label="City" value={selectedReport.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
+                                    <DetailRow label="Mobile" value={selectedReport.resultData?.mobile || selectedReport.filters?.mobile} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>} />
+                                    <DetailRow label="Email" value={selectedReport.resultData?.email || selectedReport.filters?.email} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>} />
+                                    <DetailRow label="State" value={selectedReport.resultData?.state || selectedReport.filters?.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
+                                    <DetailRow label="District" value={selectedReport.resultData?.district || selectedReport.filters?.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
+                                    <DetailRow label="Sub district" value={selectedReport.resultData?.subDistrict || selectedReport.filters?.subDistrict || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
+                                    <DetailRow label="City" value={selectedReport.resultData?.city || selectedReport.filters?.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
                                     <div className="col-span-full pt-2">
-                                        <DetailRow label="Full address" value={selectedReport.defaulter_address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
+                                        <DetailRow label="Full address" value={selectedReport.resultData?.address || selectedReport.filters?.address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
                                     </div>
                                 </div>
                             </div>
@@ -555,12 +585,12 @@ export default function CombinedReportsPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Financial status</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Default amount" value={`₹${Number(selectedReport.default_amount).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><path d="M12 8v8" /><path d="M8 12h8" /></svg>} />
-                                    <DetailRow label="Outstanding" value={`₹${Number(selectedReport.outstanding_amount || selectedReport.default_amount).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>} />
-                                    <DetailRow label="Date of default" value={selectedReport.date_of_default ? new Date(selectedReport.date_of_default).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
-                                    <DetailRow label="Financial year" value={selectedReport.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
+                                    <DetailRow label="Default amount" value={`₹${Number(selectedReport.resultData?.default_amount || 0).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><path d="M12 8v8" /><path d="M8 12h8" /></svg>} />
+                                    <DetailRow label="Outstanding" value={`₹${Number(selectedReport.resultData?.outstanding_amount || selectedReport.resultData?.default_amount || 0).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>} />
+                                    <DetailRow label="Date of default" value={selectedReport.resultData?.date_of_default ? new Date(selectedReport.resultData.date_of_default).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
+                                    <DetailRow label="Financial year" value={selectedReport.resultData?.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
                                     <div className="col-span-full">
-                                        <DetailRow label="Reason for default" value={selectedReport.reason_description || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01" /><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" /><path d="M12 9v4" /></svg>} />
+                                        <DetailRow label="Reason for default" value={selectedReport.resultData?.reason || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01" /><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" /><path d="M12 9v4" /></svg>} />
                                     </div>
                                 </div>
                             </div>
@@ -572,11 +602,11 @@ export default function CombinedReportsPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & proceedings</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Court name" value={selectedReport.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
-                                    <DetailRow label="Case number" value={selectedReport.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
-                                    <DetailRow label="Case type" value={selectedReport.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
-                                    <DetailRow label="Case year" value={selectedReport.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
-                                    <DetailRow label="Legal status" value={selectedReport.case_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
+                                    <DetailRow label="Court name" value={selectedReport.resultData?.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
+                                    <DetailRow label="Case number" value={selectedReport.resultData?.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
+                                    <DetailRow label="Case type" value={selectedReport.resultData?.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
+                                    <DetailRow label="Case year" value={selectedReport.resultData?.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
+                                    <DetailRow label="Legal status" value={selectedReport.resultData?.case_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
                                 </div>
                             </div>
 
@@ -587,14 +617,7 @@ export default function CombinedReportsPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Report information</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Report by person name" value={selectedReport.user_id?.name || user?.name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
-                                    <DetailRow label="Report by company name" value={selectedReport.user_id?.companyName || user?.companyName || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
-                                    <DetailRow
-                                        label="Verification status"
-                                        value={selectedReport.status === 1 ? 'Approved' : selectedReport.status === 2 ? 'Rejected' : 'Pending'}
-                                        isStatus
-                                        icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" /><path d="m9 12 2 2 4-4" /></svg>}
-                                    />
+                                    <DetailRow label="Reported By" value={selectedReport.resultData?.reported_by || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
                                 </div>
                             </div>
 
@@ -605,8 +628,8 @@ export default function CombinedReportsPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Documents</h4>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                    {selectedReport.attachment_documents?.length > 0 ? (
-                                        selectedReport.attachment_documents.map((doc: string, idx: number) => {
+                                    {selectedReport.resultData?.attachment_documents?.length > 0 ? (
+                                        selectedReport.resultData.attachment_documents.map((doc: string, idx: number) => {
                                             const isPdf = doc.toLowerCase().endsWith('.pdf');
                                             return (
                                                 <a
@@ -654,8 +677,8 @@ export default function CombinedReportsPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
-                                            {selectedReport.payments?.length > 0 ? (
-                                                selectedReport.payments.map((p: any, idx: number) => (
+                                            {selectedReport.resultData?.payments?.length > 0 ? (
+                                                selectedReport.resultData.payments.map((p: any, idx: number) => (
                                                     <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                                                         <td className="px-6 py-4 text-[14px] font-bold">{(idx + 1).toString().padStart(2, '0')}</td>
                                                         <td className="px-6 py-4 text-[14px] font-medium">{new Date(p.date).toLocaleDateString()}</td>

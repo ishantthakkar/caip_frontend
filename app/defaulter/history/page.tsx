@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import MemberPortalContainer from '@/components/MemberPortalContainer';
 import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const DetailRow = ({ label, value, icon, isHighlights = false, isStatus = false }: any) => (
     <div className="flex gap-4 min-w-0">
@@ -25,6 +27,8 @@ export default function SearchHistoryPage() {
     const [loading, setLoading] = useState(true);
     const [selectedLog, setSelectedLog] = useState<any>(null);
     const [showDetails, setShowDetails] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const [isGenerating, setIsGenerating] = useState<string | null>(null);
 
     // Pagination & Search
     const [currentPage, setCurrentPage] = useState(1);
@@ -33,6 +37,8 @@ export default function SearchHistoryPage() {
 
     useEffect(() => {
         fetchHistory();
+        const userData = localStorage.getItem('user');
+        if (userData) setUser(JSON.parse(userData));
     }, []);
 
     const fetchHistory = async () => {
@@ -71,6 +77,135 @@ export default function SearchHistoryPage() {
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
+    };
+
+    const getSearchField = (filters: any): string => {
+        if (!filters) return '-';
+        const fields: string[] = [];
+        const filterMap: Record<string, string[]> = {
+            'Company Name': ['name', 'defaulter_name'],
+            'GST': ['gst', 'gst_number'],
+            'PAN': ['pan', 'pan_number'],
+            'CIN': ['cin', 'cin_number'],
+            'Aadhar': ['aadhar', 'aadhar_number'],
+            'Mobile': ['mobile', 'mobile_number'],
+            'State': ['state'],
+            'District': ['district'],
+            'Sub-District': ['subDistrict'],
+            'City': ['city', 'cities'],
+            'Address': ['address', 'defaulter_address'],
+            'Member Name': ['member_name']
+        };
+
+        Object.entries(filterMap).forEach(([label, keys]: [string, string[]]) => {
+            if (keys.some((key: string) => filters[key] && filters[key].toString().trim() !== '')) {
+                fields.push(label);
+            }
+        });
+
+        return fields.length > 0 ? fields.join(', ') : '-';
+    };
+
+    const handleDownloadSinglePDF = (log: any) => {
+        setIsGenerating(log._id);
+        try {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+
+            // Header Section
+            doc.setFillColor(27, 94, 32);
+            doc.rect(0, 0, pageWidth, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont("helvetica", "bold");
+            doc.text("SEARCH REPORT", pageWidth / 2, 25, { align: 'center' });
+
+            // User Info
+            doc.setTextColor(60, 60, 60);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            const memberName = user?.name || 'Verified Member';
+            const memberId = user?.memberId || user?._id?.slice(-8).toUpperCase() || 'N/A';
+            doc.text(`Requestor: ${memberName} (${memberId})`, 14, 50);
+            doc.text(`Report Date: ${new Date().toLocaleString()}`, 14, 56);
+            doc.text(`Transaction ID: ${log._id}`, 14, 62);
+
+            // Search Criteria
+            doc.setFillColor(245, 245, 245);
+            doc.rect(14, 70, pageWidth - 28, 30, 'F');
+            doc.setTextColor(27, 94, 32);
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("Search Parameters", 20, 78);
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            const filterText = Object.entries(log.filters || {})
+                .filter(([_, v]) => v && v !== '')
+                .map(([k, v]) => `${k.toUpperCase()}: ${v}`)
+                .join(' | ');
+            doc.text(filterText || 'N/A', 20, 86, { maxWidth: pageWidth - 40 });
+
+            // Result Section
+            if (log.resultData) {
+                doc.setTextColor(27, 94, 32);
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text("Defaulter Identification Details", 14, 115);
+
+                const details = [
+                    ["Firm Name", log.resultData.name || '-'],
+                    ["Industry Type", log.resultData.industry || '-'],
+                    ["GSTIN", log.resultData.gst || '-'],
+                    ["PAN", log.resultData.pan || '-'],
+                    ["CIN / Aadhar", log.resultData.cin || log.resultData.aadhar || '-'],
+                    ["Location", `${log.resultData.city || '-'}, ${log.resultData.district || '-'}, ${log.resultData.state || '-'}`],
+                    ["Total Default Amount", `INR ${Number(log.resultData.default_amount || 0).toLocaleString()}`],
+                    ["Current Outstanding", `INR ${Number(log.resultData.outstanding_amount || log.resultData.default_amount || 0).toLocaleString()}`],
+                    ["Status", (log.resultData.isSettled || Number(log.resultData.outstanding_amount ?? log.resultData.default_amount) === 0) ? 'CLEARED' : 'DEFAULTER']
+                ];
+
+                autoTable(doc, {
+                    startY: 120,
+                    body: details,
+                    theme: 'grid',
+                    styles: { fontSize: 10, cellPadding: 4 },
+                    columnStyles: { 0: { fontStyle: 'bold', fillColor: [240, 248, 240], cellWidth: 40 } }
+                });
+
+                // Watermark
+                const watermarkText = `${memberName.toUpperCase()} | ID: ${memberId} | FOR OFFICIAL USE ONLY`;
+                doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+                doc.setFontSize(14);
+                doc.setTextColor(200, 0, 0);
+                const angle = 45;
+                for (let x = -50; x < pageWidth + 100; x += 100) {
+                    for (let y = -50; y < pageHeight + 100; y += 100) {
+                        doc.text(watermarkText, x, y, { angle: angle });
+                    }
+                }
+            } else {
+                doc.setTextColor(200, 0, 0);
+                doc.setFontSize(16);
+                doc.text("NO MATCHING RECORDS FOUND", pageWidth / 2, 120, { align: 'center' });
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text("The search criteria provided did not match any active defaulter entries in the CAIP Central Registry.", pageWidth / 2, 130, { align: 'center' });
+            }
+
+            // Footer
+            doc.setGState(new (doc as any).GState({ opacity: 1 }));
+            doc.setTextColor(150, 150, 150);
+            doc.setFontSize(8);
+            doc.text("Generated by CAIP Central Registry System. This is a computer generated document and does not require a physical signature.", pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+            doc.save(`CAIP_Search_Report_${log._id.slice(-6)}.pdf`);
+        } catch (err) {
+            console.error("PDF Generate Error:", err);
+        } finally {
+            setIsGenerating(null);
+        }
     };
 
     if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -123,72 +258,92 @@ export default function SearchHistoryPage() {
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-[#0a2f0a] text-white">
                                 <tr>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center border-r border-gray-700 w-10">#</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center border-r border-gray-700 min-w-[90px]">Date</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center border-r border-gray-700 min-w-[80px]">Time</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[120px]">Reported By</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[180px]">Defaulter Company Name</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[140px]">GST Number</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[120px]">PAN Number</th>
-                                    <th className="px-4 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[150px]">CIN Number</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[140px]">Aadhar Number</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">State</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">District</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">Sub District</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase border-r border-gray-700 min-w-[100px]">City/Town/Village</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center border-r border-gray-700 min-w-[80px]">Status</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold uppercase text-center min-w-[100px]">Action</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 w-10">#</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 min-w-[90px]">Date</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[80px]">Time</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[120px]">Search Field</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[120px]">Reported By</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[180px]">Defaulter Firm Name</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[140px]">GST</th>
+                                    <th className="px-4 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[150px]">CIN</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[100px]">State</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[100px]">District</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[100px]">Sub District</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[100px]">City/Town/Village</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 min-w-[80px]">Status</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 min-w-[100px]">Search Report PDF</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold text-center min-w-[100px]">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {currentItems.map((log, i) => (
-                                    <tr key={i} className="hover:bg-gray-50 bg-white transition-colors text-[11px] font-medium text-gray-700">
-                                        <td className="px-3 py-4 text-center border-r border-gray-100">{indexOfFirstItem + i + 1}</td>
-                                        <td className="px-3 py-4 text-center border-r border-gray-100 whitespace-nowrap">
-                                            {new Date(log.createdAt).toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}
-                                        </td>
-                                        <td className="px-3 py-4 text-center border-r border-gray-100 whitespace-nowrap">
-                                            {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                        </td>
-                                        <td className="px-3 py-4 border-r border-gray-100">{log.user_id?.name || 'Local Member'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.name || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.gst || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.pan || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.cin || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-100 uppercase">{log.filters?.aadhar || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-100">{log.filters?.state || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-100">{log.filters?.district || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-100">{log.filters?.subDistrict || '-'}</td>
-                                        <td className="px-3 py-4 border-r border-gray-100">{log.filters?.city || '-'}</td>
-                                        <td className="px-3 py-4 text-center border-r border-gray-100">
-                                            {(() => {
-                                                const defaultAmt = Number(log.filters?.default_amount) || 0;
-                                                const outstandingAmt = log.filters?.outstanding_amount !== undefined ? Number(log.filters.outstanding_amount) : defaultAmt;
-                                                const isPaid = outstandingAmt === 0;
+                                {currentItems.map((record, i) => {
+                                    const displayData = record.resultData || {};
+                                    const filters = record.filters || {};
+                                    
+                                    return (
+                                        <tr key={i} className="hover:bg-gray-50 bg-white transition-colors text-[11px] font-medium text-gray-700">
+                                            <td className="px-3 py-4 text-center border-r border-gray-100">{indexOfFirstItem + i + 1}</td>
+                                            <td className="px-3 py-4 text-center border-r border-gray-100 whitespace-nowrap">
+                                                {new Date(record.createdAt).toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}
+                                            </td>
+                                            <td className="px-3 py-4 text-center border-r border-gray-100 whitespace-nowrap">
+                                                {new Date(record.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                            </td>
+                                            <td className="px-3 py-4 border-r border-gray-100 font-bold text-green-700 bg-green-50/20">{getSearchField(filters)}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100">{record.user_id?.name || 'Local Member'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.name || filters.name || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.gst || filters.gst || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.cin || filters.cin || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100">{displayData.state || filters.state || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100">{displayData.district || filters.district || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100">{displayData.subDistrict || filters.subDistrict || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100">{displayData.city || filters.city || '-'}</td>
+                                            <td className="px-3 py-4 text-center border-r border-gray-100">
+                                                {(() => {
+                                                    const defaultAmt = Number(displayData.default_amount || filters.default_amount) || 0;
+                                                    const outstanding = displayData.outstanding_amount !== undefined 
+                                                        ? Number(displayData.outstanding_amount) 
+                                                        : (filters.outstanding_amount !== undefined ? Number(filters.outstanding_amount) : defaultAmt);
+                                                    const isPaid = outstanding === 0 || displayData.isSettled;
 
-                                                return (
-                                                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border uppercase inline-block whitespace-nowrap ${isPaid
+                                                    return (
+                                                        <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border uppercase inline-block whitespace-nowrap ${isPaid
                                                             ? 'bg-green-50 text-green-600 border-green-100'
                                                             : 'bg-red-50 text-red-600 border-red-100'
-                                                        }`}>
-                                                        {isPaid ? 'Not Defaulter' : 'Defaulter'}
-                                                    </span>
-                                                );
-                                            })()}
-                                        </td>
-                                        <td className="px-3 py-4 text-center">
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedLog(log);
-                                                    setShowDetails(true);
-                                                }}
-                                                className="bg-[#46c1e1] text-white px-4 py-1.5 rounded text-[10px] font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1 mx-auto"
-                                            >
-                                                <span>👁 VIEW</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                                            }`}>
+                                                            {isPaid ? 'Not Defaulter' : 'Defaulter'}
+                                                        </span>
+                                                    );
+                                                })()}
+                                            </td>
+                                            <td className="px-3 py-4 text-center border-r border-gray-100">
+                                                <button
+                                                    disabled={isGenerating === record._id}
+                                                    onClick={() => handleDownloadSinglePDF(record)}
+                                                    className="bg-rose-50 text-rose-600 px-2 py-1.5 rounded text-[9px] font-bold hover:bg-rose-100 transition-all flex items-center justify-center gap-1.5 mx-auto border border-rose-100 disabled:opacity-50"
+                                                >
+                                                    {isGenerating === record._id ? (
+                                                        <div className="w-3 h-3 border-2 border-rose-600 border-t-transparent rounded-full animate-spin"></div>
+                                                    ) : (
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                                                    )}
+                                                    PDF
+                                                </button>
+                                            </td>
+                                            <td className="px-3 py-4 text-center">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedLog(record);
+                                                        setShowDetails(true);
+                                                    }}
+                                                    className="bg-[#46c1e1] text-white px-4 py-1.5 rounded text-[10px] font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1 mx-auto"
+                                                >
+                                                    <span>👁 VIEW</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -274,12 +429,12 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter Company Details</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Defaulter Company name" value={selectedLog.filters?.name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
-                                        <DetailRow label="Industry" value={selectedLog.filters?.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
-                                        <DetailRow label="GST" value={selectedLog.filters?.gst} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
-                                        <DetailRow label="PAN" value={selectedLog.filters?.pan || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
-                                        <DetailRow label="CIN" value={selectedLog.filters?.cin || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
-                                        <DetailRow label="Aadhar" value={selectedLog.filters?.aadhar || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
+                                        <DetailRow label="Defaulter Company name" value={selectedLog.resultData?.name || selectedLog.filters?.name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                        <DetailRow label="Industry" value={selectedLog.resultData?.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
+                                        <DetailRow label="GST" value={selectedLog.resultData?.gst || selectedLog.filters?.gst || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
+                                        <DetailRow label="PAN" value={selectedLog.resultData?.pan || selectedLog.filters?.pan || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
+                                        <DetailRow label="CIN" value={selectedLog.resultData?.cin || selectedLog.filters?.cin || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
+                                        <DetailRow label="Aadhar" value={selectedLog.resultData?.aadhar || selectedLog.filters?.aadhar || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
                                     </div>
                                 </div>
 
@@ -290,14 +445,14 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Contact & Address</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Mobile" value={selectedLog.filters?.mobile} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>} />
-                                        <DetailRow label="Email" value={selectedLog.filters?.email} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>} />
-                                        <DetailRow label="State" value={selectedLog.filters?.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
-                                        <DetailRow label="District" value={selectedLog.filters?.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
-                                        <DetailRow label="Sub district" value={selectedLog.filters?.subDistrict || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
-                                        <DetailRow label="City" value={selectedLog.filters?.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
+                                        <DetailRow label="Mobile" value={selectedLog.resultData?.mobile || selectedLog.filters?.mobile} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>} />
+                                        <DetailRow label="Email" value={selectedLog.resultData?.email || selectedLog.filters?.email} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>} />
+                                        <DetailRow label="State" value={selectedLog.resultData?.state || selectedLog.filters?.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
+                                        <DetailRow label="District" value={selectedLog.resultData?.district || selectedLog.filters?.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
+                                        <DetailRow label="Sub district" value={selectedLog.resultData?.subDistrict || selectedLog.filters?.subDistrict || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
+                                        <DetailRow label="City" value={selectedLog.resultData?.city || selectedLog.filters?.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
                                         <div className="col-span-full pt-2">
-                                            <DetailRow label="Full address" value={selectedLog.filters?.address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
+                                            <DetailRow label="Full address" value={selectedLog.resultData?.address || selectedLog.filters?.address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
                                         </div>
                                     </div>
                                 </div>
@@ -309,7 +464,7 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Financial Status</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Default amount" value={`₹${Number(selectedLog.filters?.default_amount).toLocaleString()}`} isHighlights icon={
+                                        <DetailRow label="Default amount" value={`₹${Number(selectedLog.resultData?.default_amount || 0).toLocaleString()}`} isHighlights icon={
                                             <svg
                                                 width="16"
                                                 height="16"
@@ -324,7 +479,7 @@ export default function SearchHistoryPage() {
                                                 <path d="M10 12l5 8" />
                                             </svg>
                                         } />
-                                        <DetailRow label="Outstanding" value={`₹${Number(selectedLog.filters?.outstanding_amount || selectedLog.filters?.default_amount).toLocaleString()}`} isHighlights icon={
+                                        <DetailRow label="Outstanding" value={`₹${Number(selectedLog.resultData?.outstanding_amount || selectedLog.resultData?.default_amount || 0).toLocaleString()}`} isHighlights icon={
                                             <svg
                                                 width="16"
                                                 height="16"
@@ -339,10 +494,10 @@ export default function SearchHistoryPage() {
                                                 <path d="M10 12l5 8" />
                                             </svg>
                                         } />
-                                        <DetailRow label="Date of default" value={selectedLog.filters?.date_of_default ? new Date(selectedLog.filters.date_of_default).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
-                                        <DetailRow label="Financial year" value={selectedLog.filters?.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
+                                        <DetailRow label="Date of default" value={selectedLog.resultData?.date_of_default ? new Date(selectedLog.resultData.date_of_default).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
+                                        <DetailRow label="Financial year" value={selectedLog.resultData?.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
                                         <div className="col-span-full">
-                                            <DetailRow label="Reason for default" value={selectedLog.filters?.reason || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01" /><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" /><path d="M12 9v4" /></svg>} />
+                                            <DetailRow label="Reason for default" value={selectedLog.resultData?.reason || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01" /><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" /><path d="M12 9v4" /></svg>} />
                                         </div>
                                     </div>
                                 </div>
@@ -354,11 +509,11 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & Proceedings</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Court name" value={selectedLog.filters?.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
-                                        <DetailRow label="Case number" value={selectedLog.filters?.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
-                                        <DetailRow label="Case type" value={selectedLog.filters?.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
-                                        <DetailRow label="Case year" value={selectedLog.filters?.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
-                                        <DetailRow label="Legal status" value={selectedLog.filters?.case_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
+                                        <DetailRow label="Court name" value={selectedLog.resultData?.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
+                                        <DetailRow label="Case number" value={selectedLog.resultData?.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
+                                        <DetailRow label="Case type" value={selectedLog.resultData?.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
+                                        <DetailRow label="Case year" value={selectedLog.resultData?.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
+                                        <DetailRow label="Legal status" value={selectedLog.resultData?.case_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
                                     </div>
                                 </div>
 
@@ -369,8 +524,7 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Report Information</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Reported By" value={selectedLog.filters?.reported_by || selectedLog.user_id?.name || 'Verified Member'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
-                                        <DetailRow label="Report by company" value={selectedLog.user_id?.companyName || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                        <DetailRow label="Reported By" value={selectedLog.resultData?.reported_by || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
                                     </div>
                                 </div>
 
@@ -381,8 +535,8 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Documents</h4>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        {selectedLog.filters?.attachment_documents && selectedLog.filters.attachment_documents.length > 0 ? (
-                                            selectedLog.filters.attachment_documents.map((doc: string, idx: number) => {
+                                        {selectedLog.resultData?.attachment_documents && selectedLog.resultData.attachment_documents.length > 0 ? (
+                                            selectedLog.resultData.attachment_documents.map((doc: string, idx: number) => {
                                                 const isPdf = doc.toLowerCase().endsWith('.pdf');
                                                 return (
                                                     <a
@@ -430,8 +584,8 @@ export default function SearchHistoryPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
-                                                {selectedLog.filters?.payments && selectedLog.filters.payments.length > 0 ? (
-                                                    selectedLog.filters.payments.map((p: any, idx: number) => (
+                                                {selectedLog.resultData?.payments && selectedLog.resultData.payments.length > 0 ? (
+                                                    selectedLog.resultData.payments.map((p: any, idx: number) => (
                                                         <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                                                             <td className="px-6 py-4 text-[14px] font-bold">{(idx + 1).toString().padStart(2, '0')}</td>
                                                             <td className="px-6 py-4 text-[14px] font-medium">{new Date(p.date).toLocaleDateString()}</td>

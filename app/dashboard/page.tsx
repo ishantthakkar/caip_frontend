@@ -339,7 +339,7 @@ export default function DashboardPage() {
                         <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white rounded-t-xl">
                             <h3 className="text-[16px] font-semibold tracking-tight flex items-center gap-3">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                                {cardTimeframes[4] === 'all' ? `Defaulter Industry Types (${new Date().getFullYear()})` : `Industry Distribution (${cardTimeframes[4].toUpperCase()})`}
+                                {cardTimeframes[4] === 'all' ? `Type of Defaulters (${new Date().getFullYear()})` : `Industry Distribution (${cardTimeframes[4].toUpperCase()})`}
                             </h3>
                             <div className="relative">
                                 <button

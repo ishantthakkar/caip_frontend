@@ -20,6 +20,7 @@ export default function AdminMembersPage() {
     const [modalLoading, setModalLoading] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [showDocModal, setShowDocModal] = useState(false);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [showRejectionModal, setShowRejectionModal] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [showSubModal, setShowSubModal] = useState(false);
@@ -206,6 +207,8 @@ export default function AdminMembersPage() {
                                             <th className="px-4 py-3 text-sm font-semibold tracking-tight">Status</th>
                                             <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Searches</th>
                                             <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub-Member</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Docs</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">View</th>
                                             <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Action</th>
                                         </tr>
                                     </thead>
@@ -261,8 +264,25 @@ export default function AdminMembersPage() {
                                                         View
                                                     </button>
                                                 </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <button
+                                                        onClick={() => { setSelectedUser(user); setShowDocModal(true); }}
+                                                        className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 shadow-sm active:scale-95"
+                                                        title="View Documents"
+                                                    >
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+                                                    </button>
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <button
+                                                        onClick={() => { setSelectedUser(user); setShowDetailsModal(true); }}
+                                                        className="px-3 py-1.5 bg-gray-50 text-gray-700 text-[12px] font-medium rounded-lg hover:bg-[#1b5e20] hover:text-white transition-all border border-gray-200 shadow-sm active:scale-95"
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                </td>
                                                 <td className="px-4 py-3 text-right bg-white group-hover:bg-gray-50 transition-colors">
-                                                    <div className="flex justify-end pr-2">
+                                                    <div className="flex justify-end gap-2 items-center">
                                                         <div
                                                             onClick={() => handleAction(user._id, user.status === '1' ? 'rejected' : 'approved')}
                                                             className={`relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer transition-colors duration-200 outline-none focus:ring-2 focus:ring-[#1b5e20] focus:ring-offset-2 ${user.status === '1' ? 'bg-[#1b5e20]' : 'bg-gray-200'}`}
@@ -550,58 +570,125 @@ export default function AdminMembersPage() {
                     </div>
                 )}
 
-                {/* Document Preview Modal */}
-                {showDocModal && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
-                        <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                            <div className="bg-[#1b5e20] px-10 py-8 flex justify-between items-center text-white">
-                                <div>
-                                    <h3 className="text-xl font-black tracking-tight tracking-widest">Compliance audit records</h3>
-                                    <p className="text-[10px] font-black text-white/60 tracking-wider mt-1">Found {selectedUser?.businessDocuments?.length || 0} assets for {selectedUser?.name}</p>
-                                </div>
-                                <button onClick={() => setShowDocModal(false)} className="w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all">✕</button>
+            {/* Document Preview Modal */}
+            {showDocModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex justify-between items-center text-white">
+                            <div className="flex items-center gap-3">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                <h3 className="text-lg font-bold tracking-tight">Business Documents</h3>
                             </div>
+                            <button onClick={() => setShowDocModal(false)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">✕</button>
+                        </div>
 
-                            <div className="p-10 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                                {selectedUser?.businessDocuments?.length > 0 ? (
-                                    <div className="grid grid-cols-2 gap-8">
-                                        {selectedUser.businessDocuments.map((doc: string, idx: number) => {
-                                            const isPdf = doc.toLowerCase().endsWith('.pdf');
-                                            const docUrl = `${ASSETS_BASE_URL}${doc}`;
-                                            return (
-                                                <div key={idx} className="group relative bg-gray-50 rounded-3xl border border-gray-100 p-8 flex flex-col items-center justify-center gap-6 hover:shadow-2xl transition-all hover:bg-white">
-                                                    <div className="text-6xl group-hover:scale-110 transition-transform">
-                                                        {isPdf ? '📄' : '🖼️'}
-                                                    </div>
-                                                    <div className="text-center font-black">
-                                                        <p className="text-[9px] text-gray-400 tracking-wider">Compliance asset #{idx + 1}</p>
-                                                        <p className="text-xs text-gray-900 mt-2 truncate max-w-[200px] italic">{doc.split('/').pop()}</p>
-                                                    </div>
-                                                    <a
-                                                        href={docUrl}
-                                                        target="_blank"
-                                                        className="w-full text-center py-3 bg-white text-[#1b5e20] text-[9px] font-black tracking-[0.3em] rounded-2xl border border-green-100 shadow-sm hover:bg-[#1b5e20] hover:text-white transition-all shadow-emerald-900/5 group-hover:shadow-xl group-hover:shadow-emerald-900/10"
-                                                    >
-                                                        Inspect Asset
-                                                    </a>
+                        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar bg-gray-50/50">
+                            {selectedUser?.businessDocuments?.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {selectedUser.businessDocuments.map((doc: string, idx: number) => {
+                                        const isPdf = doc.toLowerCase().endsWith('.pdf');
+                                        const docUrl = `${ASSETS_BASE_URL}uploads/${doc}`;
+                                        return (
+                                            <a
+                                                key={idx}
+                                                href={docUrl}
+                                                target="_blank"
+                                                className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-100 hover:border-[#1b5e20] transition-all group shadow-sm"
+                                            >
+                                                <div className={`w-12 h-12 rounded flex items-center justify-center text-xl ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
+                                                    {isPdf ? '📄' : '🖼️'}
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <div className="py-20 text-center tracking-wider">
-                                        <div className="text-6xl mb-6 opacity-20">📂</div>
-                                        <p className="text-sm font-black text-gray-400">Zero compliance assets archived</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="p-8 border-t border-gray-100 flex justify-end gap-4">
-                                <button onClick={() => setShowDocModal(false)} className="px-12 py-4 bg-gray-900 text-white text-[10px] font-black tracking-wider rounded-2xl hover:bg-black transition-all shadow-2xl active:scale-95">Safe exit</button>
-                            </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-[12px] font-normal text-black truncate uppercase">DOCUMENT_{idx + 1}</p>
+                                                    <p className="text-[10px] font-medium text-gray-400 capitalize group-hover:text-[#1b5e20]">View File →</p>
+                                                </div>
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="py-12 text-center bg-white border-2 border-dashed border-gray-100 rounded-xl">
+                                    <p className="text-[14px] font-medium text-gray-400 capitalize">No documents uploaded.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
-                )}
+                </div>
+            )}
+
+            {/* View Member Details Modal */}
+            {showDetailsModal && selectedUser && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex justify-between items-center text-white">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">👤</div>
+                                <div>
+                                    <h3 className="text-lg font-bold tracking-tight">{selectedUser.name}</h3>
+                                    <p className="text-[11px] font-medium text-white/60 capitalize mt-0.5">Member ID: {selectedUser.memberId || 'Pending Approval'}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowDetailsModal(false)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">✕</button>
+                        </div>
+
+                        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar space-y-8 bg-gray-50/50">
+                            {/* Section 1: Entity Details */}
+                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Company Details
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <DetailItem label="Company Name" value={selectedUser.companyName} />
+                                    <DetailItem label="Industry" value={selectedUser.industry} />
+                                    <DetailItem label="Business Type" value={selectedUser.businessType} />
+                                    <DetailItem label="GST" value={selectedUser.gst} />
+                                    <DetailItem label="PAN" value={selectedUser.pan} />
+                                    <DetailItem label="CIN Number" value={selectedUser.cinNumber} />
+                                    <DetailItem label="Years in Business" value={selectedUser.yearsInBusiness} />
+                                    <DetailItem label="Company Phone Number" value={selectedUser.companyPhoneNumber} />
+                                    <DetailItem label="Register Date" value={new Date(selectedUser.createdAt).toLocaleDateString('en-GB')} />
+                                </div>
+                            </section>
+
+                            {/* Section 2: Primary Member Details */}
+                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Member Info
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <DetailItem label="Full Name" value={selectedUser.name} />
+                                    <DetailItem label="Email Address" value={selectedUser.email} />
+                                    <DetailItem label="Contact Number" value={selectedUser.phone} />
+                                    <DetailItem label="Company Email" value={selectedUser.companyEmail} />
+                                    <DetailItem label="Alt Contact Number" value={selectedUser.alternateContactNumber} />
+                                    <DetailItem label="Membership Status" value={selectedUser.status === '1' ? 'ACTIVE' : selectedUser.status === '2' ? 'REJECTED' : 'PENDING'} isBadge status={selectedUser.status} />
+                                </div>
+                            </section>
+
+                            {/* Section 3: Geographic Location */}
+                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Location
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <DetailItem label="State" value={selectedUser.state} />
+                                    <DetailItem label="District" value={selectedUser.district} />
+                                    <DetailItem label="Sub District" value={selectedUser.subDistrict} />
+                                    <DetailItem label="City" value={selectedUser.city} />
+                                    <DetailItem label="Pin Code" value={selectedUser.pinCode} />
+                                    <div className="col-span-full">
+                                        <DetailItem label="Registered Address" value={selectedUser.businessAddress} />
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <div className="p-6 border-t border-gray-100 bg-white flex justify-end">
+                            <button onClick={() => setShowDetailsModal(false)} className="px-8 py-2 bg-gray-900 text-white text-[12px] font-bold rounded-lg hover:bg-black transition-all shadow-lg active:scale-95">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
                 {/* Rejection Reason Modal */}
                 {showRejectionModal && (
@@ -653,12 +740,22 @@ export default function AdminMembersPage() {
                     </div>
                 )}
             </div>
-            <style jsx global>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 20px; border: 2px solid transparent; background-clip: content-box; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; background-clip: content-box; }
-            `}</style>
         </AdminPortalContainer>
     );
 }
+
+const DetailItem = ({ label, value, isBadge = false, status = '0' }: { label: string, value: any, isBadge?: boolean, status?: string }) => (
+    <div className="flex items-start gap-4 py-1">
+        <div className="w-1.5 h-1.5 rounded-full bg-[#1b5e20]/20 mt-1.5 flex-shrink-0" />
+        <div className="min-w-0">
+            <p className="text-[11px] font-medium text-gray-500 capitalize tracking-tight leading-none mb-1.5">{label}</p>
+            {isBadge ? (
+                <span className={`inline-block px-3 py-1 rounded-md text-[11px] font-bold ${status === '1' ? 'bg-green-100 text-green-700' : status === '2' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {value || '-'}
+                </span>
+            ) : (
+                <p className="text-[15px] font-normal text-black break-words leading-tight">{value || '-'}</p>
+            )}
+        </div>
+    </div>
+);

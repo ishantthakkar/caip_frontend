@@ -243,17 +243,17 @@ export default function ProfilePage() {
                         {/* Profile Info */}
                         <div className="relative pt-14 pb-8 px-8 flex flex-col items-center flex-1">
                             {/* Avatar */}
-                            <div 
+                            <div
                                 onClick={() => setShowAvatarEdit(true)}
                                 className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white bg-white shadow-sm overflow-hidden flex items-center justify-center cursor-pointer group"
                             >
-                                <img 
-                                    src={user.profileImage ? `${ASSETS_BASE_URL}uploads/${user.profileImage}` : (avatarPreview || "/default-avatar.jpg")} 
-                                    alt="Profile" 
+                                <img
+                                    src={user.profileImage ? `${ASSETS_BASE_URL}uploads/${user.profileImage}` : (avatarPreview || "/default-avatar.jpg")}
+                                    alt="Profile"
                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                                 />
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
                                 </div>
                             </div>
 
@@ -266,18 +266,15 @@ export default function ProfilePage() {
                                     { label: 'Phone', value: user.phone || '9876543210' },
                                     { label: 'Membership Status', value: user.membership_status === '1' ? 'Active' : 'Pending', valueClass: user.membership_status === '1' ? 'text-green-600' : 'text-amber-500' },
                                     ...(user.membership_status === '1' ? [
-                                        { 
-                                            label: 'Membership Expiry Date', 
-                                            value: user.membershipExpiry === 'Lifetime' 
-                                                ? 'Lifetime' 
-                                                : (user.membershipExpiry && user.membershipExpiry !== 'N/A' 
+                                        {
+                                            label: 'Membership Expiry Date',
+                                            value: user.membershipExpiry === 'Lifetime'
+                                                ? 'Lifetime'
+                                                : (user.membershipExpiry && user.membershipExpiry !== 'N/A'
                                                     ? new Date(user.membershipExpiry).toLocaleString('en-US', {
                                                         year: 'numeric',
                                                         month: 'long',
                                                         day: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: true
                                                     })
                                                     : 'N/A')
                                         }
@@ -293,11 +290,11 @@ export default function ProfilePage() {
                             {/* Stats Summary Area at Bottom */}
                             <div className="mt-auto w-full pt-8 border-t border-gray-100 grid grid-cols-2 text-center divide-x divide-gray-100">
                                 <div>
-                                    <p className="text-xl font-bold text-gray-800">28</p>
+                                    <p className="text-xl font-bold text-gray-800">{user?.searchCount || 0}</p>
                                     <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Searches</p>
                                 </div>
                                 <div>
-                                    <p className="text-xl font-bold text-gray-800">5</p>
+                                    <p className="text-xl font-bold text-gray-800">{user?.reportCount || 0}</p>
                                     <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider leading-none">Defaulter<br />Reported</p>
                                 </div>
                             </div>
@@ -337,53 +334,31 @@ export default function ProfilePage() {
                             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
                                 <div className="flex items-center justify-between mb-8">
                                     <h3 className="text-lg font-bold text-[#4caf50]">Business Information</h3>
-                                    <button
-                                        onClick={() => setIsEditing(!isEditing)}
-                                        className="flex items-center gap-2 bg-[#1b5e20] text-white px-4 py-1.5 rounded-md text-xs font-bold hover:bg-green-800 transition-all shadow-sm"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                        </svg>
-                                        Edit
-                                    </button>
+
                                 </div>
 
                                 <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                     {[
-                                        { label: 'Company Name*', key: 'companyName' },
-                                        { label: 'Business Type', key: 'businessType', isSelect: true, options: ['Manufacturer', 'Distributor', 'Retailer', 'Wholesaler'] },
-                                        { label: 'GST Number*', key: 'gst' },
-                                        { label: 'Years in Business', key: 'yearsInBusiness' },
-                                        { label: 'CIN Number', key: 'cinNumber' },
-                                        { label: 'PAN Number*', key: 'pan' }
+                                        { label: 'Company Name', key: 'companyName' },
+                                        { label: 'GST', key: 'gst' },
+                                        { label: 'CIN', key: 'cinNumber' },
+                                        { label: 'PAN', key: 'pan' }
                                     ].map((field: any) => (
                                         <div key={field.key} className="space-y-1.5 flex flex-col">
                                             <label className="text-sm font-bold text-gray-700">{field.label}</label>
-                                            {field.isSelect ? (
-                                                <select
-                                                    disabled={!isEditing}
-                                                    value={formData[field.key] || ''}
-                                                    onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                                                    className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] appearance-none disabled:opacity-100 disabled:bg-gray-50/30 h-[42px]`}
-                                                >
-                                                    <option value="">Select Business Type</option>
-                                                    {field.options.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
-                                                </select>
-                                            ) : (
-                                                <input
-                                                    type="text"
-                                                    readOnly={!isEditing}
-                                                    value={formData[field.key] || ''}
-                                                    onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                                                    placeholder={`Enter ${field.label.replace('*', '')}`}
-                                                    className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] ${!isEditing ? 'bg-gray-50/30' : ''}`}
-                                                />
-                                            )}
+                                            <input
+                                                type="text"
+                                                readOnly={!isEditing}
+                                                value={formData[field.key] || ''}
+                                                onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                                                placeholder={`Enter ${field.label.replace('*', '')}`}
+                                                className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] ${!isEditing ? 'bg-gray-50/30' : ''}`}
+                                            />
                                         </div>
                                     ))}
 
                                     <div className="space-y-1.5 flex flex-col">
-                                        <label className="text-sm font-bold text-gray-700">State*</label>
+                                        <label className="text-sm font-bold text-gray-700">State</label>
                                         <select
                                             disabled={!isEditing}
                                             value={formData.state || ''}
@@ -403,7 +378,7 @@ export default function ProfilePage() {
                                     </div>
 
                                     <div className="space-y-1.5 flex flex-col">
-                                        <label className="text-sm font-bold text-gray-700">District*</label>
+                                        <label className="text-sm font-bold text-gray-700">District</label>
                                         <select
                                             disabled={!isEditing}
                                             value={formData.district || ''}
@@ -422,7 +397,7 @@ export default function ProfilePage() {
                                     </div>
 
                                     <div className="space-y-1.5 flex flex-col">
-                                        <label className="text-sm font-bold text-gray-700">Sub District*</label>
+                                        <label className="text-sm font-bold text-gray-700">Sub District</label>
                                         <select
                                             disabled={!isEditing}
                                             value={formData.subDistrict || ''}
@@ -440,7 +415,7 @@ export default function ProfilePage() {
                                     </div>
 
                                     <div className="space-y-1.5 flex flex-col">
-                                        <label className="text-sm font-bold text-gray-700">City/Village/Town*</label>
+                                        <label className="text-sm font-bold text-gray-700">City/Village/Town</label>
                                         <select
                                             disabled={!isEditing}
                                             value={formData.city || ''}
@@ -453,7 +428,7 @@ export default function ProfilePage() {
                                     </div>
 
                                     <div className="space-y-1.5 flex flex-col">
-                                        <label className="text-sm font-bold text-gray-700">Pin Code*</label>
+                                        <label className="text-sm font-bold text-gray-700">Pincode</label>
                                         <input
                                             type="text"
                                             readOnly={!isEditing}
@@ -465,41 +440,24 @@ export default function ProfilePage() {
                                     </div>
 
                                     <div className="space-y-1.5 flex flex-col md:col-span-1">
-                                        <label className="text-sm font-bold text-gray-700">Business Address*</label>
+                                        <label className="text-sm font-bold text-gray-700">Business Address</label>
                                         <textarea
                                             readOnly={!isEditing}
                                             value={formData.businessAddress || ''}
                                             onChange={(e) => setFormData({ ...formData, businessAddress: e.target.value })}
                                             placeholder="Enter Business Address"
-                                            rows={1}
+                                            rows={3}
                                             className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] resize-none ${!isEditing ? 'bg-gray-50/30' : ''}`}
                                         />
                                     </div>
 
-                                    <div className="space-y-1.5 flex flex-col md:col-span-1">
-                                        <label className="text-sm font-bold text-gray-700">Industry</label>
-                                        <select
-                                            disabled={!isEditing}
-                                            value={formData.industry || ''}
-                                            onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                                            className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] appearance-none disabled:opacity-100 disabled:bg-gray-50/30`}
-                                        >
-                                            <option value="Agriculture">Agriculture</option>
-                                            <option value="Agrochemicals & Fertilizers">Agrochemicals & Fertilizers</option>
-                                            <option value="Seed Suppliers">Seed Suppliers</option>
-                                            <option value="Farming Equipment">Farming Equipment</option>
-                                            <option value="Others">Others</option>
-                                        </select>
-                                    </div>
 
                                     {/* Contact Information Section */}
                                     <div className="col-span-full pt-8 mt-4 border-t border-gray-100/50">
                                         <h3 className="text-lg font-bold text-[#4caf50] mb-6">Contact Information</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                             {[
-                                                { label: 'Company Email*', key: 'companyEmail', placeholder: 'testcompany@gmail.com' },
-                                                { label: 'Alternate Contact Person', key: 'alternateContactPerson', placeholder: 'Enter Contact Person Name' },
-                                                { label: 'Company Phone Number*', key: 'companyPhoneNumber', placeholder: '9876543210' },
+                                                { label: 'Company Email', key: 'companyEmail', placeholder: 'testcompany@gmail.com' },
                                                 { label: 'Alternate Contact Number', key: 'alternateContactNumber', placeholder: 'Enter Contact Number' }
                                             ].map((field) => (
                                                 <div key={field.key} className="space-y-1.5 flex flex-col">
@@ -521,17 +479,7 @@ export default function ProfilePage() {
                                     <div className="col-span-full pt-8 mt-4 border-t border-gray-100/50">
                                         <h3 className="text-lg font-bold text-[#4caf50] mb-6">Additional Business Details</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                                            <div className="space-y-1.5 flex flex-col">
-                                                <label className="text-sm font-bold text-gray-700">Website URL</label>
-                                                <input
-                                                    type="text"
-                                                    readOnly={!isEditing}
-                                                    value={formData.websiteUrl || ''}
-                                                    onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                                                    placeholder="Enter Website URL"
-                                                    className={`w-full bg-white border ${isEditing ? 'border-[#4caf50]' : 'border-gray-200'} rounded-lg py-2.5 px-4 outline-none text-sm font-medium transition-colors focus:border-[#1b5e20] ${!isEditing ? 'bg-gray-50/30' : ''}`}
-                                                />
-                                            </div>
+
                                             <div className="space-y-1.5 flex flex-col">
                                                 <label className="text-sm font-bold text-gray-700">Upload Business Documents</label>
                                                 <div className={`relative w-full border ${isEditing ? 'border-[#4caf50] border-dashed' : 'border-gray-200'} rounded-lg py-2 px-4 flex items-center gap-3 transition-colors ${!isEditing ? 'bg-gray-50/30' : 'bg-green-50/20'}`}>
@@ -616,8 +564,8 @@ export default function ProfilePage() {
                                         <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg text-right">
                                             <p className="text-[10px] font-bold uppercase opacity-60">Expires On</p>
                                             <p className="text-sm font-bold">
-                                                {user.membershipExpiry === 'Lifetime' 
-                                                    ? 'Lifetime Validity' 
+                                                {user.membershipExpiry === 'Lifetime'
+                                                    ? 'Lifetime Validity'
                                                     : new Date(user.membershipExpiry).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                             </p>
                                         </div>
@@ -654,75 +602,66 @@ export default function ProfilePage() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {plans.map((plan: any) => (
-                                <div key={plan._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:border-green-600/30 transition-colors">
-                                    <div className="bg-[#1b5e20] p-6 text-white text-center">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">{plan.duration} Validity</p>
-                                        <h4 className="text-xl font-bold">{plan.name}</h4>
-                                    </div>
-                                    <div className="p-8 flex-1 flex flex-col">
-                                        <div className="mb-6 text-center">
-                                            <span className="text-3xl font-bold text-gray-900">₹{plan.price}</span>
-                                            <span className="text-gray-400 font-medium ml-2 text-sm">/ {plan.duration}</span>
+                                {plans.map((plan: any) => (
+                                    <div key={plan._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:border-green-600/30 transition-colors">
+                                        <div className="bg-[#1b5e20] p-6 text-white text-center">
+                                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">{plan.duration} Validity</p>
+                                            <h4 className="text-xl font-bold">{plan.name}</h4>
                                         </div>
-                                        <ul className="space-y-3 flex-1 mb-8">
-                                            {plan.benefits?.map((f: string, i: number) => (
-                                                <li key={i} className="flex items-start gap-3 text-xs font-semibold text-gray-600">
-                                                    <span className="text-green-600 mt-1">✓</span> {f}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <button
-                                            onClick={() => purchaseMembership(plan._id)}
-                                            disabled={purchasing || user.membership_status === '1'}
-                                            className="w-full bg-[#1b5e20] text-white py-3 rounded-lg font-bold text-xs shadow-sm hover:bg-green-700 transition-all disabled:opacity-30"
-                                        >
-                                            {user.membership_status === '1' ? 'Current Plan' : 'Buy Now'}
-                                        </button>
+                                        <div className="p-8 flex-1 flex flex-col">
+                                            <div className="mb-6 text-center">
+                                                <span className="text-3xl font-bold text-gray-900">₹{plan.price}</span>
+                                                <span className="text-gray-400 font-medium ml-2 text-sm">/ {plan.duration}</span>
+                                            </div>
+                                            <ul className="space-y-3 flex-1 mb-8">
+                                                {plan.benefits?.map((f: string, i: number) => (
+                                                    <li key={i} className="flex items-start gap-3 text-xs font-semibold text-gray-600">
+                                                        <span className="text-green-600 mt-1">✓</span> {f}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <button
+                                                onClick={() => purchaseMembership(plan._id)}
+                                                disabled={purchasing || user.membership_status === '1'}
+                                                className="w-full bg-[#1b5e20] text-white py-3 rounded-lg font-bold text-xs shadow-sm hover:bg-green-700 transition-all disabled:opacity-30"
+                                            >
+                                                {user.membership_status === '1' ? 'Current Plan' : 'Buy Now'}
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
-        </div>
             {showAvatarEdit && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="relative bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300">
                         <div className="px-6 py-4 bg-[#1b5e20] text-white flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                                 <h3 className="text-lg font-bold">Edit Profile</h3>
                             </div>
                             <button onClick={() => setShowAvatarEdit(false)} className="hover:rotate-90 transition-transform">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                             </button>
                         </div>
                         <form onSubmit={handleUpdate} className="p-8 space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-700">Display Name</label>
-                                <input 
-                                    type="text" 
-                                    value={formData.name || ""} 
-                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                    className="w-full border border-gray-200 rounded-xl py-3 px-4 outline-none focus:border-green-600 transition-colors bg-gray-50/30"
-                                    placeholder="Enter your name"
-                                />
-                            </div>
+
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700">Profile Image</label>
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 rounded-full border-2 border-gray-100 overflow-hidden shrink-0">
-                                        <img 
-                                            src={avatarPreview || (user.profileImage ? `${ASSETS_BASE_URL}uploads/${user.profileImage}` : "/default-avatar.jpg")} 
-                                            alt="Preview" 
+                                        <img
+                                            src={avatarPreview || (user.profileImage ? `${ASSETS_BASE_URL}uploads/${user.profileImage}` : "/default-avatar.jpg")}
+                                            alt="Preview"
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
                                     <div className="relative flex-1">
-                                        <input 
-                                            type="file" 
+                                        <input
+                                            type="file"
                                             accept="image/*"
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0];
@@ -740,15 +679,15 @@ export default function ProfilePage() {
                                 </div>
                             </div>
                             <div className="pt-4 flex items-center justify-end gap-3">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => setShowAvatarEdit(false)}
                                     className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-500 font-bold text-sm hover:bg-gray-50 transition-all"
                                 >
                                     Cancel
                                 </button>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     disabled={saving}
                                     className="px-8 py-2.5 rounded-xl bg-[#1b5e20] text-white font-bold text-sm shadow-lg hover:bg-green-800 transition-all disabled:opacity-50"
                                 >

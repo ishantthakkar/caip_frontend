@@ -102,7 +102,7 @@ function LoginContent() {
             />
             {/* Light Overlay to ensure contrast like the reference .bg-overlay */}
             <div className="absolute inset-0 bg-white opacity-50" />
-            
+
             {/* Carbon Fiber Texture Overlay */}
             <div
                 className="absolute inset-0 bg-repeat opacity-20 pointer-events-none"
@@ -111,7 +111,7 @@ function LoginContent() {
 
             <div className="container mx-auto px-4 flex-1 flex flex-col pt-12 pb-10 relative z-10">
                 <div className="flex-1 flex flex-col items-center justify-center -mt-10">
-                    
+
                     <div className="w-full max-w-md relative z-10">
                         {/* Error & Success Toasts */}
                         {error && (
@@ -131,7 +131,7 @@ function LoginContent() {
                             <Link href="/" className="inline-block mb-4">
                                 <img src="/images/caip_logo.png" alt="CAIP Logo" className="mx-auto h-[70px] drop-shadow-sm" />
                             </Link>
-                            
+
                             <div className="bg-agri-green-primary text-center px-4 py-3.5 rounded-2xl shadow-sm">
                                 <h4 className="text-white m-0 font-bold text-lg tracking-wide">Chamber for Agri Input Protection</h4>
                             </div>
@@ -145,8 +145,8 @@ function LoginContent() {
                                     {step === 'enter_mobile' ? 'Member Login' : 'OTP Verification'}
                                 </h5>
                                 <p className="text-white/80 text-sm m-0">
-                                    {step === 'enter_mobile' 
-                                        ? 'Sign in to continue to Chamber for Agri Input Protection.' 
+                                    {step === 'enter_mobile'
+                                        ? 'Sign in to continue to Chamber for Agri Input Protection.'
                                         : `Verification code sent to +91 ${phone}`}
                                 </p>
                             </div>
@@ -226,7 +226,7 @@ function LoginContent() {
                                                 onClick={() => setStep('enter_mobile')}
                                                 className="text-sm font-medium text-blue-600 hover:underline"
                                             >
-                                                Change Mobile Number
+                                                Re-enter Mobile Number
                                             </button>
                                         </div>
                                     </form>

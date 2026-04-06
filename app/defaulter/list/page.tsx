@@ -6,12 +6,13 @@ import Link from 'next/link';
 import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import Swal from 'sweetalert2';
 
 const InfoItem = ({ icon, label, value, isBold = false }: { icon: any, label: string, value: any, isBold?: boolean }) => (
     <div className="flex items-start gap-3">
         <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-sm flex-shrink-0 shadow-sm border border-gray-100">{icon}</div>
         <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-1 leading-none">{label}</p>
+            <p className="text-[11px] font-semibold text-gray-400  tracking-widest mb-1 leading-none">{label}</p>
             <p className={`text-[14px] text-gray-600 break-words leading-relaxed ${isBold ? 'font-bold text-[#1b5e20]' : 'font-medium'}`}>{value || '-'}</p>
         </div>
     </div>
@@ -31,7 +32,6 @@ export default function MemberDefaulterListPage() {
     const [saving, setSaving] = useState(false);
     const [locations, setLocations] = useState<any[]>([]);
     const [editFiles, setEditFiles] = useState<FileList | null>(null);
-    const [editTab, setEditTab] = useState<'general' | 'history' | 'legal'>('general');
 
     // Payment States
     const [showPayment, setShowPayment] = useState(false);
@@ -39,6 +39,11 @@ export default function MemberDefaulterListPage() {
     const [processingPayment, setProcessingPayment] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [isSubMember, setIsSubMember] = useState(false);
+
+    // Settlement States
+    const [showSettle, setShowSettle] = useState(false);
+    const [settleForm, setSettleForm] = useState({ settledAmount: '', settledBy: '', settlementDate: '' });
+    const [processingSettle, setProcessingSettle] = useState(false);
 
     // New high-precision location states
     const [districts, setDistricts] = useState<string[]>([]);
@@ -135,10 +140,10 @@ export default function MemberDefaulterListPage() {
         setSelectedDefaulter(def);
         setEditForm({
             ...def,
-            date_of_default: formattedDate
+            date_of_default: formattedDate,
+            defaulter_persons: def.defaulter_persons || [{ name: '', pan: '', aadhar: '' }]
         });
         setEditFiles(null);
-        setEditTab('general');
         setShowEdit(true);
     };
 
@@ -148,10 +153,11 @@ export default function MemberDefaulterListPage() {
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+        const { name, value, type } = e.target as any;
+        const finalValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
         setEditForm((prev: any) => ({
             ...prev,
-            [name]: value,
+            [name]: finalValue,
             ...(name === 'state' ? { district: '', cities: '', city: '' } : {}),
             ...(name === 'district' ? { cities: '', city: '' } : {}),
             ...(name === 'cities' ? { city: '' } : {})
@@ -167,65 +173,73 @@ export default function MemberDefaulterListPage() {
         }
     };
 
-    const validateTab = (tab: 'general' | 'history' | 'legal') => {
-        const errors: any = {};
-        if (tab === 'general') {
-            const requiredFields = [
-                { key: 'defaulter_name', label: 'Company Name' },
-                { key: 'mobile_number', label: 'Contact Number' },
-                { key: 'industry', label: 'Industry' },
-                { key: 'state', label: 'State' },
-                { key: 'district', label: 'District' },
-                { key: 'cities', label: 'Sub District' },
-                { key: 'city', label: 'City' },
-                { key: 'defaulter_address', label: 'Address' },
-                { key: 'financial_year', label: 'Financial Year' },
-                { key: 'gst_number', label: 'GST Number' },
-                { key: 'pan_number', label: 'PAN Number' },
-                { key: 'aadhar_number', label: 'Aadhar Number' }
-            ];
-            requiredFields.forEach(f => {
-                if (!editForm[f.key] || editForm[f.key].toString().trim() === '') errors[f.key] = `${f.label} is required`;
-            });
-        } else if (tab === 'history') {
-            const requiredFields = [
-                { key: 'date_of_default', label: 'Date of Default' },
-                { key: 'default_amount', label: 'Default Amount' },
-                { key: 'reason_description', label: 'Reason / Description' }
-            ];
-            requiredFields.forEach(f => {
-                if (!editForm[f.key] || editForm[f.key].toString().trim() === '') errors[f.key] = `${f.label} is required`;
-            });
+    const handlePersonChange = (index: number, field: string, value: string) => {
+        const updatedPersons = [...editForm.defaulter_persons];
+        (updatedPersons[index] as any)[field] = value;
+        setEditForm((prev: any) => ({ ...prev, defaulter_persons: updatedPersons }));
+    };
+
+    const addPerson = () => {
+        setEditForm((prev: any) => ({
+            ...prev,
+            defaulter_persons: [...(prev.defaulter_persons || []), { name: '', pan: '', aadhar: '' }]
+        }));
+    };
+
+    const removePerson = (index: number) => {
+        if (editForm.defaulter_persons.length > 1) {
+            const updatedPersons = editForm.defaulter_persons.filter((_: any, i: number) => i !== index);
+            setEditForm((prev: any) => ({ ...prev, defaulter_persons: updatedPersons }));
+        } else {
+            setEditForm((prev: any) => ({ ...prev, defaulter_persons: [{ name: '', pan: '', aadhar: '' }] }));
         }
+    };
+
+    const validateEditForm = () => {
+        const errors: any = {};
+        const requiredFields = [
+            { key: 'defaulter_name', label: 'Company Name' },
+            { key: 'mobile_number', label: 'Contact Number' },
+            { key: 'industry', label: 'Industry' },
+            { key: 'state', label: 'State' },
+            { key: 'district', label: 'District' },
+            { key: 'cities', label: 'Sub District' },
+            { key: 'city', label: 'City' },
+            { key: 'defaulter_address', label: 'Address' },
+            { key: 'financial_year', label: 'Financial Year' },
+            { key: 'gst_number', label: 'GST Number' },
+            { key: 'email_id', label: 'Email' },
+            { key: 'date_of_default', label: 'Date of Default' },
+            { key: 'default_amount', label: 'Default Amount' },
+            { key: 'reason_description', label: 'Reason' }
+        ];
+
+        requiredFields.forEach(f => {
+            if (!editForm[f.key] || editForm[f.key].toString().trim() === '') {
+                errors[f.key] = `${f.label} is required`;
+            }
+        });
+
+        // CIN Validation
+        if (editForm.cin_number && editForm.cin_number.length !== 21) {
+            errors.cin_number = "CIN must be 21 characters";
+        }
+
         setEditErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        // If not on the last tab, just go to next tab after validation
-        if (editTab === 'general') {
-            if (validateTab('general')) setEditTab('history');
-            return;
-        }
-        if (editTab === 'history') {
-            if (validateTab('history')) setEditTab('legal');
-            return;
-        }
-
-        // We are on 'legal' tab, ensure previous tabs are still valid
-        if (!validateTab('general') || !validateTab('history')) {
-            if (!validateTab('general')) setEditTab('general');
-            else if (!validateTab('history')) setEditTab('history');
-            return;
-        }
+        if (!validateEditForm()) return;
 
         setSaving(true);
         try {
             const formData = new FormData();
             Object.keys(editForm).forEach(key => {
-                if (key !== 'attachment_documents' && key !== 'payments' && key !== 'user_id' && key !== '_id' && key !== 'createdAt' && key !== 'updatedAt' && key !== '__v') {
+                if (key === 'defaulter_persons') {
+                    formData.append(key, JSON.stringify(editForm.defaulter_persons));
+                } else if (key !== 'attachment_documents' && key !== 'payments' && key !== 'user_id' && key !== '_id' && key !== 'createdAt' && key !== 'updatedAt' && key !== '__v') {
                     formData.append(key, editForm[key]);
                 }
             });
@@ -246,18 +260,98 @@ export default function MemberDefaulterListPage() {
             });
 
             if (response.ok) {
-                alert("Record updated successfully!");
+                Swal.fire({
+                    title: "Updated!",
+                    text: "Record updated successfully.",
+                    icon: "success",
+                    confirmButtonColor: "#1b5e20"
+                });
                 setShowEdit(false);
                 fetchMyReports();
             } else {
                 const data = await response.json();
-                alert(data.msg || "Failed to update record");
+                Swal.fire({
+                    title: "Update Failed",
+                    text: data.msg || "Failed to update record",
+                    icon: "error",
+                    confirmButtonColor: "#1b5e20"
+                });
             }
         } catch (error) {
             console.error("Update error:", error);
-            alert("An error occurred during update.");
+            Swal.fire({
+                title: "Error",
+                text: "An error occurred during update.",
+                icon: "error",
+                confirmButtonColor: "#1b5e20"
+            });
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleSettleClick = (def: any) => {
+        const outstanding = Number(def.outstanding_amount === undefined ? def.default_amount : def.outstanding_amount);
+        setSelectedDefaulter(def);
+        setSettleForm({
+            settledAmount: outstanding.toString(),
+            settledBy: user?.name || '',
+            settlementDate: new Date().toISOString().split('T')[0]
+        });
+        setShowSettle(true);
+    };
+
+    const handleSaveSettle = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedDefaulter) return;
+
+        const result = await Swal.fire({
+            title: "Are you sure?",
+            text: "Are you sure you want to settle this record? This will close the outstanding balance.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#1b5e20",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, settle it!"
+        });
+
+        if (!result.isConfirmed) return;
+
+        setProcessingSettle(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE_URL}defaulter/settle/${selectedDefaulter._id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(settleForm)
+            });
+
+            if (res.ok) {
+                Swal.fire({
+                    title: "Settled!",
+                    text: "Record has been settled and closed.",
+                    icon: "success",
+                    confirmButtonColor: "#1b5e20"
+                });
+                setShowSettle(false);
+                fetchMyReports();
+            } else {
+                const data = await res.json();
+                Swal.fire({
+                    title: "Error",
+                    text: data.msg || "Failed to settle record",
+                    icon: "error",
+                    confirmButtonColor: "#1b5e20"
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire("Error", "Internal server error", "error");
+        } finally {
+            setProcessingSettle(false);
         }
     };
 
@@ -274,11 +368,22 @@ export default function MemberDefaulterListPage() {
     const paginatedData = processedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const getRecoveryStatus = (def: any) => {
+        const outstanding = Number(def.outstanding_amount === undefined ? def.default_amount : def.outstanding_amount);
+        if (def.isSettled || outstanding === 0) {
+            return { label: 'Not Defaulter', color: 'bg-green-50 text-green-600' };
+        }
+        return { label: 'Defaulter', color: 'bg-red-50 text-red-600' };
+    };
+
+    const getPaymentRecoveryStatus = (def: any) => {
+        if (def.isSettled) return { label: 'Settled', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
+
         const defaultAmt = Number(def.default_amount) || 0;
         const outstandingAmt = def.outstanding_amount !== undefined ? Number(def.outstanding_amount) : defaultAmt;
 
-        if (outstandingAmt === 0) return { label: 'Not Defaulter', color: 'bg-green-100 text-[#1b5e20]' };
-        return { label: 'Defaulter', color: 'bg-red-50 text-red-600' };
+        if (outstandingAmt === 0) return { label: 'Full Paid', color: 'bg-green-50 text-green-700 border-green-200' };
+        if (outstandingAmt > 0 && outstandingAmt < defaultAmt) return { label: 'Partial Paid', color: 'bg-orange-50 text-orange-700 border-orange-200' };
+        return { label: 'Not Paid', color: 'bg-red-50 text-red-700 border-red-200' };
     };
 
     const isWithin24Hours = (date: string) => {
@@ -315,7 +420,12 @@ export default function MemberDefaulterListPage() {
 
         const validPayments = paymentRows.filter(p => p.amount && p.date);
         if (validPayments.length === 0) {
-            alert("Please add at least one valid payment amount and date.");
+            Swal.fire({
+                title: "Invalid Input",
+                text: "Please add at least one valid payment amount and date.",
+                icon: "warning",
+                confirmButtonColor: "#1b5e20"
+            });
             return;
         }
 
@@ -332,16 +442,31 @@ export default function MemberDefaulterListPage() {
             });
 
             if (res.ok) {
-                alert("Payments recorded successfully!");
+                Swal.fire({
+                    title: "Recorded!",
+                    text: "Payments recorded successfully.",
+                    icon: "success",
+                    confirmButtonColor: "#1b5e20"
+                });
                 setShowPayment(false);
                 fetchMyReports();
             } else {
                 const data = await res.json();
-                alert(data.msg || "Error saving payments");
+                Swal.fire({
+                    title: "Error",
+                    text: data.msg || "Error saving payments",
+                    icon: "error",
+                    confirmButtonColor: "#1b5e20"
+                });
             }
         } catch (error) {
             console.error("Payment error:", error);
-            alert("Failed to save payments");
+            Swal.fire({
+                title: "Error",
+                text: "Failed to save payments",
+                icon: "error",
+                confirmButtonColor: "#1b5e20"
+            });
         } finally {
             setProcessingPayment(false);
         }
@@ -462,7 +587,12 @@ export default function MemberDefaulterListPage() {
 
         } catch (err) {
             console.error("PDF Export Error: ", err);
-            alert("Failed to export PDF.");
+            Swal.fire({
+                title: "Export Failed",
+                text: "Failed to export PDF.",
+                icon: "error",
+                confirmButtonColor: "#1b5e20"
+            });
         }
     };
 
@@ -518,7 +648,7 @@ export default function MemberDefaulterListPage() {
                                             </th>
                                             <th className="px-5 py-4 text-[13px] font-bold tracking-tight text-left">
                                                 <div className="flex items-center justify-between gap-1.5">
-                                                    Defaulter Company Name <div className="flex flex-col"><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[4px] border-b-white"></div><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white/40 mt-0.5"></div></div>
+                                                    Defaulter Firm Name <div className="flex flex-col"><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[4px] border-b-white"></div><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white/40 mt-0.5"></div></div>
                                                 </div>
                                             </th>
                                             <th className="px-5 py-4 text-[13px] font-bold tracking-tight">
@@ -544,6 +674,11 @@ export default function MemberDefaulterListPage() {
                                             <th className="px-5 py-4 text-[13px] font-bold tracking-tight">
                                                 <div className="flex items-center justify-center gap-1.5">
                                                     Recovery Amount <div className="flex flex-col"><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[4px] border-b-white"></div><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white/40 mt-0.5"></div></div>
+                                                </div>
+                                            </th>
+                                            <th className="px-5 py-4 text-[13px] font-bold tracking-tight text-center">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    Payment Recovery Status <div className="flex flex-col"><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-b-[4px] border-b-white"></div><div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-white/40 mt-0.5"></div></div>
                                                 </div>
                                             </th>
                                             <th className="px-5 py-4 text-[13px] font-bold tracking-tight text-center">
@@ -577,6 +712,16 @@ export default function MemberDefaulterListPage() {
                                                         ₹{totalPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                     </td>
                                                     <td className="px-5 py-4 text-center">
+                                                        {(() => {
+                                                            const paymentStatus = getPaymentRecoveryStatus(def);
+                                                            return (
+                                                                <span className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap border ${paymentStatus.color}`}>
+                                                                    {paymentStatus.label}
+                                                                </span>
+                                                            );
+                                                        })()}
+                                                    </td>
+                                                    <td className="px-5 py-4 text-center">
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handlePaymentClick(def); }}
                                                             disabled={def.status !== 1 || isPaid}
@@ -602,6 +747,15 @@ export default function MemberDefaulterListPage() {
                                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                                                                 View
                                                             </button>
+                                                            {!isPaid && (
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleSettleClick(def); }}
+                                                                    className="px-3.5 py-2 bg-[#1b5e20] text-white rounded-lg hover:bg-green-800 transition-all flex items-center gap-2 text-[12px] font-bold shadow-md active:scale-95"
+                                                                >
+                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7" /></svg>
+                                                                    Settle
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -667,7 +821,7 @@ export default function MemberDefaulterListPage() {
                 {/* Important Action Note */}
                 <div className="bg-[#fff9c4] border-l-4 border-[#fbc02d] p-4 rounded-r-xl shadow-sm animate-in slide-in-from-left-4 duration-500 mt-8">
                     <p className="text-sm font-bold text-gray-800">
-                        <span className="font-black uppercase mr-2 tracking-widest text-[#f57c00]">Note:</span>
+                        <span className="font-black  mr-2 tracking-widest text-[#f57c00]">Note:</span>
                         After reporting defaulters, records can be edited within 24 hours only. Post this period, the entries will become non-editable.
                     </p>
                 </div>
@@ -701,12 +855,10 @@ export default function MemberDefaulterListPage() {
                                     <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter Company Details</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Defaulter Company name" value={selectedDefaulter.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
-                                    <DetailRow label="Industry" value={selectedDefaulter.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
+                                    <DetailRow label="Defaulter Firm name" value={selectedDefaulter.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                    <DetailRow label="Type of Defaulter" value={selectedDefaulter.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
                                     <DetailRow label="GST" value={selectedDefaulter.gst_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
-                                    <DetailRow label="PAN" value={selectedDefaulter.pan_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
                                     <DetailRow label="CIN" value={selectedDefaulter.cin_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
-                                    <DetailRow label="Aadhar" value={selectedDefaulter.aadhar_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
                                 </div>
                             </div>
 
@@ -728,6 +880,41 @@ export default function MemberDefaulterListPage() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Section: Owners/Partners Information */}
+                            {selectedDefaulter.defaulter_persons?.length > 0 && (
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                        <div className="w-1 h-6 bg-amber-500 rounded-full opacity-50"></div>
+                                        <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Owners/Partners Details</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {selectedDefaulter.defaulter_persons.map((person: any, idx: number) => (
+                                            <div key={idx} className="p-4 bg-gray-50/50 rounded-xl border border-gray-100 space-y-3 shadow-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#1b5e20] shadow-sm border border-gray-100">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-[10px] font-bold text-gray-400  tracking-wider">Person Name</span>
+                                                        <span className="text-[14px] font-bold text-gray-900 truncate ">{person.name || 'N/A'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-100">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-bold text-gray-400  tracking-wider">PAN</span>
+                                                        <span className="text-[13px] font-medium text-gray-700">{person.pan || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-bold text-gray-400  tracking-wider">Aadhar</span>
+                                                        <span className="text-[13px] font-medium text-gray-700">{person.aadhar || 'N/A'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Section 3: Financial Status */}
                             <div className="space-y-6">
@@ -768,24 +955,10 @@ export default function MemberDefaulterListPage() {
                                     } />
                                     <DetailRow label="Date of default" value={selectedDefaulter.date_of_default ? new Date(selectedDefaulter.date_of_default).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
                                     <DetailRow label="Financial year" value={selectedDefaulter.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
+                                    <DetailRow label="Legal action taken" value={selectedDefaulter.legal_status_taken ? 'Yes' : 'No'} isStatus icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
                                     <div className="col-span-full">
                                         <DetailRow label="Reason for default" value={selectedDefaulter.reason_description || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01" /><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" /><path d="M12 9v4" /></svg>} />
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* Section 4: Legal & Proceedings */}
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
-                                    <div className="w-1 h-6 bg-gray-300 rounded-full"></div>
-                                    <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & Proceedings</h4>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                    <DetailRow label="Court name" value={selectedDefaulter.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
-                                    <DetailRow label="Case number" value={selectedDefaulter.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
-                                    <DetailRow label="Case type" value={selectedDefaulter.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
-                                    <DetailRow label="Case year" value={selectedDefaulter.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
-                                    <DetailRow label="Legal status" value={selectedDefaulter.case_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
                                 </div>
                             </div>
 
@@ -897,164 +1070,219 @@ export default function MemberDefaulterListPage() {
                                 <div className="p-2.5 bg-white/10 rounded-xl">
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                                 </div>
-                                <div>
-                                    <h3 className="text-[18px] font-bold tracking-tight">Edit Defaulter</h3>
-                                </div>
+                                <h3 className="text-[18px] font-bold tracking-tight">Edit Defaulter</h3>
                             </div>
                             <button onClick={() => setShowEdit(false)} className="text-white/40 hover:text-white transition-all bg-white/10 p-2 rounded-xl">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                             </button>
                         </div>
 
-                        {/* Tab Headers */}
-                        <div className="px-8 py-4 bg-white border-b border-gray-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
-                            <button
-                                type="button"
-                                onClick={() => setEditTab('general')}
-                                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap ${editTab === 'general' ? 'bg-[#1b5e20] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
-                            >
-                                General Information
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => { if (validateTab('general')) setEditTab('history'); }}
-                                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap ${editTab === 'history' ? 'bg-[#1b5e20] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
-                            >
-                                Default History & Upload
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => { if (validateTab('general') && validateTab('history')) setEditTab('legal'); }}
-                                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap ${editTab === 'legal' ? 'bg-[#1b5e20] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
-                            >
-                                Legal Information
-                            </button>
-                        </div>
-
                         <form onSubmit={handleUpdate} className="flex-1 flex flex-col overflow-hidden">
-                            <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
-                                {editTab === 'general' && (
-                                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            <FormInput label="Defaulter Company Name" name="defaulter_name" value={editForm.defaulter_name} onChange={handleInputChange} error={editErrors.defaulter_name} required />
-                                            <FormInput label="Mobile Number" name="mobile_number" value={editForm.mobile_number} onChange={handleInputChange} error={editErrors.mobile_number} required />
-                                            <FormInput label="Email ID" name="email_id" value={editForm.email_id} onChange={handleInputChange} type="email" />
-                                            <FormInput label="GST Number" name="gst_number" value={editForm.gst_number} onChange={handleInputChange} error={editErrors.gst_number} required />
-                                            <FormInput label="PAN Number" name="pan_number" value={editForm.pan_number} onChange={handleInputChange} error={editErrors.pan_number} required />
-                                            <FormInput label="CIN Number" name="cin_number" value={editForm.cin_number} onChange={handleInputChange} />
-                                            <FormInput label="Aadhar Number" name="aadhar_number" value={editForm.aadhar_number} onChange={handleInputChange} error={editErrors.aadhar_number} required />
-                                            <FormInput label="Financial Year" name="financial_year" value={editForm.financial_year} onChange={handleInputChange} isSelect options={Array.from({ length: 10 }).map((_, i) => { const yr = 2025 - i; return `${yr}-${(yr + 1).toString().slice(-2)}`; })} error={editErrors.financial_year} required />
-                                            <FormInput label="Industry" name="industry" value={editForm.industry} onChange={handleInputChange} isSelect options={['Agriculture', 'Agrochemicals & Fertilizers', 'Seed Suppliers', 'Farming Equipment', 'Others']} error={editErrors.industry} required />
-                                            <FormInput label="State" name="state" value={editForm.state} onChange={handleInputChange} isSelect options={locations} error={editErrors.state} required />
-                                            <FormInput label="District" name="district" value={editForm.district} onChange={handleInputChange} isSelect options={districts} disabled={!editForm.state} error={editErrors.district} required />
-                                            <FormInput label="Sub District" name="cities" value={editForm.cities} onChange={handleInputChange} isSelect options={subDistricts} disabled={!editForm.district} error={editErrors.cities} required />
-                                            <FormInput label="City/Town/Village" name="city" value={editForm.city} onChange={handleInputChange} isSelect options={cities} disabled={!editForm.cities} error={editErrors.city} required />
-                                        </div>
-                                        <div>
-                                            <FormInput label="Defaulter Address" name="defaulter_address" value={editForm.defaulter_address} onChange={handleInputChange} isTextArea error={editErrors.defaulter_address} required />
+                            <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-12">
+                                {/* Section 1: Firm Information */}
+                                <div className="space-y-6">
+                                    <h4 className="text-[15px] font-black text-[#1b5e20] tracking-widest  border-b border-gray-100 pb-2">1. Defaulter Firm Information</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <FormInput label="Full Name / Company Name" name="defaulter_name" value={editForm.defaulter_name} onChange={handleInputChange} error={editErrors.defaulter_name} required />
+                                        <FormInput label="Type of Defaulter" name="industry" value={editForm.industry} onChange={handleInputChange} isSelect options={['Dealer / Distributor', 'Company']} error={editErrors.industry} required />
+                                        <FormInput label="Phone / Mobile Number" name="mobile_number" value={editForm.mobile_number} onChange={handleInputChange} error={editErrors.mobile_number} required />
+                                        <FormInput label="Email Address" name="email_id" value={editForm.email_id} onChange={handleInputChange} type="email" error={editErrors.email_id} required />
+                                        <FormInput label="GST Number" name="gst_number" value={editForm.gst_number} onChange={handleInputChange} error={editErrors.gst_number} required />
+                                        <FormInput label="CIN Number (Optional)" name="cin_number" value={editForm.cin_number} onChange={handleInputChange} error={editErrors.cin_number} />
+                                        <FormInput label="State" name="state" value={editForm.state} onChange={handleInputChange} isSelect options={locations} error={editErrors.state} required />
+                                        <FormInput label="District" name="district" value={editForm.district} onChange={handleInputChange} isSelect options={districts} disabled={!editForm.state} error={editErrors.district} required />
+                                        <FormInput label="Sub District" name="cities" value={editForm.cities} onChange={handleInputChange} isSelect options={subDistricts} disabled={!editForm.district} error={editErrors.cities} required />
+                                        <FormInput label="City/Town/Village" name="city" value={editForm.city} onChange={handleInputChange} isSelect options={cities} disabled={!editForm.cities} error={editErrors.city} required />
+                                        <div className="md:col-span-2 lg:col-span-3">
+                                            <FormInput label="Complete Address" name="defaulter_address" value={editForm.defaulter_address} onChange={handleInputChange} isTextArea error={editErrors.defaulter_address} required />
                                         </div>
                                     </div>
-                                )}
 
-                                {editTab === 'history' && (
-                                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <FormInput label="Date of Default" name="date_of_default" value={editForm.date_of_default} onChange={handleInputChange} type="date" max={new Date().toISOString().split('T')[0]} error={editErrors.date_of_default} required />
-                                            <FormInput label="Default Amount (₹)" name="default_amount" value={editForm.default_amount} onChange={handleInputChange} type="number" error={editErrors.default_amount} required />
+                                    {/* Personal Info Dynamic List */}
+                                    <div className="mt-8 pt-8 border-t border-gray-100 space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="text-sm font-bold text-gray-700">Defaulter Personal Information</h4>
+                                            <button type="button" onClick={addPerson} className="text-[10px] font-black text-green-700 bg-green-50 px-3 py-1.5 rounded-full hover:bg-green-100 transition-all flex items-center gap-1.5">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                                                ADD PERSON
+                                            </button>
                                         </div>
-                                        <FormInput label="Reason / Description" name="reason_description" value={editForm.reason_description} onChange={handleInputChange} isTextArea error={editErrors.reason_description} required />
-
-                                        <div className="space-y-4">
-                                            <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Upload Supporting Documents</h4>
-                                            <div className="relative group">
-                                                <input
-                                                    type="file"
-                                                    multiple
-                                                    onChange={(e) => setEditFiles(e.target.files)}
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                />
-                                                <div className="w-full border-2 border-dashed border-gray-200 rounded-2xl p-6 bg-white group-hover:border-[#1b5e20] group-hover:bg-emerald-50/10 transition-all flex items-center justify-center gap-4">
-                                                    <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 group-hover:bg-[#1b5e20] group-hover:text-white transition-all shrink-0">
-                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                                                    </div>
-                                                    <div className="text-center">
-                                                        <p className="text-[13px] font-bold text-gray-600">Attachment Documents</p>
-                                                        <p className="text-[12px] text-gray-400">{editFiles ? `${editFiles.length} files selected` : 'Choose Files - No file chosen'}</p>
-                                                    </div>
+                                        {editForm.defaulter_persons?.map((person: any, index: number) => (
+                                            <div key={index} className="bg-gray-50/50 p-6 rounded-xl border border-gray-100 relative group animate-in slide-in-from-top-2">
+                                                {editForm.defaulter_persons.length > 1 && (
+                                                    <button type="button" onClick={() => removePerson(index)} className="absolute top-4 right-4 text-gray-400 hover:text-red-500">
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                                    </button>
+                                                )}
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                    <FormInput label="Person Name" value={person.name} onChange={(e: any) => handlePersonChange(index, 'name', e.target.value)} />
+                                                    <FormInput label="Person PAN" value={person.pan} onChange={(e: any) => handlePersonChange(index, 'pan', e.target.value.toUpperCase())} maxLength={10} />
+                                                    <FormInput label="Person Aadhar" value={person.aadhar} onChange={(e: any) => handlePersonChange(index, 'aadhar', e.target.value.replace(/\D/g, ''))} maxLength={12} />
                                                 </div>
                                             </div>
-                                        </div>
+                                        ))}
                                     </div>
-                                )}
+                                </div>
 
-                                {editTab === 'legal' && (
-                                    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <FormInput label="Court Complex Name" name="court_complex_name" value={editForm.court_complex_name} onChange={handleInputChange} />
-                                            <FormInput label="Case Type" name="case_type" value={editForm.case_type} onChange={handleInputChange} />
-                                            <FormInput label="Case Number" name="case_number" value={editForm.case_number} onChange={handleInputChange} />
-                                            <FormInput label="Case Year" name="case_year" value={editForm.case_year} onChange={handleInputChange} isSelect options={Array.from({ length: 26 }).map((_, i) => (2025 - i).toString())} />
-                                            <div className="md:col-span-2">
-                                                <FormInput label="Case Status" name="case_status" value={editForm.case_status} onChange={handleInputChange} isSelect options={['No Legal Action', 'Notice Served', 'Case Filed', 'In Court', 'Decree Awarded', 'Others']} />
-                                            </div>
+                                {/* Section 2: Default Details */}
+                                <div className="space-y-6">
+                                    <h4 className="text-[15px] font-black text-[#1b5e20] tracking-widest  border-b border-gray-100 pb-2">2. Default Information</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <FormInput label="Financial Year" name="financial_year" value={editForm.financial_year} onChange={handleInputChange} isSelect options={Array.from({ length: 15 }).map((_, i) => `${2025 - i}-${(2026 - i).toString().slice(-2)}`)} error={editErrors.financial_year} required />
+                                        <FormInput label="Date of Default" name="date_of_default" value={editForm.date_of_default} onChange={handleInputChange} type="date" max={new Date().toISOString().split('T')[0]} error={editErrors.date_of_default} required />
+                                        <FormInput label="Default Amount (₹)" name="default_amount" value={editForm.default_amount} onChange={handleInputChange} type="number" error={editErrors.default_amount} required />
+                                        <div className="md:col-span-2 lg:col-span-3">
+                                            <FormInput label="Reason / Description" name="reason_description" value={editForm.reason_description} onChange={handleInputChange} isTextArea error={editErrors.reason_description} required />
                                         </div>
                                     </div>
-                                )}
+                                </div>
+
+                                {/* Section 4: Documents */}
+                                <div className="space-y-4">
+                                    <h4 className="text-[15px] font-black text-[#1b5e20] tracking-widest  border-b border-gray-100 pb-2">3. Supporting Evidence</h4>
+                                    <div className="relative group">
+                                        <input type="file" multiple onChange={(e) => setEditFiles(e.target.files)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                        <div className="w-full border-2 border-dashed border-gray-200 rounded-2xl p-8 bg-gray-50 group-hover:border-[#1b5e20] group-hover:bg-white transition-all text-center">
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mx-auto mb-3 text-gray-400"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                                            <p className="text-sm font-bold text-gray-600">Attachment Documents</p>
+                                            <p className="text-xs text-gray-400 mt-1">{editFiles ? `${editFiles.length} files selected` : 'Choose Files (Max 3, Max 5MB each)'}</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Modal Footer */}
-                            <div className="px-8 py-5 bg-white border-t border-gray-100 flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-3">
-                                    {editTab !== 'general' && (
-                                        <button
-                                            type="button"
-                                            onClick={() => setEditTab(editTab === 'legal' ? 'history' : 'general')}
-                                            className="px-8 py-2.5 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold hover:bg-[#144317] transition-all flex items-center gap-2"
-                                        >
-                                            Previous
-                                        </button>
-                                    )}
+                            <div className="px-8 py-5 bg-white border-t border-gray-100 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 group cursor-pointer">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            name="legal_status_taken"
+                                            id="edit_legal_status_taken"
+                                            checked={editForm.legal_status_taken}
+                                            onChange={handleInputChange}
+                                            className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 bg-white checked:border-green-600 checked:bg-green-600 transition-all"
+                                        />
+                                        <svg className="absolute h-3.5 w-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 stroke-current stroke-[4]" viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    </div>
+                                    <label htmlFor="edit_legal_status_taken" className="text-sm font-bold text-gray-500 group-hover:text-gray-800 transition-colors cursor-pointer select-none">
+                                        Legal action taken
+                                    </label>
                                 </div>
+
                                 <div className="flex items-center gap-3">
-                                    {editTab !== 'legal' ? (
-                                        <button
-                                            type="submit"
-                                            className="px-10 py-3 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold shadow-xl shadow-[#1b5e20]/20 hover:bg-[#144317] hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2"
-                                        >
-                                            Next Step
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
-                                        </button>
-                                    ) : (
-                                        <button
-                                            type="submit"
-                                            disabled={saving}
-                                            className="px-10 py-3 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold shadow-xl shadow-[#1b5e20]/20 hover:bg-[#144317] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
-                                        >
-                                            {saving ? (
-                                                <>
-                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                                    Updating...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
-                                                    Submit Update
-                                                </>
-                                            )}
-                                        </button>
-                                    )}
+                                    <button
+                                        type="submit"
+                                        disabled={saving}
+                                        className="px-10 py-3.5 bg-[#1b5e20] text-white rounded-xl text-[14px] font-bold shadow-xl shadow-[#1b5e20]/20 hover:bg-[#144317] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3"
+                                    >
+                                        {saving ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                Updating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+                                                Submit Update
+                                            </>
+                                        )}
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={() => setShowEdit(false)}
-                                        className="px-8 py-3 bg-white border border-gray-200 text-gray-500 rounded-xl text-[14px] font-bold hover:bg-gray-50 hover:text-gray-900 transition-all"
+                                        className="px-8 py-3.5 bg-white border border-gray-200 text-gray-500 rounded-xl text-[14px] font-bold hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm"
                                     >
                                         Cancel
                                     </button>
                                 </div>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
 
-                        {/* Modal Footer */}
+            {/* Settle Modal */}
+            {showSettle && selectedDefaulter && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSettle(false)}></div>
+                    <div className="relative bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white">
+                            <h3 className="text-lg font-bold">Settle Defaulter Record</h3>
+                            <button onClick={() => setShowSettle(false)} className="text-white/60 hover:text-white transition-colors">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                            </button>
+                        </div>
+                        <form onSubmit={handleSaveSettle} className="p-6 space-y-5">
+                            <div>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Defaulter Firm Name</label>
+                                <div className="w-full bg-gray-50 border border-gray-100 px-4 py-2.5 rounded-lg text-gray-700 font-semibold">{selectedDefaulter.defaulter_name}</div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Recovery Amount (Outstanding)</label>
+                                    <div className="w-full bg-gray-50 border border-gray-100 px-4 py-2.5 rounded-lg text-[#1b5e20] font-bold">
+                                        ₹{Number(selectedDefaulter.outstanding_amount === undefined ? selectedDefaulter.default_amount : selectedDefaulter.outstanding_amount).toLocaleString()}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Settled Amount</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        value={settleForm.settledAmount}
+                                        onChange={(e) => setSettleForm({ ...settleForm, settledAmount: e.target.value })}
+                                        className="w-full border border-gray-200 px-4 py-2.5 rounded-lg outline-none focus:border-[#1b5e20] focus:ring-1 focus:ring-[#1b5e20]/20 font-bold text-gray-900"
+                                        placeholder="Enter amount accepted"
+                                    />
+                                    <p className="text-[10px] text-gray-400 mt-1 italic">* Usually equal or less than outstanding</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Settled By (Name)</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={settleForm.settledBy}
+                                    onChange={(e) => setSettleForm({ ...settleForm, settledBy: e.target.value })}
+                                    className="w-full border border-gray-200 px-4 py-2.5 rounded-lg outline-none focus:border-[#1b5e20] focus:ring-1 focus:ring-[#1b5e20]/20 font-medium text-gray-900"
+                                    placeholder="Name of person handling settlement"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Settlement Date</label>
+                                <input
+                                    type="date"
+                                    required
+                                    value={settleForm.settlementDate}
+                                    onChange={(e) => setSettleForm({ ...settleForm, settlementDate: e.target.value })}
+                                    className="w-full border border-gray-200 px-4 py-2.5 rounded-lg outline-none focus:border-[#1b5e20] focus:ring-1 focus:ring-[#1b5e20]/20 font-medium text-gray-900"
+                                />
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSettle(false)}
+                                    className="flex-1 py-3 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all active:scale-[0.98]"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processingSettle}
+                                    className="flex-[2] py-3 bg-[#1b5e20] text-white rounded-xl font-bold hover:bg-green-800 transition-all shadow-lg shadow-[#1b5e20]/20 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {processingSettle ? (
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                        <>Complete Settlement</>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
@@ -1166,7 +1394,7 @@ export default function MemberDefaulterListPage() {
     );
 }
 
-const FormInput = ({ label, name, value, onChange, type = 'text', isTextArea = false, isSelect = false, options = [], disabled = false, required = false, error = '', max = '' }: any) => {
+const FormInput = ({ label, name, value, onChange, type = 'text', isTextArea = false, isSelect = false, options = [], disabled = false, required = false, error = '', max = '', maxLength }: any) => {
     return (
         <div className="space-y-1.5 flex flex-col">
             <label className="text-[14px] font-medium text-gray-500 tracking-tight px-1">
@@ -1180,6 +1408,7 @@ const FormInput = ({ label, name, value, onChange, type = 'text', isTextArea = f
                     disabled={disabled}
                     required={required}
                     rows={4}
+                    maxLength={maxLength}
                     className={`w-full bg-[#f8fafc] border ${error ? 'border-red-500 bg-red-50/10' : 'border-gray-200'} rounded-2xl px-5 py-4 text-[15px] font-medium focus:border-[#1b5e20] focus:bg-white outline-none transition-all shadow-sm resize-none`}
                 />
             ) : isSelect ? (
@@ -1206,6 +1435,7 @@ const FormInput = ({ label, name, value, onChange, type = 'text', isTextArea = f
                     value={value || ''}
                     onChange={onChange}
                     max={max}
+                    maxLength={maxLength}
                     disabled={disabled}
                     required={required}
                     className={`w-full bg-[#f8fafc] border ${error ? 'border-red-500 bg-red-50/10' : 'border-gray-200'} rounded-xl px-5 py-3.5 text-[15px] font-medium focus:border-[#1b5e20] focus:bg-white outline-none transition-all shadow-sm disabled:opacity-50`}
