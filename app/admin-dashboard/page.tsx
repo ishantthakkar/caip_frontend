@@ -193,6 +193,7 @@ export default function AdminDashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[
                         {
+                            key: 'total_reported',
                             title: 'Total defaulters',
                             val: summaryData?.totalReported || 0,
                             icon: (
