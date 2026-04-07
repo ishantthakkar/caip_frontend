@@ -18,7 +18,7 @@ export default function AddDefaulterPage() {
     const [errors, setErrors] = useState<any>({});
 
     const [formData, setFormData] = useState({
-        defaulter_name: '', mobile_number: '', email_id: '', gst_number: '', pan_number: '', cin_number: '', aadhar_number: '', state: '', district: '', cities: '', city: '', financial_year: '2025-2026', default_amount: '', industry: '', date_of_default: '', reason_description: '', defaulter_address: '', court_complex_name: '', case_type: '', case_number: '', case_year: '', case_status: '',
+        defaulter_name: '', mobile_number: '', email_id: '', gst_number: '', pan_number: '', cin_number: '', aadhar_number: '', state: '', district: '', cities: '', city: '', financial_year: '', default_amount: '', industry: '', date_of_default: '', reason_description: '', defaulter_address: '', court_complex_name: '', case_type: '', case_number: '', case_year: '', case_status: '',
         defaulter_persons: [{ name: '', pan: '', aadhar: '' }],
         legal_status_taken: false
     });
@@ -260,6 +260,7 @@ export default function AddDefaulterPage() {
 
         if (!formData.date_of_default) newErrors.date_of_default = "Required";
         if (!formData.default_amount || parseFloat(formData.default_amount) <= 0) newErrors.default_amount = "Valid amount required";
+        if (!formData.industry) newErrors.industry = "Required";
         if (!formData.reason_description) newErrors.reason_description = "Reason is required";
 
         setErrors(newErrors);
@@ -440,12 +441,13 @@ export default function AddDefaulterPage() {
                                     {errors.cin_number && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.cin_number}</p>}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-gray-600">Type of Defaulter</label>
-                                    <select name="industry" value={formData.industry} onChange={handleInputChange} className="w-full border border-gray-200 rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white">
+                                    <label className="text-xs font-semibold text-gray-600">Type of Defaulter<span className="text-red-500">*</span></label>
+                                    <select name="industry" value={formData.industry} onChange={handleInputChange} className={`w-full border rounded-lg py-2.5 px-4 outline-none focus:border-green-600 text-sm bg-white ${errors.industry ? 'border-red-500 bg-red-50 font-bold' : 'border-gray-200 font-medium'}`}>
                                         <option value="">Select Type of Defaulter</option>
                                         <option value="Dealer / Distributor">Dealer / Distributor</option>
                                         <option value="Company">Company</option>
                                     </select>
+                                    {errors.industry && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.industry}</p>}
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-semibold text-gray-600">Financial Year of Default<span className="text-red-500">*</span></label>

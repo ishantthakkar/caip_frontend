@@ -30,8 +30,15 @@ export default function AdminDashboardPage() {
     const [showModal, setShowModal] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
-    const [cardTimeframes, setCardTimeframes] = useState(['all', 'all', 'all', 'all', 'all', 'all']); // box1, box2, box3, box4, trend, industry
-    const [activeMenu, setActiveMenu] = useState<string | number | null>(null);
+    const [cardTimeframes, setCardTimeframes] = useState<any>({
+        total_reported: 'all',
+        total_amount: 'all',
+        total_recovered: 'all',
+        total_members: 'all',
+        search_trend: 'all',
+        industry_dist: 'all'
+    });
+    const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [summaryData, setSummaryData] = useState<any>(null);
 
     useEffect(() => {
@@ -41,33 +48,30 @@ export default function AdminDashboardPage() {
         initialFetch();
     }, []);
 
-    const updateCardTimeframe = async (index: number, tf: string) => {
-        const newTfs = [...cardTimeframes];
-        newTfs[index] = tf;
-        setCardTimeframes(newTfs);
+    const updateCardTimeframe = async (key: string, tf: string) => {
+        setCardTimeframes((prev: any) => ({ ...prev, [key]: tf }));
         setActiveMenu(null);
 
         const token = localStorage.getItem('adminToken');
         if (!token) return;
 
         try {
-            const res = await fetch(`${API_BASE_URL}admin/dashboard-stats?timeframe=${tf}`, {
+            const res = await fetch(`${API_BASE_URL}admin/dashboard-stats?timeframe=${tf}&card=${key}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
             if (res.ok) {
-                if (index <= 3) {
-                    setSummaryData((prev: any) => {
-                        const updated = { ...prev };
-                        if (index === 0) updated.totalReported = data.summary.totalReported;
-                        if (index === 1) updated.totalAmount = data.summary.totalAmount;
-                        if (index === 2) updated.totalRecovered = data.summary.totalRecovered;
-                        if (index === 3) updated.totalMembers = data.summary.totalMembers;
-                        return updated;
-                    });
-                } else if (index === 4) {
+                if (key === 'total_reported') {
+                    setSummaryData((prev: any) => ({ ...prev, totalReported: data.summary.totalReported }));
+                } else if (key === 'total_amount') {
+                    setSummaryData((prev: any) => ({ ...prev, totalAmount: data.summary.totalAmount }));
+                } else if (key === 'total_recovered') {
+                    setSummaryData((prev: any) => ({ ...prev, totalRecovered: data.summary.totalRecovered }));
+                } else if (key === 'total_members') {
+                    setSummaryData((prev: any) => ({ ...prev, totalMembers: data.summary.totalMembers }));
+                } else if (key === 'search_trend') {
                     setStats((prev: any) => ({ ...prev, searchTrend: data.searchTrend }));
-                } else if (index === 5) {
+                } else if (key === 'industry_dist') {
                     setStats((prev: any) => ({ ...prev, industryDist: data.industryDist }));
                 }
             }
@@ -198,6 +202,7 @@ export default function AdminDashboardPage() {
                             ),
                         },
                         {
+                            key: 'total_amount',
                             title: 'Total defaulters amount',
                             val: `₹ ${(summaryData?.totalAmount || 0).toLocaleString()}`,
                             icon: (
@@ -207,6 +212,7 @@ export default function AdminDashboardPage() {
                             ),
                         },
                         {
+                            key: 'total_recovered',
                             title: 'Total recovery amount',
                             val: `₹ ${(summaryData?.totalRecovered || 0).toLocaleString()}`,
                             icon: (
@@ -216,6 +222,7 @@ export default function AdminDashboardPage() {
                             ),
                         },
                         {
+                            key: 'total_members',
                             title: 'Total members',
                             val: summaryData?.totalMembers ?? users.length,
                             icon: (
@@ -224,45 +231,43 @@ export default function AdminDashboardPage() {
                                 </svg>
                             ),
                         }
-                    ].map((s, i) => (
-                        <div key={i} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-visible group hover:shadow-lg transition-all relative">
+                    ].map((s) => (
+                        <div key={s.key} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-visible group hover:shadow-lg transition-all relative">
                             <div className="bg-[#1b5e20] px-5 py-3 flex items-center justify-between text-white rounded-t-xl">
                                 <h4 className="text-[15px] font-semibold tracking-tight flex items-center gap-2.5 capitalize">
                                     {s.icon}
                                     {s.title}
                                 </h4>
-                                {i < 4 && (
-                                    <div className="relative">
-                                        <button
-                                            onClick={() => setActiveMenu(activeMenu === i ? null : i)}
-                                            className="w-8 h-7 flex items-center justify-center border border-white/20 rounded-md hover:bg-white/10 transition-all text-xs"
-                                        >
-                                            •••
-                                        </button>
-                                        {activeMenu === i && (
-                                            <>
-                                                <div className="fixed inset-0 z-30" onClick={() => setActiveMenu(null)}></div>
-                                                <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-2xl border border-gray-100 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-200 origin-top-right text-gray-800">
-                                                    {[
-                                                        { label: 'All', value: 'all' },
-                                                        { label: 'Today', value: 'today' },
-                                                        { label: 'Last 7 Days', value: 'last7days' },
-                                                        { label: 'This Month', value: 'thisMonth' },
-                                                        { label: 'Last Month', value: 'lastMonth' }
-                                                    ].map((opt) => (
-                                                        <button
-                                                            key={opt.value}
-                                                            onClick={() => updateCardTimeframe(i, opt.value)}
-                                                            className={`w-full text-left px-4 py-2 text-[13px] hover:bg-gray-50 transition-colors ${cardTimeframes[i] === opt.value ? 'text-[#1b5e20] font-black bg-green-50/50' : 'text-gray-600 font-medium'}`}
-                                                        >
-                                                            {opt.label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setActiveMenu(activeMenu === s.key ? null : s.key)}
+                                        className="w-8 h-7 flex items-center justify-center border border-white/20 rounded-md hover:bg-white/10 transition-all text-xs"
+                                    >
+                                        •••
+                                    </button>
+                                    {activeMenu === s.key && (
+                                        <>
+                                            <div className="fixed inset-0 z-30" onClick={() => setActiveMenu(null)}></div>
+                                            <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-2xl border border-gray-100 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-200 origin-top-right text-gray-800">
+                                                {[
+                                                    { label: 'All', value: 'all' },
+                                                    { label: 'Today', value: 'today' },
+                                                    { label: 'Last 7 Days', value: 'last7days' },
+                                                    { label: 'This Month', value: 'thisMonth' },
+                                                    { label: 'Last Month', value: 'lastMonth' }
+                                                ].map((opt) => (
+                                                    <button
+                                                        key={opt.value}
+                                                        onClick={() => updateCardTimeframe(s.key, opt.value)}
+                                                        className={`w-full text-left px-4 py-2 text-[13px] hover:bg-gray-50 transition-colors ${cardTimeframes[s.key] === opt.value ? 'text-[#1b5e20] font-black bg-green-50/50' : 'text-gray-600 font-medium'}`}
+                                                    >
+                                                        {opt.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                             <div className="p-5">
                                 <p className="text-[20px] font-bold text-gray-900 tracking-tight leading-none">{s.val}</p>
@@ -278,7 +283,7 @@ export default function AdminDashboardPage() {
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
                             </svg>
-                            {cardTimeframes[4] === 'all' ? `Defaulter Search Trend (${new Date().getFullYear()})` : `Searching Activity (${cardTimeframes[4].toUpperCase()})`}
+                            {cardTimeframes.search_trend === 'all' ? `Defaulter Search Trend (${new Date().getFullYear()})` : `Searching Activity (${cardTimeframes.search_trend.toUpperCase()})`}
                         </h3>
                         <div className="relative">
                             <button
@@ -300,8 +305,8 @@ export default function AdminDashboardPage() {
                                         ].map((opt) => (
                                             <button
                                                 key={opt.value}
-                                                onClick={() => updateCardTimeframe(4, opt.value)}
-                                                className={`w-full text-left px-4 py-2 text-[13px] hover:bg-gray-50 transition-colors ${cardTimeframes[4] === opt.value ? 'text-[#1b5e20] font-black bg-green-50/50' : 'text-gray-600 font-medium'}`}
+                                                onClick={() => updateCardTimeframe('search_trend', opt.value)}
+                                                className={`w-full text-left px-4 py-2 text-[13px] hover:bg-gray-50 transition-colors ${cardTimeframes.search_trend === opt.value ? 'text-[#1b5e20] font-black bg-green-50/50' : 'text-gray-600 font-medium'}`}
                                             >
                                                 {opt.label}
                                             </button>
@@ -412,7 +417,7 @@ export default function AdminDashboardPage() {
                         <div className="bg-[#1b5e20] px-6 py-4 flex items-center justify-between text-white rounded-t-xl">
                             <h3 className="text-[16px] font-semibold tracking-tight flex items-center gap-3">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                                {cardTimeframes[5] === 'all' ? 'Defaulter Industry Types' : `Industry Distribution (${cardTimeframes[5].toUpperCase()})`}
+                                {cardTimeframes.industry_dist === 'all' ? 'Defaulter Industry Types' : `Industry Distribution (${cardTimeframes.industry_dist.toUpperCase()})`}
                             </h3>
                             <div className="relative">
                                 <button
@@ -434,8 +439,8 @@ export default function AdminDashboardPage() {
                                             ].map((opt) => (
                                                 <button
                                                     key={opt.value}
-                                                    onClick={() => updateCardTimeframe(5, opt.value)}
-                                                    className={`w-full text-left px-4 py-2 text-[13px] hover:bg-gray-50 transition-colors ${cardTimeframes[5] === opt.value ? 'text-[#1b5e20] font-black bg-green-50/50' : 'text-gray-600 font-medium'}`}
+                                                    onClick={() => updateCardTimeframe('industry_dist', opt.value)}
+                                                    className={`w-full text-left px-4 py-2 text-[13px] hover:bg-gray-50 transition-colors ${cardTimeframes.industry_dist === opt.value ? 'text-[#1b5e20] font-black bg-green-50/50' : 'text-gray-600 font-medium'}`}
                                                 >
                                                     {opt.label}
                                                 </button>

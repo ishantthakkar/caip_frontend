@@ -301,9 +301,7 @@ export default function CombinedReportsPage() {
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight whitespace-nowrap">Mobile Number</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight whitespace-nowrap">Email ID</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">GST</th>
-                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">PAN</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">CIN</th>
-                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Aadhar</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Address</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">State</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">District</th>
@@ -343,13 +341,7 @@ export default function CombinedReportsPage() {
                                                             {item.gst_number || '-'}
                                                         </td>
                                                         <td className="px-4 py-3 text-[12px] uppercase">
-                                                            {item.pan_number || '-'}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-[12px] uppercase">
                                                             {item.cin_number || '-'}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-[12px]">
-                                                            {item.aadhar_number || '-'}
                                                         </td>
                                                         <td className="px-4 py-3 text-[12px] uppercase">
                                                             {item.defaulter_address || '-'}
@@ -389,11 +381,9 @@ export default function CombinedReportsPage() {
                                             <tr className="divide-x divide-white/5">
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Search Date</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Search Field</th>
-                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Defaulter Company Name</th>
+                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Defaulter Firm Name</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">GST</th>
-                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">PAN</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">CIN</th>
-                                                <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Aadhar</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">Address</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">State</th>
                                                 <th className="px-4 py-3 text-[12px] font-semibold tracking-tight">District</th>
@@ -407,64 +397,59 @@ export default function CombinedReportsPage() {
                                         <tbody className="divide-y divide-gray-100 text-[14px] font-medium text-gray-600 bg-white">
                                             {loading ? (
                                                 <tr>
-                                                    <td colSpan={14} className="py-20 text-center">Loading...</td>
+                                                    <td colSpan={15} className="py-20 text-center">Loading...</td>
                                                 </tr>
                                             ) : paginatedData.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={14} className="py-20 text-center">No search records.</td>
+                                                    <td colSpan={15} className="py-20 text-center">No search records.</td>
                                                 </tr>
                                             ) : (
                                                 paginatedData.map((item, i) => {
                                                     const f = item.filters || {};
-                                                    const hasResults = item.resultCount > 0;
+                                                    const r = item.resultData || {};
+                                                    const hasResults = (item.resultCount > 0) || !!item.resultData;
                                                     return (
-                                                        <tr key={i} className="hover:bg-gray-50/50 divide-x divide-gray-50 transition-colors">
-                                                            <td className="px-4 py-3">
+                                                        <tr key={i} className="hover:bg-gray-50/50 divide-x divide-gray-50 transition-colors uppercase">
+                                                            <td className="px-4 py-3 whitespace-nowrap text-gray-900 font-bold">
                                                                 {new Date(item.createdAt).toLocaleDateString('en-GB')}
                                                             </td>
-                                                            <td className="px-4 py-3 font-bold text-green-700 bg-green-50/20">
+                                                            <td className="px-4 py-3 font-bold text-green-700 bg-green-50/20 whitespace-nowrap">
                                                                 {getSearchField(item.filters)}
                                                             </td>
-                                                            <td className="px-4 py-3 font-semibold text-gray-900">
-                                                                {f.name || f.defaulter_name || '-'}
-                                                            </td>
-                                                            <td className="px-4 py-3 text-[12px] ">
-                                                                {f.gst || f.gst_number || '-'}
-                                                            </td>
-                                                            <td className="px-4 py-3 text-[12px] ">
-                                                                {f.pan || f.pan_number || '-'}
+                                                            <td className="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">
+                                                                {r.name || f.name || f.defaulter_name || '-'}
                                                             </td>
                                                             <td className="px-4 py-3 text-[12px]">
-                                                                {f.cin || f.cin_number || '-'}
+                                                                {r.gst || f.gst || f.gst_number || '-'}
                                                             </td>
                                                             <td className="px-4 py-3 text-[12px]">
-                                                                {f.aadhar || f.aadhar_number || '-'}
+                                                                {r.cin || f.cin || f.cin_number || '-'}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-[11px] min-w-[150px]">
+                                                                {r.address || f.address || '-'}
                                                             </td>
                                                             <td className="px-4 py-3 text-[12px]">
-                                                                {f.address || '-'}
+                                                                {r.state || f.state || '-'}
                                                             </td>
                                                             <td className="px-4 py-3 text-[12px]">
-                                                                {f.state || '-'}
+                                                                {r.district || f.district || '-'}
                                                             </td>
                                                             <td className="px-4 py-3 text-[12px]">
-                                                                {f.district || '-'}
+                                                                {r.subDistrict || f.subDistrict || '-'}
                                                             </td>
                                                             <td className="px-4 py-3 text-[12px]">
-                                                                {f.subDistrict || '-'}
-                                                            </td>
-                                                            <td className="px-4 py-3 text-[12px]">
-                                                                {f.cities || '-'}
+                                                                {r.city || f.cities || f.city || '-'}
                                                             </td>
                                                             <td className="px-4 py-3">
-                                                                <span className={`ml-1 ${hasResults ? 'text-black' : 'text-black'}`}>
-                                                                    {hasResults ? 'Yes' : 'No'}
+                                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${hasResults ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                                                                    {hasResults ? 'YES' : 'NO'}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-4 py-3 font-semibold text-gray-900">
-                                                                ₹{hasResults ? (Number(f.default_amount || 0)).toLocaleString('en-IN') : '0'}
+                                                            <td className="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">
+                                                                ₹{hasResults ? (Number(r.default_amount || f.default_amount || 0)).toLocaleString('en-IN') : '0'}
                                                             </td>
                                                             <td className="px-4 py-3 font-bold text-gray-900">
-                                                                {hasResults ? item.resultCount : '-'}
+                                                                {hasResults ? (item.resultCount || 1) : '-'}
                                                             </td>
                                                         </tr>
                                                     );

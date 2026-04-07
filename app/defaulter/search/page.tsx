@@ -151,7 +151,6 @@ export default function SearchDefaulterPage() {
             if (response.ok) {
                 setDefaulters(data.data || []);
                 setCurrentPage(1);
-                setCurrentPage(1);
             }
         } catch (error) {
             console.error("Search error:", error);
@@ -573,7 +572,11 @@ export default function SearchDefaulterPage() {
                                                             <p className="text-[13px] font-bold text-blue-600 font-sans">₹{((def.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount), 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
                                                         </td>
                                                         <td className="px-6 py-4 text-center">
-                                                            {(() => {
+                                                            {def.isExternal ? (
+                                                                <span className="px-2 py-1 rounded text-[10px] font-bold whitespace-nowrap border bg-gray-50 text-gray-400 border-gray-100">
+                                                                    N/A
+                                                                </span>
+                                                            ) : (() => {
                                                                 const paymentStatus = getPaymentRecoveryStatus(def);
                                                                 return (
                                                                     <span className={`px-2 py-1 rounded text-[10px] font-bold whitespace-nowrap border ${paymentStatus.color}`}>
@@ -583,12 +586,16 @@ export default function SearchDefaulterPage() {
                                                             })()}
                                                         </td>
                                                         <td className="px-6 py-4 text-center">
-                                                            {(() => {
+                                                            {def.isExternal ? (
+                                                                <span className="bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded text-[10px] font-bold">
+                                                                    Not Reported
+                                                                </span>
+                                                            ) : (() => {
                                                                 const outstanding = Number(def.outstanding_amount === undefined ? def.default_amount : def.outstanding_amount);
                                                                 const isCleared = def.isSettled || outstanding === 0;
                                                                 return (
-                                                                    <span className={`${isCleared ? 'bg-red-50 text-red-600 border-red-100' : 'bg-red-50 text-red-600 border-red-100'} px-2 py-1 rounded text-[10px] font-bold`}>
-                                                                        {isCleared ? 'Defaulter' : 'Defaulter'}
+                                                                    <span className="bg-red-50 text-red-600 border border-red-100 px-2 py-1 rounded text-[10px] font-bold">
+                                                                        Defaulter
                                                                     </span>
                                                                 );
                                                             })()}
@@ -674,12 +681,46 @@ export default function SearchDefaulterPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter Company Details</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Defaulter Company name" value={selectedDefaulter.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
-                                        <DetailRow label="Industry" value={selectedDefaulter.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
+                                        <DetailRow label="Defaulter Firm name" value={selectedDefaulter.defaulter_name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                        <DetailRow label="Type of Defaulter" value={selectedDefaulter.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
                                         <DetailRow label="GST" value={selectedDefaulter.gst_number} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
-                                        <DetailRow label="PAN" value={selectedDefaulter.pan_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
                                         <DetailRow label="CIN" value={selectedDefaulter.cin_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
-                                        <DetailRow label="Aadhar" value={selectedDefaulter.aadhar_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
+                                    </div>
+                                </div>
+
+                                {/* Section: Owners/Partners Information */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                        <div className="w-1 h-6 bg-slate-400 rounded-full"></div>
+                                        <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Owners/Partners Details</h4>
+                                    </div>
+                                    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                                        <table className="w-full text-left font-sans">
+                                            <thead>
+                                                <tr className="bg-gray-50 border-b border-gray-200">
+                                                    <th className="px-6 py-4 text-[12px] font-bold tracking-widest">#</th>
+                                                    <th className="px-6 py-4 text-[12px] font-bold tracking-widest">Name</th>
+                                                    <th className="px-6 py-4 text-[12px] font-bold tracking-widest">PAN</th>
+                                                    <th className="px-6 py-4 text-[12px] font-bold tracking-widest">Aadhar</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {selectedDefaulter.defaulter_persons && selectedDefaulter.defaulter_persons.length > 0 ? (
+                                                    selectedDefaulter.defaulter_persons.map((p: any, idx: number) => (
+                                                        <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                                            <td className="px-6 py-4 text-[14px] font-bold">{(idx + 1).toString().padStart(2, '0')}</td>
+                                                            <td className="px-6 py-4 text-[14px] font-bold text-gray-900">{p.name || 'N/A'}</td>
+                                                            <td className="px-6 py-4 text-[13px] font-mono font-medium text-gray-600">{p.pan || 'N/A'}</td>
+                                                            <td className="px-6 py-4 text-[13px] font-mono font-medium text-gray-600">{p.aadhar || 'N/A'}</td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan={4} className="px-6 py-8 text-center text-[13px] font-medium text-gray-400 italic">No owner/partner details recorded.</td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
 
@@ -695,7 +736,7 @@ export default function SearchDefaulterPage() {
                                         <DetailRow label="State" value={selectedDefaulter.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
                                         <DetailRow label="District" value={selectedDefaulter.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
                                         <DetailRow label="Sub district" value={selectedDefaulter.cities || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
-                                        <DetailRow label="City" value={selectedDefaulter.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
+                                        <DetailRow label="City/Town/Village" value={selectedDefaulter.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
                                         <div className="col-span-full pt-2">
                                             <DetailRow label="Full address" value={selectedDefaulter.defaulter_address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
                                         </div>
@@ -744,21 +785,6 @@ export default function SearchDefaulterPage() {
                                     </div>
                                 </div>
 
-                                {/* Section 4: Legal & Proceedings */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
-                                        <div className="w-1 h-6 bg-gray-300 rounded-full"></div>
-                                        <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & Proceedings</h4>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Court name" value={selectedDefaulter.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
-                                        <DetailRow label="Case number" value={selectedDefaulter.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
-                                        <DetailRow label="Case type" value={selectedDefaulter.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
-                                        <DetailRow label="Case year" value={selectedDefaulter.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
-                                        <DetailRow label="Legal status" value={selectedDefaulter.case_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
-                                    </div>
-                                </div>
-
                                 {/* Section 5: Report Information */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
@@ -770,6 +796,23 @@ export default function SearchDefaulterPage() {
                                         <DetailRow label="Report by Company Name" value={selectedDefaulter.user_id?.companyName || user?.companyName || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
                                     </div>
                                 </div>
+
+                                {/* Section: Settlement Details */}
+                                {selectedDefaulter.isSettled && (
+                                    <div className="space-y-6 animate-in fade-in duration-700">
+                                        <div className="flex items-center gap-3 border-b border-emerald-100 pb-3">
+                                            <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
+                                            <h4 className="text-[15px] font-bold text-emerald-900 tracking-tight flex items-center gap-2">
+                                                Settlement Details
+                                            </h4>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12 p-6 bg-emerald-50/30 rounded-2xl border border-emerald-100">
+                                            <DetailRow label="Settled Amount" value={`₹${Number(selectedDefaulter.settledAmount || 0).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m9 12 2 2 4-4" /></svg>} />
+                                            <DetailRow label="Settled By" value={selectedDefaulter.settledBy || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+                                            <DetailRow label="Settlement Date" value={selectedDefaulter.settlementDate ? new Date(selectedDefaulter.settlementDate).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Section 6: Documents */}
                                 <div className="space-y-6">
@@ -827,19 +870,23 @@ export default function SearchDefaulterPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
-                                                {selectedDefaulter.payments?.length > 0 ? (
-                                                    selectedDefaulter.payments.map((p: any, idx: number) => (
+                                                {(() => {
+                                                    const displayedPayments = (selectedDefaulter.payments || []).filter((p: any) => p.type !== 'settlement');
+                                                    if (displayedPayments.length === 0) return (
+                                                        <tr>
+                                                            <td colSpan={3} className="px-6 py-12 text-center text-[13px] font-medium text-gray-400 italic">No Recovery Payments.</td>
+                                                        </tr>
+                                                    );
+                                                    return displayedPayments.map((p: any, idx: number) => (
                                                         <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                                                             <td className="px-6 py-4 text-[14px] font-bold">{(idx + 1).toString().padStart(2, '0')}</td>
-                                                            <td className="px-6 py-4 text-[14px] font-medium">{new Date(p.date).toLocaleDateString()}</td>
-                                                            <td className="px-6 py-4 text-[14px] font-bold text-[#1b5e20] text-right">₹{Number(p.amount).toLocaleString()}</td>
+                                                            <td className="px-6 py-4 text-[14px] font-medium leading-tight text-center sm:text-left">
+                                                                {new Date(p.date).toLocaleDateString()}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-[14px] font-bold text-right text-[#1b5e20]">₹{Number(p.amount).toLocaleString()}</td>
                                                         </tr>
-                                                    ))
-                                                ) : (
-                                                    <tr>
-                                                        <td colSpan={3} className="px-6 py-12 text-center text-[13px] font-medium text-gray-400 italic">No Recovery Payments.</td>
-                                                    </tr>
-                                                )}
+                                                    ));
+                                                })()}
                                             </tbody>
                                         </table>
                                     </div>

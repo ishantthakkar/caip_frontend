@@ -103,10 +103,22 @@ export default function SearchHistoryPage() {
             }
         });
 
-        return fields.length > 0 ? fields.join(', ') : '-';
+        return fields.length > 0 ? fields.join(', ') : 'Combined Filters';
     };
 
-    const handleDownloadSinglePDF = (log: any) => {
+    const getPaymentRecoveryStatus = (def: any) => {
+        if (!def) return { label: 'Not Found', color: 'bg-gray-50 text-gray-400 border-gray-100' };
+        if (def.isSettled) return { label: 'Settled', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
+
+        const defaultAmt = Number(def.default_amount) || 0;
+        const outstandingAmt = def.outstanding_amount !== undefined ? Number(def.outstanding_amount) : defaultAmt;
+
+        if (outstandingAmt === 0) return { label: 'Full Paid', color: 'bg-green-50 text-green-700 border-green-200' };
+        if (outstandingAmt > 0 && outstandingAmt < defaultAmt) return { label: 'Partial Paid', color: 'bg-orange-50 text-orange-700 border-orange-200' };
+        return { label: 'Not Paid', color: 'bg-red-50 text-red-700 border-red-200' };
+    };
+
+    const handleDownloadSinglePDF = async (log: any) => {
         setIsGenerating(log._id);
         try {
             const doc = new jsPDF();
@@ -270,7 +282,10 @@ export default function SearchHistoryPage() {
                                     <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[100px]">District</th>
                                     <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[100px]">Sub District</th>
                                     <th className="px-3 py-3 text-[10px] font-bold border-r border-gray-700 min-w-[100px]">City/Town/Village</th>
-                                    <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 min-w-[80px]">Status</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 min-w-[70px]">Matches</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 min-w-[100px]">Outstanding</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 min-w-[100px]">Payment Status</th>
+                                    <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 min-w-[80px]">Defaulter Status</th>
                                     <th className="px-3 py-3 text-[10px] font-bold text-center border-r border-gray-700 min-w-[100px]">Search Report PDF</th>
                                     <th className="px-3 py-3 text-[10px] font-bold text-center min-w-[100px]">Action</th>
                                 </tr>
@@ -279,7 +294,7 @@ export default function SearchHistoryPage() {
                                 {currentItems.map((record, i) => {
                                     const displayData = record.resultData || {};
                                     const filters = record.filters || {};
-                                    
+
                                     return (
                                         <tr key={i} className="hover:bg-gray-50 bg-white transition-colors text-[11px] font-medium text-gray-700">
                                             <td className="px-3 py-4 text-center border-r border-gray-100">{indexOfFirstItem + i + 1}</td>
@@ -297,24 +312,42 @@ export default function SearchHistoryPage() {
                                             <td className="px-3 py-4 border-r border-gray-100">{displayData.state || filters.state || '-'}</td>
                                             <td className="px-3 py-4 border-r border-gray-100">{displayData.district || filters.district || '-'}</td>
                                             <td className="px-3 py-4 border-r border-gray-100">{displayData.subDistrict || filters.subDistrict || '-'}</td>
-                                            <td className="px-3 py-4 border-r border-gray-100">{displayData.city || filters.city || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.city || filters.city || '-'}</td>
+                                            <td className="px-3 py-4 text-center border-r border-gray-100">
+                                                <div className="flex flex-col items-center">
+                                                    <span className={`text-[13px] font-bold ${Number(record.resultCount) > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                                        {record.resultCount || (record.resultData ? 1 : 0)}
+                                                    </span>
+                                                    <span className="text-[9px] font-bold text-gray-400">RECORDS</span>
+                                                </div>
+                                            </td>
                                             <td className="px-3 py-4 text-center border-r border-gray-100">
                                                 {(() => {
                                                     const defaultAmt = Number(displayData.default_amount || filters.default_amount) || 0;
-                                                    const outstanding = displayData.outstanding_amount !== undefined 
-                                                        ? Number(displayData.outstanding_amount) 
+                                                    const outstanding = displayData.outstanding_amount !== undefined
+                                                        ? Number(displayData.outstanding_amount)
                                                         : (filters.outstanding_amount !== undefined ? Number(filters.outstanding_amount) : defaultAmt);
-                                                    const isPaid = outstanding === 0 || displayData.isSettled;
-
                                                     return (
-                                                        <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold border uppercase inline-block whitespace-nowrap ${isPaid
-                                                            ? 'bg-green-50 text-green-600 border-green-100'
-                                                            : 'bg-red-50 text-red-600 border-red-100'
-                                                            }`}>
-                                                            {isPaid ? 'Not Defaulter' : 'Defaulter'}
+                                                        <span className="text-[12px] font-bold text-gray-900 font-sans">
+                                                            ₹{outstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                         </span>
                                                     );
                                                 })()}
+                                            </td>
+                                            <td className="px-3 py-4 text-center border-r border-gray-100">
+                                                {(() => {
+                                                    const paymentStatus = getPaymentRecoveryStatus(displayData);
+                                                    return (
+                                                        <span className={`px-2 py-1 rounded text-[9px] font-bold whitespace-nowrap border ${paymentStatus.color}`}>
+                                                            {paymentStatus.label}
+                                                        </span>
+                                                    );
+                                                })()}
+                                            </td>
+                                            <td className="px-3 py-4 text-center border-r border-gray-100">
+                                                <span className="bg-red-50 text-red-600 border border-red-100 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase inline-block whitespace-nowrap">
+                                                    Defaulter
+                                                </span>
                                             </td>
                                             <td className="px-3 py-4 text-center border-r border-gray-100">
                                                 <button
@@ -429,12 +462,46 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter Company Details</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Defaulter Company name" value={selectedLog.resultData?.name || selectedLog.filters?.name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
-                                        <DetailRow label="Industry" value={selectedLog.resultData?.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
+                                        <DetailRow label="Defaulter Firm name" value={selectedLog.resultData?.name || selectedLog.filters?.name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                        <DetailRow label="Type of Defaulter" value={selectedLog.resultData?.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
                                         <DetailRow label="GST" value={selectedLog.resultData?.gst || selectedLog.filters?.gst || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
-                                        <DetailRow label="PAN" value={selectedLog.resultData?.pan || selectedLog.filters?.pan || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="14" x="3" y="5" rx="2" /><path d="M3 10h18" /><path d="M7 15h.01" /><path d="M11 15h2" /></svg>} />
                                         <DetailRow label="CIN" value={selectedLog.resultData?.cin || selectedLog.filters?.cin || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
-                                        <DetailRow label="Aadhar" value={selectedLog.resultData?.aadhar || selectedLog.filters?.aadhar || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z" /></svg>} />
+                                    </div>
+                                </div>
+
+                                {/* Section: Owners/Partners Information */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                        <div className="w-1 h-6 bg-slate-400 rounded-full"></div>
+                                        <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Owners/Partners Details</h4>
+                                    </div>
+                                    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                                        <table className="w-full text-left font-sans">
+                                            <thead>
+                                                <tr className="bg-gray-50 border-b border-gray-200">
+                                                    <th className="px-6 py-4 text-[12px] font-bold tracking-widest">#</th>
+                                                    <th className="px-6 py-4 text-[12px] font-bold tracking-widest">Name</th>
+                                                    <th className="px-6 py-4 text-[12px] font-bold tracking-widest">PAN</th>
+                                                    <th className="px-6 py-4 text-[12px] font-bold tracking-widest">Aadhar</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {selectedLog.resultData?.defaulter_persons && selectedLog.resultData.defaulter_persons.length > 0 ? (
+                                                    selectedLog.resultData.defaulter_persons.map((p: any, idx: number) => (
+                                                        <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                                            <td className="px-6 py-4 text-[14px] font-bold">{(idx + 1).toString().padStart(2, '0')}</td>
+                                                            <td className="px-6 py-4 text-[14px] font-bold text-gray-900">{p.name || 'N/A'}</td>
+                                                            <td className="px-6 py-4 text-[13px] font-mono font-medium text-gray-600">{p.pan || 'N/A'}</td>
+                                                            <td className="px-6 py-4 text-[13px] font-mono font-medium text-gray-600">{p.aadhar || 'N/A'}</td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan={4} className="px-6 py-8 text-center text-[13px] font-medium text-gray-400 italic">No owner/partner details recorded.</td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
 
@@ -450,7 +517,7 @@ export default function SearchHistoryPage() {
                                         <DetailRow label="State" value={selectedLog.resultData?.state || selectedLog.filters?.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
                                         <DetailRow label="District" value={selectedLog.resultData?.district || selectedLog.filters?.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
                                         <DetailRow label="Sub district" value={selectedLog.resultData?.subDistrict || selectedLog.filters?.subDistrict || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
-                                        <DetailRow label="City" value={selectedLog.resultData?.city || selectedLog.filters?.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
+                                        <DetailRow label="City/Town/Village" value={selectedLog.resultData?.city || selectedLog.filters?.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
                                         <div className="col-span-full pt-2">
                                             <DetailRow label="Full address" value={selectedLog.resultData?.address || selectedLog.filters?.address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
                                         </div>
@@ -502,21 +569,6 @@ export default function SearchHistoryPage() {
                                     </div>
                                 </div>
 
-                                {/* Section 4: Legal & Proceedings */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
-                                        <div className="w-1 h-6 bg-gray-300 rounded-full"></div>
-                                        <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Legal & Proceedings</h4>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Court name" value={selectedLog.resultData?.court_complex_name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 20v-4l-4-4-4-4-4 4-4 4v4H2" /><path d="M6 12v.01" /><path d="M18 12v.01" /><path d="M12 6v.01" /></svg>} />
-                                        <DetailRow label="Case number" value={selectedLog.resultData?.case_number || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>} />
-                                        <DetailRow label="Case type" value={selectedLog.resultData?.case_type || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>} />
-                                        <DetailRow label="Case year" value={selectedLog.resultData?.case_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>} />
-                                        <DetailRow label="Legal status" value={selectedLog.resultData?.case_status || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>} />
-                                    </div>
-                                </div>
-
                                 {/* Section 5: Report Information */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
@@ -527,6 +579,23 @@ export default function SearchHistoryPage() {
                                         <DetailRow label="Reported By" value={selectedLog.resultData?.reported_by || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
                                     </div>
                                 </div>
+
+                                {/* Section: Settlement Details */}
+                                {selectedLog.resultData?.isSettled && (
+                                    <div className="space-y-6 animate-in fade-in duration-700">
+                                        <div className="flex items-center gap-3 border-b border-emerald-100 pb-3">
+                                            <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
+                                            <h4 className="text-[15px] font-bold text-emerald-900 tracking-tight flex items-center gap-2">
+                                                Settlement Details
+                                            </h4>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12 p-6 bg-emerald-50/30 rounded-2xl border border-emerald-100">
+                                            <DetailRow label="Settled Amount" value={`₹${Number(selectedLog.resultData.settledAmount || 0).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m9 12 2 2 4-4" /></svg>} />
+                                            <DetailRow label="Settled By" value={selectedLog.resultData.settledBy || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+                                            <DetailRow label="Settlement Date" value={selectedLog.resultData.settlementDate ? new Date(selectedLog.resultData.settlementDate).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Section 6: Documents */}
                                 <div className="space-y-6">
@@ -584,19 +653,23 @@ export default function SearchHistoryPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
-                                                {selectedLog.resultData?.payments && selectedLog.resultData.payments.length > 0 ? (
-                                                    selectedLog.resultData.payments.map((p: any, idx: number) => (
+                                                {(() => {
+                                                    const displayedPayments = (selectedLog.resultData?.payments || []).filter((p: any) => p.type !== 'settlement');
+                                                    if (displayedPayments.length === 0) return (
+                                                        <tr>
+                                                            <td colSpan={3} className="px-6 py-12 text-center text-[13px] font-medium text-gray-400 italic">No recovery payments synchronized yet.</td>
+                                                        </tr>
+                                                    );
+                                                    return displayedPayments.map((p: any, idx: number) => (
                                                         <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                                                             <td className="px-6 py-4 text-[14px] font-bold">{(idx + 1).toString().padStart(2, '0')}</td>
-                                                            <td className="px-6 py-4 text-[14px] font-medium">{new Date(p.date).toLocaleDateString()}</td>
-                                                            <td className="px-6 py-4 text-[14px] font-bold text-[#1b5e20] text-right">₹{Number(p.amount).toLocaleString()}</td>
+                                                            <td className="px-6 py-4 text-[14px] font-medium leading-tight text-center sm:text-left">
+                                                                {new Date(p.date).toLocaleDateString()}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-[14px] font-bold text-right text-[#1b5e20]">₹{Number(p.amount).toLocaleString()}</td>
                                                         </tr>
-                                                    ))
-                                                ) : (
-                                                    <tr>
-                                                        <td colSpan={3} className="px-6 py-12 text-center text-[13px] font-medium text-gray-400 italic">No recovery payments synchronized yet.</td>
-                                                    </tr>
-                                                )}
+                                                    ));
+                                                })()}
                                             </tbody>
                                         </table>
                                     </div>
