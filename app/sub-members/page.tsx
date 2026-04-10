@@ -245,7 +245,7 @@ export default function SubMembersPage() {
                                                 <div className="flex flex-col items-center gap-1.5">
                                                     <button
                                                         onClick={() => toggleStatus(member._id)}
-                                                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-all focus:outline-none ${member.isActive ? 'bg-[#1b5e20]' : 'bg-gray-300'
+                                                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-all focus:outline-none ${member.isActive ? 'bg-[#1b5e20]' : 'bg-red-300'
                                                             }`}
                                                     >
                                                         <span
@@ -253,8 +253,8 @@ export default function SubMembersPage() {
                                                                 }`}
                                                         />
                                                     </button>
-                                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${member.isActive ? 'text-[#1b5e20]' : 'text-gray-400'}`}>
-                                                        {member.isActive ? 'Active' : 'Disabled'}
+                                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${member.isActive ? 'text-[#1b5e20]' : 'text-red-400'}`}>
+                                                        {member.isActive ? 'Active' : 'Inactive'}
                                                     </span>
                                                 </div>
                                             </td>
