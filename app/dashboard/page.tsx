@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MemberPortalContainer from '@/components/MemberPortalContainer';
 import dynamic from 'next/dynamic';
-import { API_BASE_URL } from '@/config/apiConfig';
+import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 
@@ -30,11 +30,64 @@ export default function DashboardPage() {
     });
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [summaryData, setSummaryData] = useState<any>(null);
+    const [publishedTerms, setPublishedTerms] = useState<any>(null);
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [hasAgreed, setHasAgreed] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (token) fetchDashboardStats(token);
+        if (token) {
+            fetchDashboardStats(token);
+            checkTermsAcceptance();
+        }
     }, []);
+
+    const checkTermsAcceptance = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}terms/published`);
+            const data = await res.json();
+            if (res.ok && data.data) {
+                setPublishedTerms(data.data);
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                // If user hasn't accepted these specific terms, show modal
+                if (!user.acceptedTermsId || user.acceptedTermsId.toString() !== data.data._id.toString()) {
+                    setShowTermsModal(true);
+                }
+            }
+        } catch (error) {
+            console.error("Error checking terms:", error);
+        }
+    };
+
+    const handleAcceptTerms = async () => {
+        if (!hasAgreed) return;
+        try {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const res = await fetch(`${API_BASE_URL}accept-terms`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ userId: user._id, termsId: publishedTerms._id })
+            });
+
+            if (res.ok) {
+                const updatedUser = { ...user, acceptedTermsId: publishedTerms._id };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                setShowTermsModal(false);
+            }
+        } catch (error) {
+            console.error("Error accepting terms:", error);
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.push('/');
+    };
 
     const updateCardTimeframe = async (key: string, tf: string) => {
         setCardTimeframes((prev: any) => ({ ...prev, [key]: tf }));
@@ -91,7 +144,8 @@ export default function DashboardPage() {
     );
 
     return (
-        <MemberPortalContainer title="Dashboard">
+        <>
+            <MemberPortalContainer title="Dashboard">
             <div className="space-y-8 animate-in fade-in duration-500">
                 {/* Identifier Subheader */}
                 <div className="text-center py-4 border-b border-gray-100 flex items-center justify-center gap-4">
@@ -473,5 +527,74 @@ export default function DashboardPage() {
                 </div>
             </div>
         </MemberPortalContainer>
+        
+        {/* MODAL FOR TERMS AND CONDITIONS RE-ACCEPTANCE */}
+        {showTermsModal && publishedTerms && (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                <div className="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
+                <div className="bg-white rounded-3xl w-full max-w-xl relative z-10 shadow-2xl overflow-hidden animate-in zoom-in fade-in duration-500 border border-white/20">
+                    <div className="bg-[#1b5e20] p-6 text-white text-center pb-8">
+                        <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+                        </div>
+                        <h3 className="text-2xl font-black tracking-tight mb-2">Terms & Conditions Updated</h3>
+                        <p className="text-green-100/80 text-sm font-medium leading-relaxed max-w-sm mx-auto">
+                            Our Terms & Conditions have been updated. Please review and accept the latest version to continue.
+                        </p>
+                    </div>
+                    
+                    <div className="p-8 md:p-10 space-y-8 bg-white">
+                        <div className="flex items-start gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-white hover:shadow-md transition-all">
+                            <div className="relative flex items-center mt-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="agreeTerms" 
+                                    checked={hasAgreed}
+                                    onChange={(e) => setHasAgreed(e.target.checked)}
+                                    className="peer h-6 w-6 cursor-pointer appearance-none rounded-md border-2 border-gray-300 transition-all checked:bg-[#1b5e20] checked:border-[#1b5e20] focus:ring-0"
+                                />
+                                <svg className="absolute h-6 w-6 pointer-events-none stroke-white opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <label htmlFor="agreeTerms" className="text-[15px] font-bold text-gray-700 cursor-pointer select-none leading-snug">
+                                I have read and agree to the {' '}
+                                <a 
+                                    href={`${ASSETS_BASE_URL}uploads/${publishedTerms.file}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-[#1b5e20] underline hover:text-green-800 transition-colors decoration-2 underline-offset-4"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    Terms & Conditions
+                                </a>
+                            </label>
+                        </div>
+                        
+                        <div className="flex flex-col gap-4 pt-2">
+                            <button 
+                                onClick={handleAcceptTerms}
+                                disabled={!hasAgreed}
+                                className={`w-full py-4 rounded-2xl font-black text-sm shadow-xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest ${
+                                    hasAgreed 
+                                    ? 'bg-[#1b5e20] text-white hover:bg-green-700 hover:scale-[1.02] active:scale-95 cursor-pointer' 
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                                }`}
+                            >
+                                Accept & Continue
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                            </button>
+                            
+                            <button 
+                                onClick={handleLogout}
+                                className="w-full py-4 text-gray-500 font-bold text-sm hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 }

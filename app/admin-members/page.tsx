@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminPortalContainer from '@/components/AdminPortalContainer';
 import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import Swal from 'sweetalert2';
 
 export default function AdminMembersPage() {
     const router = useRouter();
@@ -21,12 +24,9 @@ export default function AdminMembersPage() {
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [showDocModal, setShowDocModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [showRejectionModal, setShowRejectionModal] = useState(false);
-    const [rejectionReason, setRejectionReason] = useState('');
     const [showSubModal, setShowSubModal] = useState(false);
     const [selectedSubMembers, setSelectedSubMembers] = useState<any[]>([]);
     const [subModalLoading, setSubModalLoading] = useState(false);
-    const [processingUserId, setProcessingUserId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15;
 
@@ -63,15 +63,24 @@ export default function AdminMembersPage() {
         }
     };
 
-    const handleAction = async (userId: string, action: string, reason: string = "") => {
-        const status = action === 'approved' ? 1 : 2;
+    const handleAction = async (userId: string, targetAction: string) => {
+        const isActivating = targetAction === 'approved';
+        const status = isActivating ? 1 : 2;
 
-        if (status === 2 && !showRejectionModal) {
-            setProcessingUserId(userId);
-            setShowRejectionModal(true);
-            setRejectionReason("");
-            return;
-        }
+        const result = await Swal.fire({
+            title: isActivating ? 'Activate Member?' : 'Deactivate Member?',
+            text: isActivating 
+                ? 'This will restore full access for the member. Proceed?' 
+                : 'This will immediately suspend the member\'s access to all features. Proceed?',
+            icon: isActivating ? 'question' : 'warning',
+            showCancelButton: true,
+            confirmButtonColor: isActivating ? '#1b5e20' : '#d33',
+            cancelButtonColor: '#475569',
+            confirmButtonText: isActivating ? 'Yes, Activate' : 'Yes, Deactivate',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             const token = localStorage.getItem('adminToken');
@@ -81,22 +90,29 @@ export default function AdminMembersPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ userId, status, rejectionReason: reason }),
+                body: JSON.stringify({ 
+                    userId, 
+                    status, 
+                    rejectionReason: isActivating ? "" : "Account deactivated by administrator." 
+                }),
             });
 
             if (response.ok) {
-                setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: status.toString(), rejectionReason: reason } : u));
-                setShowRejectionModal(false);
-                setProcessingUserId(null);
-                setRejectionReason("");
-                alert(`User ${action} successfully.`);
+                setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: status.toString() } : u));
+                Swal.fire({
+                    icon: 'success',
+                    title: isActivating ? 'Success' : 'Suspended',
+                    text: isActivating ? 'Member has been activated.' : 'Member has been deactivated.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             } else {
                 const errorData = await response.json();
-                alert(`Error: ${errorData.msg || 'Failed to update status'}`);
+                Swal.fire('Error', errorData.msg || 'Action failed', 'error');
             }
         } catch (error) {
             console.error("Error updating status:", error);
-            alert("An error occurred while updating the status.");
+            Swal.fire('Error', 'An error occurred while updating the status.', 'error');
         }
     };
 
@@ -118,6 +134,149 @@ export default function AdminMembersPage() {
         } finally {
             setModalLoading(false);
         }
+    };
+
+    const handleExportDefaultersPDF = async () => {
+        try {
+            const filteredDefaulters = selectedUserDefaulters.filter(r =>
+                r.defaulter_name?.toLowerCase().includes(modalSearchTerm.toLowerCase()) ||
+                r.gst_number?.toLowerCase().includes(modalSearchTerm.toLowerCase()) ||
+                r.pan_number?.toLowerCase().includes(modalSearchTerm.toLowerCase()) ||
+                r.mobile?.includes(modalSearchTerm)
+            );
+
+            if (filteredDefaulters.length === 0) {
+                Swal.fire({
+                    title: "No Data",
+                    text: "There are no records to export.",
+                    icon: "info",
+                    confirmButtonColor: "#1b5e20"
+                });
+                return;
+            }
+
+            const doc = new jsPDF('landscape');
+            const adminData = JSON.parse(localStorage.getItem('adminUser') || '{}');
+            const adminName = adminData.name || 'Administrator';
+            const adminId = adminData.id || adminData._id?.slice(-8).toUpperCase() || 'ADMIN';
+            const adminEmail = adminData.email || 'N/A';
+
+            // Header Texts
+            doc.setFontSize(22);
+            doc.setTextColor(27, 94, 32);
+            doc.text(`Defaulter Report - ${selectedUser?.name || 'Member Detail'}`, 14, 22);
+
+            // Audit details
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generated By: ${adminName} (${adminEmail})`, 14, 32);
+            doc.text(`Total Records: ${filteredDefaulters.length}`, 14, 38);
+            doc.text(`Exported On: ${new Date().toLocaleString('en-GB')}`, 14, 44);
+
+            // Generate Table
+            const tableColumn = [
+                "Sr.",
+                "Date",
+                "Defaulter Firm",
+                "Mobile",
+                "GST/PAN/CIN",
+                "Location",
+                "Default Amount",
+                "Outstanding",
+                "Recovery",
+                "Status"
+            ];
+
+            const tableRows = filteredDefaulters.map((def, idx) => {
+                const dAmount = Number(def.default_amount || 0);
+                const oAmount = Number(def.outstanding_amount ?? def.default_amount ?? 0);
+                const rAmount = dAmount - oAmount;
+
+                let paymentStatus = 'Not Paid';
+                if (oAmount === 0) paymentStatus = 'Full Paid';
+                else if (rAmount > 0) paymentStatus = 'Partial Paid';
+
+                return [
+                    idx + 1,
+                    def.date_of_default ? new Date(def.date_of_default).toLocaleDateString('en-GB') : '-',
+                    def.defaulter_name || '-',
+                    def.mobile_number || '-',
+                    `${def.gst_number || '-'}\n${def.pan_number || '-'}\n${def.cin_number || '-'}`,
+                    `${def.state || '-'}\n${def.district || '-'}\n${def.city || '-'}`,
+                    `Rs. ${dAmount.toLocaleString('en-IN')}`,
+                    `Rs. ${oAmount.toLocaleString('en-IN')}`,
+                    `Rs. ${rAmount.toLocaleString('en-IN')}`,
+                    paymentStatus
+                ];
+            });
+
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 52,
+                theme: 'grid',
+                headStyles: { fillColor: [27, 94, 32], textColor: 255, fontSize: 7 },
+                styles: { fontSize: 7, cellPadding: 2 },
+                columnStyles: {
+                    0: { cellWidth: 8 },
+                    1: { cellWidth: 20 },
+                    4: { cellWidth: 35 },
+                    9: { cellWidth: 20 }
+                },
+                alternateRowStyles: { fillColor: [245, 245, 245] },
+                didDrawPage: (data) => {
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+
+                    // BACKGROUND WATERMARKS
+                    doc.setGState(new (doc as any).GState({ opacity: 0.15 }));
+                    doc.setFontSize(14);
+                    doc.setTextColor(200, 0, 0);
+
+                    const watermarkText = `${adminName.toUpperCase()} | ${adminEmail} | ADMIN AUDIT`;
+                    const angle = 45;
+                    const stepX = 120;
+                    const stepY = 120;
+
+                    for (let x = -50; x < pageWidth + 100; x += stepX) {
+                        for (let y = -50; y < pageHeight + 100; y += stepY) {
+                            doc.text(watermarkText, x, y, { angle });
+                        }
+                    }
+
+                    doc.setGState(new (doc as any).GState({ opacity: 1 }));
+
+                    // FOOTER
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text("© CAIP Administrative Platform | Member Defaulters Internal Use Only", 14, pageHeight - 10);
+                    doc.text(`Page ${data.pageNumber}`, pageWidth - 25, pageHeight - 10);
+                }
+            });
+
+            doc.save(`Defaulters_${selectedUser?.name?.replace(/\s+/g, '_') || 'Member'}_${new Date().toISOString().split('T')[0]}.pdf`);
+
+        } catch (err) {
+            console.error("PDF Export Error: ", err);
+            Swal.fire({
+                title: "Export Failed",
+                text: "An error occurred while generating the PDF.",
+                icon: "error",
+                confirmButtonColor: "#1b5e20"
+            });
+        }
+    };
+
+    const getMembershipStatus = (user: any) => {
+        if (user.status === '2') return 'Rejected'; // Admins might still want to see 'Rejected'
+        if (!user.membership_status || user.membership_status === '0') return 'Payment Pending';
+        if (user.membershipExpiry === 'Lifetime') return 'Active';
+        if (!user.membershipExpiry || user.membershipExpiry === 'N/A') return 'Payment Pending';
+
+        const expiryDate = new Date(user.membershipExpiry);
+        if (expiryDate < new Date()) return 'Expired';
+
+        return 'Active';
     };
 
     const fetchSubMembers = async (user: any) => {
@@ -145,12 +304,16 @@ export default function AdminMembersPage() {
         return users.filter(user => {
             if (user.status === '0') return false; // Exclude pending members
 
+            const mStatus = getMembershipStatus(user);
+
             const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 user.phone?.includes(searchTerm) ||
                 user.district?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.state?.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
+                user.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.companyName?.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesStatus = statusFilter === 'all' || mStatus === statusFilter;
             return matchesSearch && matchesStatus;
         });
     }, [users, searchTerm, statusFilter]);
@@ -175,17 +338,30 @@ export default function AdminMembersPage() {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                             <h3 className="text-[16px] font-semibold tracking-tight">Members List</h3>
                         </div>
-                        <div className="relative w-full md:w-80">
-                            <input
-                                type="text"
-                                placeholder="Search by name, email, city..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-white/10 border border-white/20 rounded-lg py-2 pl-9 pr-4 text-sm font-medium text-white placeholder-white/40 outline-none focus:bg-white focus:text-black focus:border-white transition-all shadow-sm"
-                            />
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" x2="11" y2="11" /></svg>
-                            </span>
+                        <div className="flex flex-col md:flex-row items-center gap-4 flex-1 md:max-w-2xl">
+                            <div className="relative w-full">
+                                <input
+                                    type="text"
+                                    placeholder="Search by name, company, email, city..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-white/10 border border-white/20 rounded-lg py-2 pl-9 pr-4 text-sm font-medium text-white placeholder-white/40 outline-none focus:bg-white focus:text-black focus:border-white transition-all shadow-sm"
+                                />
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" x2="11" y2="11" /></svg>
+                                </span>
+                            </div>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="bg-white/10 border border-white/20 rounded-lg py-2 px-3 text-sm font-medium text-white outline-none focus:bg-white focus:text-black transition-all cursor-pointer"
+                            >
+                                <option value="all" className="text-black">All Status</option>
+                                <option value="Active" className="text-black">Active</option>
+                                <option value="Expired" className="text-black">Expired</option>
+                                <option value="Payment Pending" className="text-black">Payment Pending</option>
+                                <option value="Rejected" className="text-black">Rejected</option>
+                            </select>
                         </div>
                     </div>
 
@@ -196,20 +372,14 @@ export default function AdminMembersPage() {
                                     <thead className="bg-[#051a02] text-white sticky top-0 z-10">
                                         <tr className="divide-x divide-white/5">
                                             <th className="px-4 py-3 text-sm font-semibold tracking-tight">Member ID</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Defaulter</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Name</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Email</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Phone</th>
                                             <th className="px-4 py-3 text-sm font-semibold tracking-tight">Company Name</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Membership Type</th>
                                             <th className="px-4 py-3 text-sm font-semibold tracking-tight">Membership Status</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Expiry Date</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Status</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Member Name</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Contact No</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Email</th>
                                             <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Searches</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub-Member</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Docs</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">View</th>
-                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Action</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Defaulters Added</th>
+                                            <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 font-medium text-gray-600 border-b border-gray-100">
@@ -222,75 +392,65 @@ export default function AdminMembersPage() {
                                             </tr>
                                         ) : paginatedUsers.length > 0 ? paginatedUsers.map((user) => (
                                             <tr key={user._id} className="hover:bg-gray-50/50 transition-colors group">
-                                                <td className="px-4 py-3 text-sm">
+                                                <td className="px-4 py-3 text-sm font-bold text-gray-900 capitalize">
                                                     {user.memberId || user._id?.slice(-8).toUpperCase()}
                                                 </td>
+                                                <td className="px-4 py-3 text-sm font-semibold text-gray-700">{user.companyName || '-'}</td>
                                                 <td className="px-4 py-3">
+                                                    {(() => {
+                                                        const mStatus = getMembershipStatus(user);
+                                                        let colorClass = "";
+                                                        if (mStatus === 'Active') colorClass = "bg-emerald-50 text-emerald-700 border-emerald-100";
+                                                        else if (mStatus === 'Expired') colorClass = "bg-rose-50 text-rose-700 border-rose-100";
+                                                        else if (mStatus === 'Payment Pending') colorClass = "bg-amber-50 text-amber-700 border-amber-100";
+                                                        else colorClass = "bg-gray-50 text-gray-500 border-gray-100";
+
+                                                        return (
+                                                            <span className={`px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-tight border ${colorClass}`}>
+                                                                {mStatus}
+                                                            </span>
+                                                        );
+                                                    })()}
+                                                </td>
+                                                <td className="px-4 py-3 text-sm font-medium text-gray-700">{user.name}</td>
+                                                <td className="px-4 py-3 text-sm text-gray-500 font-mono">{user.phone}</td>
+                                                <td className="px-4 py-3 text-sm lowercase text-gray-400 font-medium">{user.email}</td>
+                                                <td className="px-4 py-3 text-sm text-center font-bold text-[#1b5e20]">{user.searches || '0'}</td>
+                                                <td className="px-4 py-3 text-center">
                                                     <button
                                                         onClick={() => fetchUserDefaulters(user)}
-                                                        className="text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors cursor-pointer"
+                                                        className="text-blue-600 hover:text-blue-800 text-[12px] font-bold uppercase tracking-tight transition-colors cursor-pointer"
                                                     >
-                                                        View Defaulters
+                                                        View List
                                                     </button>
                                                 </td>
-                                                <td className="px-4 py-3 text-sm text-gray-900">{user.name}</td>
-                                                <td className="px-4 py-3 text-sm lowercase text-gray-500">{user.email}</td>
-                                                <td className="px-4 py-3 text-sm">{user.phone}</td>
-                                                <td className="px-4 py-3 text-sm">{user.companyName || '-'}</td>
-                                                <td className="px-4 py-3">
-                                                    <span className="px-2 py-0.5 bg-green-50 text-emerald-700 text-[11px] font-semibold rounded-full border border-green-100">
-                                                        Standard Membership
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${user.status === '1' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
-                                                        {user.status === '1' ? 'Active' : 'Inactive'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-gray-400">
-                                                    {user.membershipExpiry ? new Date(user.membershipExpiry).toLocaleDateString('en-GB') : '12/05/2026'}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${user.status === '1' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
-                                                        {user.status === '1' ? 'Active' : 'Inactive'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-center">{user.searches || '0'}</td>
-                                                <td className="px-4 py-3">
-                                                    <button
-                                                        onClick={() => fetchSubMembers(user)}
-                                                        className="text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors cursor-pointer"
-                                                    >
-                                                        View
-                                                    </button>
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <button
-                                                        onClick={() => { setSelectedUser(user); setShowDocModal(true); }}
-                                                        className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 shadow-sm active:scale-95"
-                                                        title="View Documents"
-                                                    >
-                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
-                                                    </button>
-                                                </td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <button
-                                                        onClick={() => { setSelectedUser(user); setShowDetailsModal(true); }}
-                                                        className="px-3 py-1.5 bg-gray-50 text-gray-700 text-[12px] font-medium rounded-lg hover:bg-[#1b5e20] hover:text-white transition-all border border-gray-200 shadow-sm active:scale-95"
-                                                    >
-                                                        View Details
-                                                    </button>
-                                                </td>
-                                                <td className="px-4 py-3 text-right bg-white group-hover:bg-gray-50 transition-colors">
-                                                    <div className="flex justify-end gap-2 items-center">
+                                                <td className="px-4 py-3 text-right">
+                                                    <div className="flex justify-end gap-3 items-center">
+                                                        {/* View Profile */}
+                                                        <button
+                                                            onClick={() => { setSelectedUser(user); setShowDetailsModal(true); }}
+                                                            className="p-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-[#1b5e20] hover:text-white transition-all border border-gray-200 shadow-sm active:scale-95"
+                                                            title="View Full Profile"
+                                                        >
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                                                        </button>
+
+                                                        {/* View Documents */}
+                                                        <button
+                                                            onClick={() => { setSelectedUser(user); setShowDocModal(true); }}
+                                                            className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all border border-emerald-100 shadow-sm active:scale-95"
+                                                            title="Business Documents"
+                                                        >
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                                        </button>
+
+                                                        {/* Active/Inactive Toggle */}
                                                         <div
                                                             onClick={() => handleAction(user._id, user.status === '1' ? 'rejected' : 'approved')}
-                                                            className={`relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer transition-colors duration-200 outline-none focus:ring-2 focus:ring-[#1b5e20] focus:ring-offset-2 ${user.status === '1' ? 'bg-[#1b5e20]' : 'bg-gray-200'}`}
+                                                            className={`relative inline-flex h-5 w-10 items-center rounded-full cursor-pointer transition-colors duration-200 outline-none ${user.status === '1' ? 'bg-[#1b5e20]' : 'bg-gray-300'}`}
+                                                            title={user.status === '1' ? 'Deactivate Member' : 'Activate Member'}
                                                         >
-                                                            <span className="sr-only">Toggle Member Status</span>
-                                                            <span
-                                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${user.status === '1' ? 'translate-x-6' : 'translate-x-1'}`}
-                                                            />
+                                                            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 ease-in-out shadow-sm ${user.status === '1' ? 'translate-x-5.5' : 'translate-x-1'}`} />
                                                         </div>
                                                     </div>
                                                 </td>
@@ -380,6 +540,13 @@ export default function AdminMembersPage() {
                                         </span>
                                     </div>
                                     <button
+                                        onClick={handleExportDefaultersPDF}
+                                        className="h-10 bg-white text-rose-600 px-4 rounded-lg font-bold text-xs flex items-center gap-2 hover:bg-rose-50 transition-all shrink-0 shadow-sm active:scale-95"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><polyline points="9 15 12 18 15 15" /></svg>
+                                        Export List
+                                    </button>
+                                    <button
                                         onClick={() => { setShowModal(false); setModalSearchTerm(''); }}
                                         className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all flex-shrink-0 cursor-pointer"
                                     >
@@ -408,16 +575,16 @@ export default function AdminMembersPage() {
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight">Mobile Number</th>
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight">Email ID</th>
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight">GST</th>
-                                                        <th className="px-4 py-3 text-sm font-semibold tracking-tight">PAN</th>
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight">CIN</th>
-                                                        <th className="px-4 py-3 text-sm font-semibold tracking-tight">Aadhar</th>
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight">State</th>
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight">District</th>
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight">Sub District</th>
-                                                        <th className="px-4 py-3 text-sm font-semibold tracking-tight">Industry</th>
+                                                        <th className="px-4 py-3 text-sm font-semibold tracking-tight">City/Town/Village</th>
+                                                        <th className="px-4 py-3 text-sm font-semibold tracking-tight">Type of Defaulter</th>
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight text-center">Financial Year</th>
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Default Amount</th>
                                                         <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Outstanding Amount</th>
+                                                        <th className="px-4 py-3 text-sm font-semibold tracking-tight text-right">Recovery Amount</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-100 font-medium text-gray-600">
@@ -442,15 +609,14 @@ export default function AdminMembersPage() {
                                                                         {report.date_of_default ? new Date(report.date_of_default).toLocaleDateString('en-GB') : '-'}
                                                                     </td>
                                                                     <td className="px-4 py-3 text-sm font-bold text-gray-900">{report.defaulter_name}</td>
-                                                                    <td className="px-4 py-3 text-sm">{report.mobile || '-'}</td>
-                                                                    <td className="px-4 py-3 text-sm lowercase">{report.email || '-'}</td>
+                                                                    <td className="px-4 py-3 text-sm">{report.mobile_number || '-'}</td>
+                                                                    <td className="px-4 py-3 text-sm lowercase">{report.email_id || '-'}</td>
                                                                     <td className="px-4 py-3 text-sm font-mono">{report.gst_number || '-'}</td>
-                                                                    <td className="px-4 py-3 text-sm font-mono">{report.pan_number || '-'}</td>
                                                                     <td className="px-4 py-3 text-sm font-mono">{report.cin_number || '-'}</td>
-                                                                    <td className="px-4 py-3 text-sm font-mono">{report.aadhar_number || '-'}</td>
                                                                     <td className="px-4 py-3 text-sm">{report.state || '-'}</td>
                                                                     <td className="px-4 py-3 text-sm">{report.district || '-'}</td>
-                                                                    <td className="px-4 py-3 text-sm">{report.sub_district || '-'}</td>
+                                                                    <td className="px-4 py-3 text-sm">{report.cities || '-'}</td>
+                                                                    <td className="px-4 py-3 text-sm">{report.city || '-'}</td>
                                                                     <td className="px-4 py-3 text-sm">
                                                                         <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase rounded border border-gray-200">
                                                                             {report.industry || 'General'}
@@ -462,6 +628,9 @@ export default function AdminMembersPage() {
                                                                     </td>
                                                                     <td className="px-4 py-3 text-sm text-right font-bold text-amber-600">
                                                                         ₹ {report.outstanding_amount?.toLocaleString() || '0'}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-sm text-right font-bold text-emerald-600">
+                                                                        ₹ {(Number(report.default_amount || 0) - Number(report.outstanding_amount ?? report.default_amount ?? 0)).toLocaleString()}
                                                                     </td>
                                                                 </tr>
                                                             ))
@@ -570,175 +739,128 @@ export default function AdminMembersPage() {
                     </div>
                 )}
 
-            {/* Document Preview Modal */}
-            {showDocModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
-                        <div className="bg-[#1b5e20] px-6 py-4 flex justify-between items-center text-white">
-                            <div className="flex items-center gap-3">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                                <h3 className="text-lg font-bold tracking-tight">Business Documents</h3>
+                {/* Document Preview Modal */}
+                {showDocModal && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
+                            <div className="bg-[#1b5e20] px-6 py-4 flex justify-between items-center text-white">
+                                <div className="flex items-center gap-3">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                    <h3 className="text-lg font-bold tracking-tight">Business Documents</h3>
+                                </div>
+                                <button onClick={() => setShowDocModal(false)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">✕</button>
                             </div>
-                            <button onClick={() => setShowDocModal(false)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">✕</button>
-                        </div>
 
-                        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar bg-gray-50/50">
-                            {selectedUser?.businessDocuments?.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {selectedUser.businessDocuments.map((doc: string, idx: number) => {
-                                        const isPdf = doc.toLowerCase().endsWith('.pdf');
-                                        const docUrl = `${ASSETS_BASE_URL}uploads/${doc}`;
-                                        return (
-                                            <a
-                                                key={idx}
-                                                href={docUrl}
-                                                target="_blank"
-                                                className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-100 hover:border-[#1b5e20] transition-all group shadow-sm"
-                                            >
-                                                <div className={`w-12 h-12 rounded flex items-center justify-center text-xl ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
-                                                    {isPdf ? '📄' : '🖼️'}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-[12px] font-normal text-black truncate uppercase">DOCUMENT_{idx + 1}</p>
-                                                    <p className="text-[10px] font-medium text-gray-400 capitalize group-hover:text-[#1b5e20]">View File →</p>
-                                                </div>
-                                            </a>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="py-12 text-center bg-white border-2 border-dashed border-gray-100 rounded-xl">
-                                    <p className="text-[14px] font-medium text-gray-400 capitalize">No documents uploaded.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* View Member Details Modal */}
-            {showDetailsModal && selectedUser && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
-                        <div className="bg-[#1b5e20] px-6 py-4 flex justify-between items-center text-white">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">👤</div>
-                                <div>
-                                    <h3 className="text-lg font-bold tracking-tight">{selectedUser.name}</h3>
-                                    <p className="text-[11px] font-medium text-white/60 capitalize mt-0.5">Member ID: {selectedUser.memberId || 'Pending Approval'}</p>
-                                </div>
-                            </div>
-                            <button onClick={() => setShowDetailsModal(false)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">✕</button>
-                        </div>
-
-                        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar space-y-8 bg-gray-50/50">
-                            {/* Section 1: Entity Details */}
-                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Company Details
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <DetailItem label="Company Name" value={selectedUser.companyName} />
-                                    <DetailItem label="Industry" value={selectedUser.industry} />
-                                    <DetailItem label="Business Type" value={selectedUser.businessType} />
-                                    <DetailItem label="GST" value={selectedUser.gst} />
-                                    <DetailItem label="PAN" value={selectedUser.pan} />
-                                    <DetailItem label="CIN Number" value={selectedUser.cinNumber} />
-                                    <DetailItem label="Years in Business" value={selectedUser.yearsInBusiness} />
-                                    <DetailItem label="Company Phone Number" value={selectedUser.companyPhoneNumber} />
-                                    <DetailItem label="Register Date" value={new Date(selectedUser.createdAt).toLocaleDateString('en-GB')} />
-                                </div>
-                            </section>
-
-                            {/* Section 2: Primary Member Details */}
-                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Member Info
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <DetailItem label="Full Name" value={selectedUser.name} />
-                                    <DetailItem label="Email Address" value={selectedUser.email} />
-                                    <DetailItem label="Contact Number" value={selectedUser.phone} />
-                                    <DetailItem label="Company Email" value={selectedUser.companyEmail} />
-                                    <DetailItem label="Alt Contact Number" value={selectedUser.alternateContactNumber} />
-                                    <DetailItem label="Membership Status" value={selectedUser.status === '1' ? 'ACTIVE' : selectedUser.status === '2' ? 'REJECTED' : 'PENDING'} isBadge status={selectedUser.status} />
-                                </div>
-                            </section>
-
-                            {/* Section 3: Geographic Location */}
-                            <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
-                                    <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Location
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <DetailItem label="State" value={selectedUser.state} />
-                                    <DetailItem label="District" value={selectedUser.district} />
-                                    <DetailItem label="Sub District" value={selectedUser.subDistrict} />
-                                    <DetailItem label="City" value={selectedUser.city} />
-                                    <DetailItem label="Pin Code" value={selectedUser.pinCode} />
-                                    <div className="col-span-full">
-                                        <DetailItem label="Registered Address" value={selectedUser.businessAddress} />
+                            <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar bg-gray-50/50">
+                                {selectedUser?.businessDocuments?.length > 0 ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {selectedUser.businessDocuments.map((doc: string, idx: number) => {
+                                            const isPdf = doc.toLowerCase().endsWith('.pdf');
+                                            const docUrl = `${ASSETS_BASE_URL}uploads/${doc}`;
+                                            return (
+                                                <a
+                                                    key={idx}
+                                                    href={docUrl}
+                                                    target="_blank"
+                                                    className="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-100 hover:border-[#1b5e20] transition-all group shadow-sm"
+                                                >
+                                                    <div className={`w-12 h-12 rounded flex items-center justify-center text-xl ${isPdf ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'}`}>
+                                                        {isPdf ? '📄' : '🖼️'}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[12px] font-normal text-black truncate uppercase">DOCUMENT_{idx + 1}</p>
+                                                        <p className="text-[10px] font-medium text-gray-400 capitalize group-hover:text-[#1b5e20]">View File →</p>
+                                                    </div>
+                                                </a>
+                                            );
+                                        })}
                                     </div>
-                                </div>
-                            </section>
-                        </div>
-
-                        <div className="p-6 border-t border-gray-100 bg-white flex justify-end">
-                            <button onClick={() => setShowDetailsModal(false)} className="px-8 py-2 bg-gray-900 text-white text-[12px] font-bold rounded-lg hover:bg-black transition-all shadow-lg active:scale-95">Close</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-                {/* Rejection Reason Modal */}
-                {showRejectionModal && (
-                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-                        <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                            <div className="bg-rose-600 px-10 py-8 text-white font-serif">
-                                <h3 className="text-xl font-black tracking-tight flex items-center gap-3">
-                                    Inactive
-                                </h3>
-                            </div>
-
-                            <div className="p-10 space-y-8 font-sans">
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-gray-400 tracking-wider ml-1">
-                                        Reason
-                                    </label>
-                                    <textarea
-                                        value={rejectionReason}
-                                        onChange={(e) => setRejectionReason(e.target.value)}
-                                        placeholder="Enter Reason..."
-                                        className="w-full h-40 bg-gray-50 border border-gray-100 rounded-3xl p-6 text-sm font-bold text-gray-700 placeholder:text-gray-300 outline-none focus:border-rose-500 focus:bg-white transition-all shadow-inner resize-none tracking-tight"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <button
-                                        onClick={() => {
-                                            setShowRejectionModal(false);
-                                            setProcessingUserId(null);
-                                            setRejectionReason("");
-                                        }}
-                                        className="px-6 py-4 bg-gray-100 text-gray-500 text-[10px] font-black tracking-wider rounded-2xl hover:bg-gray-200 transition-all active:scale-95 shadow-sm"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (processingUserId) {
-                                                handleAction(processingUserId, 'rejected', rejectionReason);
-                                            }
-                                        }}
-                                        className="px-6 py-4 bg-rose-600 text-white text-[10px] font-black tracking-wider rounded-2xl hover:bg-rose-700 transition-all shadow-2xl shadow-rose-900/30 active:scale-95"
-                                    >
-                                        Confirm
-                                    </button>
-                                </div>
+                                ) : (
+                                    <div className="py-12 text-center bg-white border-2 border-dashed border-gray-100 rounded-xl">
+                                        <p className="text-[14px] font-medium text-gray-400 capitalize">No documents uploaded.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 )}
+
+                {/* View Member Details Modal */}
+                {showDetailsModal && selectedUser && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                            <div className="bg-[#1b5e20] px-6 py-4 flex justify-between items-center text-white">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">👤</div>
+                                    <div>
+                                        <h3 className="text-lg font-bold tracking-tight">{selectedUser.name}</h3>
+                                        <p className="text-[11px] font-medium text-white/60 capitalize mt-0.5">Member ID: {selectedUser.memberId || 'Pending Approval'}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setShowDetailsModal(false)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">✕</button>
+                            </div>
+
+                            <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar space-y-8 bg-gray-50/50">
+                                {/* Section 1: Entity Details */}
+                                <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                    <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                        <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Company Details
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <DetailItem label="Company Name" value={selectedUser.companyName} />
+                                        <DetailItem label="Industry" value={selectedUser.industry} />
+                                        <DetailItem label="GST" value={selectedUser.gst} />
+                                        <DetailItem label="PAN" value={selectedUser.pan} />
+                                        <DetailItem label="CIN" value={selectedUser.cinNumber} />
+                                        <DetailItem label="Register Date" value={new Date(selectedUser.createdAt).toLocaleDateString('en-GB')} />
+                                    </div>
+                                </section>
+
+                                {/* Section 2: Primary Member Details */}
+                                <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                    <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                        <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Member Info
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <DetailItem label="Full Name" value={selectedUser.name} />
+                                        <DetailItem label="Email Address" value={selectedUser.email} />
+                                        <DetailItem label="Contact Number" value={selectedUser.phone} />
+                                        <DetailItem label="Company Email" value={selectedUser.companyEmail} />
+                                        <DetailItem label="Alt Contact Number" value={selectedUser.alternateContactNumber} />
+                                        <DetailItem
+                                            label="Membership Status"
+                                            value={getMembershipStatus(selectedUser)}
+                                            isBadge
+                                            status={getMembershipStatus(selectedUser) === 'Active' ? '1' : getMembershipStatus(selectedUser) === 'Payment Pending' ? '0' : '2'}
+                                        />
+                                    </div>
+                                </section>
+
+                                {/* Section 3: Geographic Location */}
+                                <section className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                                    <h4 className="text-[13px] font-semibold text-gray-500 capitalize tracking-tight mb-6 flex items-center gap-2">
+                                        <span className="w-1 h-4 bg-[#1b5e20] rounded-full"></span> Location
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <DetailItem label="State" value={selectedUser.state} />
+                                        <DetailItem label="District" value={selectedUser.district} />
+                                        <DetailItem label="Sub District" value={selectedUser.subDistrict} />
+                                        <DetailItem label="City" value={selectedUser.city} />
+                                        <DetailItem label="Pin Code" value={selectedUser.pinCode} />
+                                        <div className="col-span-full">
+                                            <DetailItem label="Registered Address" value={selectedUser.businessAddress} />
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <div className="p-6 border-t border-gray-100 bg-white flex justify-end">
+                                <button onClick={() => setShowDetailsModal(false)} className="px-8 py-2 bg-gray-900 text-white text-[12px] font-bold rounded-lg hover:bg-black transition-all shadow-lg active:scale-95">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </AdminPortalContainer>
     );

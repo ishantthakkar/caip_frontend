@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminPortalContainer from '@/components/AdminPortalContainer';
 import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
+import Swal from 'sweetalert2';
 
 export default function MemberRequestsPage() {
     const router = useRouter();
@@ -47,12 +48,35 @@ export default function MemberRequestsPage() {
     const handleAction = async (userId: string, action: string, reason: string = "") => {
         const status = action === 'approved' ? 1 : 2;
 
+        if (status === 1) {
+            const result = await Swal.fire({
+                title: 'Approve Membership?',
+                text: "The member will receive an approval email and gain platform access.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1b5e20',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Approve'
+            });
+            if (!result.isConfirmed) return;
+        }
+
         if (status === 2 && !showRejectionModal) {
             setProcessingUserId(userId);
             setShowRejectionModal(true);
             setRejectionReason("");
             return;
         }
+
+        // Show loading state
+        Swal.fire({
+            title: 'Processing...',
+            text: `Please wait while we ${action} the member.`,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         try {
             const token = localStorage.getItem('adminToken');
@@ -70,14 +94,28 @@ export default function MemberRequestsPage() {
                 setShowRejectionModal(false);
                 setProcessingUserId(null);
                 setRejectionReason("");
-                alert(`User ${action} successfully.`);
+                
+                Swal.fire({
+                    title: 'Success!',
+                    text: `Member has been ${action} successfully.`,
+                    icon: 'success',
+                    confirmButtonColor: '#1b5e20'
+                });
             } else {
                 const errorData = await response.json();
-                alert(`Error: ${errorData.msg || 'Failed to update status'}`);
+                Swal.fire({
+                    title: 'Error',
+                    text: errorData.msg || 'Failed to update status',
+                    icon: 'error'
+                });
             }
         } catch (error) {
             console.error("Error updating status:", error);
-            alert("An error occurred while updating the status.");
+            Swal.fire({
+                title: 'System Error',
+                text: "An error occurred while connecting to the server.",
+                icon: 'error'
+            });
         }
     };
 
@@ -160,6 +198,7 @@ export default function MemberRequestsPage() {
                                             <tr className="divide-x divide-white/5">
                                                 <th className="px-4 py-3 text-sm font-semibold tracking-tight">Member Id</th>
                                                 <th className="px-4 py-3 text-sm font-semibold tracking-tight">Company Name</th>
+                                                <th className="px-4 py-3 text-sm font-semibold tracking-tight">Industry</th>
                                                 <th className="px-4 py-3 text-sm font-semibold tracking-tight">Name</th>
                                                 <th className="px-4 py-3 text-sm font-semibold tracking-tight">Email</th>
                                                 <th className="px-4 py-3 text-sm font-semibold tracking-tight">Phone</th>
@@ -191,6 +230,7 @@ export default function MemberRequestsPage() {
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-3.5 text-[14px] font-normal text-gray-900">{user.companyName || '-'}</td>
+                                                    <td className="px-4 py-3.5 text-[14px] font-normal text-gray-900">{user.industry || '-'}</td>
 
                                                     <td className="px-4 py-3.5 text-[14px] font-normal text-gray-900">{user.name}</td>
                                                     <td className="px-4 py-3.5 text-[14px] font-normal text-gray-600">{user.email}</td>

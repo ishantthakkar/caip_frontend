@@ -10,6 +10,7 @@ export default function AdminActivityLogsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [activityFilter, setActivityFilter] = useState('all');
     const [selectedCompany, setSelectedCompany] = useState('all');
+    const [activeTab, setActiveTab] = useState<'admin' | 'member'>('admin');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15;
 
@@ -20,7 +21,7 @@ export default function AdminActivityLogsPage() {
     const fetchLogs = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('adminToken');
             const response = await fetch(`${API_BASE_URL}admin/activity-logs`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -37,12 +38,18 @@ export default function AdminActivityLogsPage() {
 
     const companies = useMemo(() => {
         const unique = Array.from(new Set(logs.map(log => log.companyName).filter(Boolean)));
-        // Exclude Admin from company filter list
-        return unique.filter(c => c.toUpperCase() !== 'ADMIN').sort();
+        return unique.filter(c => c.toUpperCase() !== 'ADMIN' && c.toUpperCase() !== 'SYSTEM').sort();
     }, [logs]);
 
     const filteredLogs = useMemo(() => {
         let result = logs;
+
+        // NEW: Filter by Tab (Role)
+        if (activeTab === 'admin') {
+            result = result.filter(log => log.userRole === 'admin');
+        } else {
+            result = result.filter(log => log.userRole !== 'admin');
+        }
 
         // Filter by Activity Type
         if (activityFilter !== 'all') {
@@ -78,23 +85,56 @@ export default function AdminActivityLogsPage() {
                 (log.userRole && log.userRole.toLowerCase().includes(term)) ||
                 (log.activityType && log.activityType.toLowerCase().includes(term)) ||
                 (log.details && log.details.toLowerCase().includes(term)) ||
-                (log.ipAddress && log.ipAddress.includes(term))
+                (log.ipAddress && log.ipAddress.includes(term)) ||
+                (log.memberId && log.memberId.toLowerCase().includes(term))
             );
         }
 
         return result;
-    }, [searchTerm, activityFilter, selectedCompany, logs]);
+    }, [searchTerm, activityFilter, selectedCompany, logs, activeTab]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, activityFilter, selectedCompany]);
+    }, [searchTerm, activityFilter, selectedCompany, activeTab]);
 
     const totalPages = Math.max(1, Math.ceil(filteredLogs.length / itemsPerPage));
     const paginatedLogs = filteredLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <AdminPortalContainer title="Activity Log">
-            <div className="space-y-12">
+            <div className="space-y-6">
+                {/* Tabs Switcher */}
+                <div className="flex border-b border-gray-200 bg-white rounded-t-xl overflow-hidden shadow-sm">
+                    <button
+                        onClick={() => setActiveTab('admin')}
+                        className={`flex-1 py-4 px-6 text-sm font-bold flex items-center justify-center gap-3 transition-all ${
+                            activeTab === 'admin' 
+                            ? 'bg-[#1b5e20] text-white border-b-2 border-green-800' 
+                            : 'text-gray-500 hover:bg-gray-50 border-transparent'
+                        }`}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        Admin Logs
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'admin' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                            {logs.filter(l => l.userRole === 'admin').length}
+                        </span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('member')}
+                        className={`flex-1 py-4 px-6 text-sm font-bold flex items-center justify-center gap-3 transition-all ${
+                            activeTab === 'member' 
+                            ? 'bg-[#1b5e20] text-white border-b-2 border-green-800' 
+                            : 'text-gray-500 hover:bg-gray-50 border-transparent'
+                        }`}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Member Logs
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeTab === 'member' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                            {logs.filter(l => l.userRole !== 'admin').length}
+                        </span>
+                    </button>
+                </div>
+
                 <div className="space-y-6">
                     {/* Search and Filters */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5">
@@ -163,7 +203,9 @@ export default function AdminActivityLogsPage() {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
                         <div className="bg-[#1b5e20] px-6 py-4 flex items-center gap-3 text-white">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-                            <h3 className="text-sm font-bold tracking-tight">Activity Logs</h3>
+                            <h3 className="text-sm font-bold tracking-tight">
+                                {activeTab === 'admin' ? 'Admin Activity Audit' : 'Member Activity Audit'}
+                            </h3>
                         </div>
 
                         <div className="p-4 md:p-5">

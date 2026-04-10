@@ -70,8 +70,13 @@ export default function SearchDefaulterPage() {
         if (filters.cin) fields.push(`CIN: ${filters.cin}`);
         if (filters.aadhar) fields.push(`Aadhar: ${filters.aadhar}`);
         if (filters.mobile) fields.push(`Mobile: ${filters.mobile}`);
-        if (filters.name) fields.push(`Name: ${filters.name}`);
+        if (filters.name) fields.push(`Company: ${filters.name}`);
+        if (filters.address) fields.push(`Address: ${filters.address}`);
         if (filters.state) fields.push(`State: ${filters.state}`);
+        if (filters.district) fields.push(`District: ${filters.district}`);
+        if (filters.subDistrict) fields.push(`Sub-District: ${filters.subDistrict}`);
+        if (filters.city) fields.push(`City: ${filters.city}`);
+        if (filters.member_name) fields.push(`Reported By: ${filters.member_name}`);
         return fields.length > 0 ? fields.join(', ') : 'All Records';
     };
 
@@ -148,6 +153,7 @@ export default function SearchDefaulterPage() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
+            console.log(data);
             if (response.ok) {
                 setDefaulters(data.data || []);
                 setCurrentPage(1);
@@ -198,48 +204,70 @@ export default function SearchDefaulterPage() {
             doc.text(`Downloaded By: ${memberName} (${memberId})`, 14, 32);
             doc.text(`Downloaded On: ${new Date().toLocaleString('en-GB')}`, 14, 38);
 
+            const searchCriteria = getSearchField(filters);
+            doc.setFontSize(9);
+            doc.setTextColor(50, 50, 50);
+            doc.text(`Search Criteria: ${searchCriteria}`, 14, 44, { maxWidth: 270 });
+
             const tableColumn = [
                 "Sr.",
+                "Reported By (Member)",
+                "Reported By (Company)",
                 "Defaulter Company",
-                "Amount",
-                "Outstanding",
+                "Address",
                 "GST",
-                "PAN",
-                "CIN / Aadhar",
-                "State",
-                "District",
-                "Sub-District",
-                "City/Town/Village",
+                "CIN",
+                "Persons",
+                "Location (State, Dist, SubDist, City)",
+                "Default Amount",
+                "Outstanding Amt",
+                "Recovery Amt",
+                "Pymt Status",
                 "Status"
             ];
 
-            const tableRows = defaulters.map((def, idx) => [
-                idx + 1,
-                def.defaulter_name || '-',
-                `Rs. ${Number(def.default_amount).toLocaleString('en-IN')}`,
-                `Rs. ${Number(def.outstanding_amount || def.default_amount).toLocaleString('en-IN')}`,
-                def.gst_number || '-',
-                def.pan_number || '-',
-                def.cin_number || def.aadhar_number || '-',
-                def.state || '-',
-                def.district || '-',
-                def.cities || '-',
-                def.city || '-',
-                (def.isSettled || Number(def.outstanding_amount ?? def.default_amount) === 0) ? 'CLEARED' : 'PENDING'
-            ]);
+            const tableRows = defaulters.length > 0 ? defaulters.map((def, idx) => {
+                const recoveryAmt = (def.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount), 0);
+                const paymentStatus = getPaymentRecoveryStatus(def).label;
+                const outstanding = Number(def.outstanding_amount === undefined ? def.default_amount : def.outstanding_amount);
+                const status = (def.isSettled || outstanding === 0) ? 'CLEARED' : 'DEFAULTER';
+
+                return [
+                    idx + 1,
+                    def.user_id?.name || 'N/A',
+                    def.user_id?.companyName || 'N/A',
+                    def.defaulter_name || '-',
+                    def.defaulter_address || '-',
+                    def.gst_number || '-',
+                    def.cin_number || '-',
+                    (def.defaulter_persons || []).length,
+                    `${def.state || '-'}\n${def.district || '-'}\n${def.cities || def.sub_district || '-'}\n${def.city || '-'}`,
+                    `Rs. ${Number(def.default_amount).toLocaleString('en-IN')}`,
+                    `Rs. ${Number(outstanding).toLocaleString('en-IN')}`,
+                    `Rs. ${Number(recoveryAmt).toLocaleString('en-IN')}`,
+                    paymentStatus,
+                    status
+                ];
+            }) : [["-", "No Record Found", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"]];
 
             autoTable(doc, {
                 head: [tableColumn],
                 body: tableRows,
-                startY: 46,
+                startY: 52,
                 theme: 'grid',
-                headStyles: { fillColor: [27, 94, 32], textColor: 255, fontSize: 8 },
-                styles: { fontSize: 8 },
+                headStyles: { fillColor: [27, 94, 32], textColor: 255, fontSize: 6 },
+                styles: { fontSize: 6, cellPadding: 1 },
+                columnStyles: {
+                    0: { cellWidth: 8 },
+                    7: { cellWidth: 10 },
+                    12: { cellWidth: 15 },
+                    13: { cellWidth: 15 }
+                },
                 didDrawPage: (data) => {
                     const pageWidth = doc.internal.pageSize.getWidth();
                     const pageHeight = doc.internal.pageSize.getHeight();
 
-                    doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+                    doc.setGState(new (doc as any).GState({ opacity: 0.25 }));
                     doc.setFontSize(14);
                     doc.setTextColor(200, 0, 0);
 
@@ -436,7 +464,7 @@ export default function SearchDefaulterPage() {
                                 {searching ? "Searching..." : "Search Records"}
                             </button>
 
-                            {hasSearched && defaulters.length > 0 && (
+                            {hasSearched && (
                                 <button
                                     type="button"
                                     onClick={handleDownloadPDF}
@@ -503,6 +531,7 @@ export default function SearchDefaulterPage() {
                                             .map((def, i) => {
                                                 const absoluteIndex = (currentPage - 1) * ITEMS_PER_PAGE + i + 1;
                                                 const isPaid = Number(def.outstanding_amount ?? def.default_amount) === 0;
+
                                                 return (
                                                     <tr key={def._id} className={`${isPaid ? 'bg-green-50/50 hover:bg-green-100/50' : 'hover:bg-gray-50/80'} transition-colors`}>
 
@@ -511,7 +540,7 @@ export default function SearchDefaulterPage() {
                                                             <p className="text-xs font-bold text-gray-700">{def.user_id?.name || 'N/A'}</p>
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            <p className="text-xs font-bold">{def.user_id?.companyName || 'Verified Member'}</p>
+                                                            <p className="text-xs font-bold text-green-800">{def.user_id?.companyName || 'Verified Member'}</p>
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <p className="text-sm font-bold text-gray-900">{def.defaulter_name}</p>
@@ -792,8 +821,8 @@ export default function SearchDefaulterPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Report Information</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Report by Person Name" value={selectedDefaulter.user_id?.name || user?.name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
-                                        <DetailRow label="Report by Company Name" value={selectedDefaulter.user_id?.companyName || user?.companyName || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                        <DetailRow label="Report by Person Name" value={selectedDefaulter.user_id?.name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+                                        <DetailRow label="Report by Company Name" value={selectedDefaulter.user_id?.companyName || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
                                     </div>
                                 </div>
 

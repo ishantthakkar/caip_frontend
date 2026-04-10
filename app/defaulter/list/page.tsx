@@ -507,7 +507,7 @@ export default function MemberDefaulterListPage() {
             doc.setTextColor(100, 100, 100);
             const memberName = user?.name || 'Not Available';
             const companyName = user?.companyName || 'Not Available';
-            const memberId = user?.memberId || user?._id?.slice(-8).to() || 'N/A';
+            const memberId = user?.memberId || user?._id?.toString().slice(-8).toUpperCase() || 'N/A';
             const memberEmail = user?.email || 'N/A';
 
             doc.text(`Downloaded By: ${memberName} (${memberId})`, 14, 32);
@@ -517,35 +517,39 @@ export default function MemberDefaulterListPage() {
             // Generate Table
             const tableColumn = [
                 "Sr.",
-                "Defaulter Company",
-                "Reported Date",
-                "Amount",
-                "Outstanding",
+                "Defaulter Firm",
+                "Address",
                 "GST",
-                "PAN",
                 "CIN",
-                "Aadhar",
-                "State",
-                "District",
-                "Sub-District",
-                "City/Town/Village",
+                "Location (State, Dist, SubDist, City)",
+                "Default Amount",
+                "Outstanding",
+                "Recovery",
+                "Payment Status"
             ];
 
-            const tableRows = processedData.map((def, idx) => [
-                idx + 1,
-                def.defaulter_name || '-',
-                new Date(def.createdAt).toLocaleDateString('en-GB'),
-                `Rs. ${Number(def.default_amount).toLocaleString('en-IN')}`,
-                `Rs. ${Number(def.outstanding_amount || def.default_amount).toLocaleString('en-IN')}`,
-                def.gst_number || '-',
-                def.pan_number || '-',
-                def.cin_number || '-',
-                def.aadhar_number || '-',
-                def.state || '-',
-                def.district || '-',
-                def.cities || '-',
-                def.city || '-',
-            ]);
+            const tableRows = processedData.map((def, idx) => {
+                const dAmount = Number(def.default_amount || 0);
+                const oAmount = Number(def.outstanding_amount ?? def.default_amount ?? 0);
+                const rAmount = dAmount - oAmount;
+
+                let paymentStatus = 'Not Paid';
+                if (oAmount === 0) paymentStatus = 'Full Paid';
+                else if (rAmount > 0) paymentStatus = 'Partial Paid';
+
+                return [
+                    idx + 1,
+                    def.defaulter_name || '-',
+                    def.defaulter_address || '-',
+                    def.gst_number || '-',
+                    def.cin_number || '-',
+                    `${def.state || '-'}\n${def.district || '-'}\n${def.cities || def.sub_district || '-'}\n${def.city || '-'}`,
+                    `Rs. ${dAmount.toLocaleString('en-IN')}`,
+                    `Rs. ${oAmount.toLocaleString('en-IN')}`,
+                    `Rs. ${rAmount.toLocaleString('en-IN')}`,
+                    paymentStatus
+                ];
+            });
 
             autoTable(doc, {
                 head: [tableColumn],
@@ -560,11 +564,11 @@ export default function MemberDefaulterListPage() {
                     const pageHeight = doc.internal.pageSize.getHeight();
 
                     // BACKGROUND WATERMARKS
-                    doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+                    doc.setGState(new (doc as any).GState({ opacity: 0.25 }));
                     doc.setFontSize(14);
                     doc.setTextColor(200, 0, 0);
 
-                    const watermarkText = `${memberName.toString().to()} | ID: ${memberId} `;
+                    const watermarkText = `${memberName.toString().toUpperCase()} | ID: ${memberId} `;
                     const angle = 45;
                     const stepX = 100;
                     const stepY = 100;
@@ -1321,7 +1325,7 @@ export default function MemberDefaulterListPage() {
                                     {processingSettle ? (
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                     ) : (
-                                        <>Settlement</>
+                                        <>Confirm Settlement</>
                                     )}
                                 </button>
                             </div>

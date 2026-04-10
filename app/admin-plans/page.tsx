@@ -401,11 +401,18 @@ const MembershipPlansPage = () => {
                                 </div>
                                 <div className="space-y-1.5 flex flex-col">
                                     <label className="text-[13px] font-bold text-gray-700 ml-1">Duration <span className="text-red-500">*</span></label>
-                                    <input
-                                        type="text" placeholder="e.g. 1 Year" value={formData.duration}
+                                    <select
+                                        value={formData.duration}
                                         onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                                        className={`w-full bg-gray-50/50 border rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:bg-white shadow-sm ${errors.duration ? 'border-red-500' : 'border-gray-100 focus:border-[#1b5e20]'}`}
-                                    />
+                                        className={`w-full bg-gray-50/50 border rounded-xl py-3 px-4 outline-none text-[14px] font-medium transition-all focus:bg-white shadow-sm appearance-none cursor-pointer ${errors.duration ? 'border-red-500' : 'border-gray-100 focus:border-[#1b5e20]'}`}
+                                    >
+                                        <option value="">Select Duration</option>
+                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(year => (
+                                            <option key={year} value={`${year} Year${year > 1 ? 's' : ''}`}>
+                                                {year} Year{year > 1 ? 's' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
                                     {errors.duration && <span className="text-red-500 text-[11px] font-bold ml-1">{errors.duration}</span>}
                                 </div>
                             </div>

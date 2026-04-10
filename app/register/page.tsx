@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { API_BASE_URL } from '@/config/apiConfig';
+import { API_BASE_URL, ASSETS_BASE_URL } from '@/config/apiConfig';
 
 const FormInput = ({ label, name, type = "text", placeholder, required = false, className = "", onChange, value, error, readOnly = false }: any) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -101,6 +101,21 @@ export default function RegisterPage() {
     });
     const [isGstFetching, setIsGstFetching] = useState(false);
     const [pendingLocation, setPendingLocation] = useState<any>(null);
+    const [publishedTerms, setPublishedTerms] = useState<any>(null);
+    const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+
+    useEffect(() => {
+        const fetchPublishedTerms = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}terms/published`);
+                const data = await res.json();
+                if (res.ok) setPublishedTerms(data.data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchPublishedTerms();
+    }, []);
 
     useEffect(() => {
         const savedDataStr = sessionStorage.getItem('pendingRegistration');
@@ -608,15 +623,20 @@ export default function RegisterPage() {
                                                         <label htmlFor="terms" className="text-sm font-semibold text-gray-800 cursor-pointer group-hover:text-agri-green-800 transition-colors uppercase tracking-tight">
                                                             I agree to the&nbsp;
                                                         </label>
-                                                        <a
-                                                            href="/terms-and-condition/Term & Condition  CAIP - Business Credit Reporting Agency, Report Defaulter, Settlement, Company CIR.pdf"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => { 
+                                                                e.preventDefault(); 
+                                                                if (publishedTerms?.file) {
+                                                                    window.open(`${ASSETS_BASE_URL}uploads/${publishedTerms.file}`, '_blank');
+                                                                } else {
+                                                                    setIsTermsModalOpen(true); 
+                                                                }
+                                                            }}
                                                             className="text-agri-green-700 underline text-sm font-semibold uppercase tracking-tight hover:text-agri-green-900 transition-colors"
-                                                            onClick={(e) => e.stopPropagation()}
                                                         >
                                                             Terms and Conditions
-                                                        </a>
+                                                        </button>
                                                     </div>
                                                     <p className="text-[11px] text-gray-500 mt-1 font-medium leading-relaxed">
                                                         CAIP is a platform dedicated to protecting the interests of the agri-input industry. All data is provided by members and subject to our privacy guidelines.
@@ -668,6 +688,45 @@ export default function RegisterPage() {
                         </div>
                     </div>
                 </div>
+                {/* Terms Modal */}
+                {isTermsModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsTermsModalOpen(false)}></div>
+                        <div className="bg-white rounded-2xl w-full max-w-2xl relative z-10 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col max-h-[85vh]">
+                            <div className="bg-agri-green-primary p-6 text-white text-center flex-shrink-0">
+                                <h3 className="text-xl font-bold">{publishedTerms?.title || 'Terms & Conditions'}</h3>
+                            </div>
+                            <div className="p-8 overflow-y-auto font-medium text-gray-700 text-sm leading-relaxed whitespace-pre-wrap flex-grow custom-scrollbar flex flex-col items-center justify-center">
+                                {publishedTerms?.file ? (
+                                    <div className="text-center space-y-4">
+                                        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto border border-blue-200">
+                                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                        </div>
+                                        <p className="text-gray-500 font-bold">Document Version Published</p>
+                                        <a
+                                            href={`${ASSETS_BASE_URL}uploads/${publishedTerms.file}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all uppercase text-xs"
+                                        >
+                                            VIEW DOCUMENT
+                                        </a>
+                                    </div>
+                                ) : (
+                                    publishedTerms?.content || "No terms and conditions have been published yet. Please contact support or try again later."
+                                )}
+                            </div>
+                            <div className="p-4 border-t border-gray-100 flex-shrink-0 bg-gray-50 flex justify-center">
+                                <button
+                                    onClick={() => setIsTermsModalOpen(false)}
+                                    className="bg-agri-green-primary text-white px-8 py-2.5 rounded-xl font-bold hover:bg-agri-green-700 transition-all shadow-md"
+                                >
+                                    CLOSE
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
