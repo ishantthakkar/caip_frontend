@@ -358,6 +358,13 @@ export default function RegisterPage() {
             newErrors.phone = "Enter a valid 10-digit mobile number";
         }
 
+        const pinCode = formData.get('pinCode') as string;
+        if (!pinCode) {
+            newErrors.pinCode = "Pincode is required";
+        } else if (!/^\d{6}$/.test(pinCode)) {
+            newErrors.pinCode = "Enter a valid 6-digit pincode";
+        }
+
         if (!termsAgreed) newErrors.terms = "You must agree to the Terms";
 
         return newErrors;
@@ -572,7 +579,7 @@ export default function RegisterPage() {
                                             <FormInput label="Email" name="email" type="email" placeholder="john@example.com" required error={errors.email} value={formData.email} onChange={handleInputChange} />
 
                                             <FormInput label="Company Email" name="companyEmail" type="email" placeholder="Optional" value={formData.companyEmail} onChange={handleInputChange} />
-                                            <FormInput label="Pincode" name="pinCode" placeholder="Enter Pincode" value={formData.pinCode} onChange={handleInputChange} />
+                                            <FormInput label="Pincode" name="pinCode" placeholder="Enter Pincode" required error={errors.pinCode} value={formData.pinCode} onChange={handleInputChange} />
 
                                             <FormSelect label="State" name="state" value={selectedState} onChange={(e: any) => setSelectedState(e.target.value)} options={states} placeholder="Select State" required error={errors.state} />
                                             <FormSelect label="District" name="district" value={selectedDistrict} onChange={(e: any) => { setSelectedDistrict(e.target.value); setSelectedSubDistrict(""); }} options={districts} placeholder="Select District" required error={errors.district} />

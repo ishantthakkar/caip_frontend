@@ -173,7 +173,7 @@ export default function AdminDashboardPage() {
         return (
             <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center flex-col gap-4">
                 <div className="animate-spin h-12 w-12 border-4 border-[#1b5e20] border-t-transparent rounded-full font-black"></div>
-                <p className="text-sm font-bold text-gray-500 animate-pulse uppercase tracking-[0.2em]">Initializing Administrative Nexus...</p>
+                <p className="text-sm font-bold text-gray-500 animate-pulse uppercase tracking-[0.2em]">Loading...</p>
             </div>
         );
     }
