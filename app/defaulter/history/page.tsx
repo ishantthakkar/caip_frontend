@@ -74,6 +74,7 @@ export default function SearchHistoryPage() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredHistory.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+    const selectedData = selectedLog?.defaulter_id || selectedLog?.resultData || {};
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -189,7 +190,7 @@ export default function SearchHistoryPage() {
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                                 {currentItems.map((record, i) => {
-                                    const displayData = record.resultData || {};
+                                    const displayData = record.defaulter_id || record.resultData || {};
                                     const filters = record.filters || {};
 
                                     return (
@@ -203,17 +204,17 @@ export default function SearchHistoryPage() {
                                             </td>
                                             <td className="px-3 py-4 border-r border-gray-100 font-bold text-green-700 bg-green-50/20">{getSearchField(filters)}</td>
                                             <td className="px-3 py-4 border-r border-gray-100">{record.user_id?.name || 'Local Member'}</td>
-                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.name || filters.name || '-'}</td>
-                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.gst || filters.gst || '-'}</td>
-                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.cin || filters.cin || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.defaulter_name || displayData.name || filters.name || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.gst_number || displayData.gst || filters.gst || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.cin_number || displayData.cin || filters.cin || '-'}</td>
                                             <td className="px-3 py-4 border-r border-gray-100">{displayData.state || filters.state || '-'}</td>
                                             <td className="px-3 py-4 border-r border-gray-100">{displayData.district || filters.district || '-'}</td>
-                                            <td className="px-3 py-4 border-r border-gray-100">{displayData.subDistrict || filters.subDistrict || '-'}</td>
+                                            <td className="px-3 py-4 border-r border-gray-100">{displayData.cities || displayData.subDistrict || filters.subDistrict || '-'}</td>
                                             <td className="px-3 py-4 border-r border-gray-100 uppercase">{displayData.city || filters.city || '-'}</td>
                                             <td className="px-3 py-4 text-center border-r border-gray-100">
                                                 <div className="flex flex-col items-center">
                                                     <span className={`text-[13px] font-bold ${Number(record.resultCount) > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                                                        {record.resultCount || (record.resultData ? 1 : 0)}
+                                                        {record.resultCount || (record.defaulter_id ? 1 : 0)}
                                                     </span>
                                                     <span className="text-[9px] font-bold text-gray-400">RECORDS</span>
                                                 </div>
@@ -345,10 +346,10 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Defaulter Company Details</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Defaulter Firm name" value={selectedLog.resultData?.name || selectedLog.filters?.name} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
-                                        <DetailRow label="Type of Defaulter" value={selectedLog.resultData?.industry} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
-                                        <DetailRow label="GST" value={selectedLog.resultData?.gst || selectedLog.filters?.gst || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
-                                        <DetailRow label="CIN" value={selectedLog.resultData?.cin || selectedLog.filters?.cin || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
+                                        <DetailRow label="Defaulter Firm name" value={selectedData.defaulter_name || selectedData.name || selectedLog.filters?.name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M8 10h.01" /><path d="M16 10h.01" /><path d="M8 14h.01" /><path d="M16 14h.01" /></svg>} />
+                                        <DetailRow label="Type of Defaulter" value={selectedData.industry || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 21h18" /><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3l2-4h14l2 4" /></svg>} />
+                                        <DetailRow label="GST" value={selectedData.gst_number || selectedData.gst || selectedLog.filters?.gst || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></svg>} />
+                                        <DetailRow label="CIN" value={selectedData.cin_number || selectedData.cin || selectedLog.filters?.cin || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>} />
                                     </div>
                                 </div>
 
@@ -369,8 +370,8 @@ export default function SearchHistoryPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
-                                                {selectedLog.resultData?.defaulter_persons && selectedLog.resultData.defaulter_persons.length > 0 ? (
-                                                    selectedLog.resultData.defaulter_persons.map((p: any, idx: number) => (
+                                                {selectedData.defaulter_persons && selectedData.defaulter_persons.length > 0 ? (
+                                                    selectedData.defaulter_persons.map((p: any, idx: number) => (
                                                         <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                                                             <td className="px-6 py-4 text-[14px] font-bold">{(idx + 1).toString().padStart(2, '0')}</td>
                                                             <td className="px-6 py-4 text-[14px] font-bold text-gray-900">{p.name || 'N/A'}</td>
@@ -395,14 +396,14 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Contact & Address</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Mobile" value={selectedLog.resultData?.mobile || selectedLog.filters?.mobile} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>} />
-                                        <DetailRow label="Email" value={selectedLog.resultData?.email || selectedLog.filters?.email} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>} />
-                                        <DetailRow label="State" value={selectedLog.resultData?.state || selectedLog.filters?.state} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
-                                        <DetailRow label="District" value={selectedLog.resultData?.district || selectedLog.filters?.district} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
-                                        <DetailRow label="Sub district" value={selectedLog.resultData?.subDistrict || selectedLog.filters?.subDistrict || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
-                                        <DetailRow label="City/Town/Village" value={selectedLog.resultData?.city || selectedLog.filters?.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
+                                        <DetailRow label="Mobile" value={selectedData.mobile_number || selectedData.mobile || selectedLog.filters?.mobile || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></svg>} />
+                                        <DetailRow label="Email" value={selectedData.email_id || selectedData.email || selectedLog.filters?.email || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>} />
+                                        <DetailRow label="State" value={selectedData.state || selectedLog.filters?.state || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>} />
+                                        <DetailRow label="District" value={selectedData.district || selectedLog.filters?.district || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7z" /><path d="M10 9a2 2 0 1 0 4 0 2 2 0 0 0-4 0z" /><path d="M2 7h20" /></svg>} />
+                                        <DetailRow label="Sub district" value={selectedData.cities || selectedData.subDistrict || selectedLog.filters?.subDistrict || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15.5 5.5-3 3-3-3" /><path d="m15.5 11.5-3 3-3-3" /><path d="m15.5 17.5-3 3-3-3" /></svg>} />
+                                        <DetailRow label="City/Town/Village" value={selectedData.city || selectedLog.filters?.city || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z" /></svg>} />
                                         <div className="col-span-full pt-2">
-                                            <DetailRow label="Full address" value={selectedLog.resultData?.address || selectedLog.filters?.address} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
+                                            <DetailRow label="Full address" value={selectedData.defaulter_address || selectedData.address || selectedLog.filters?.address || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>} />
                                         </div>
                                     </div>
                                 </div>
@@ -414,7 +415,7 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Financial Status</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Default amount" value={`₹${Number(selectedLog.resultData?.default_amount || 0).toLocaleString()}`} isHighlights icon={
+                                        <DetailRow label="Default amount" value={`₹${Number(selectedData.default_amount || 0).toLocaleString()}`} isHighlights icon={
                                             <svg
                                                 width="16"
                                                 height="16"
@@ -429,7 +430,7 @@ export default function SearchHistoryPage() {
                                                 <path d="M10 12l5 8" />
                                             </svg>
                                         } />
-                                        <DetailRow label="Outstanding" value={`₹${Number(selectedLog.resultData?.outstanding_amount || selectedLog.resultData?.default_amount || 0).toLocaleString()}`} isHighlights icon={
+                                        <DetailRow label="Outstanding" value={`₹${Number(selectedData.outstanding_amount ? selectedData.outstanding_amount : selectedData.default_amount || 0).toLocaleString()}`} isHighlights icon={
                                             <svg
                                                 width="16"
                                                 height="16"
@@ -444,10 +445,10 @@ export default function SearchHistoryPage() {
                                                 <path d="M10 12l5 8" />
                                             </svg>
                                         } />
-                                        <DetailRow label="Date of default" value={selectedLog.resultData?.date_of_default ? new Date(selectedLog.resultData.date_of_default).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
-                                        <DetailRow label="Financial year" value={selectedLog.resultData?.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
+                                        <DetailRow label="Date of default" value={selectedData.date_of_default ? new Date(selectedData.date_of_default).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
+                                        <DetailRow label="Financial year" value={selectedData.financial_year || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 22h14" /><path d="M5 2h14" /><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></svg>} />
                                         <div className="col-span-full">
-                                            <DetailRow label="Reason for default" value={selectedLog.resultData?.reason || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01" /><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" /><path d="M12 9v4" /></svg>} />
+                                            <DetailRow label="Reason for default" value={selectedData.reason_description || selectedData.reason || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h.01" /><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z" /><path d="M12 9v4" /></svg>} />
                                         </div>
                                     </div>
                                 </div>
@@ -459,12 +460,12 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Report Information</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12">
-                                        <DetailRow label="Reported By" value={selectedLog.resultData?.reported_by || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+                                        <DetailRow label="Reported By" value={selectedData.user_id?.companyName || selectedData.user_id?.name || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
                                     </div>
                                 </div>
 
                                 {/* Section: Settlement Details */}
-                                {selectedLog.resultData?.isSettled && (
+                                {selectedData.isSettled && (
                                     <div className="space-y-6 animate-in fade-in duration-700">
                                         <div className="flex items-center gap-3 border-b border-emerald-100 pb-3">
                                             <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
@@ -473,9 +474,9 @@ export default function SearchHistoryPage() {
                                             </h4>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12 p-6 bg-emerald-50/30 rounded-2xl border border-emerald-100">
-                                            <DetailRow label="Settled Amount" value={`₹${Number(selectedLog.resultData.settledAmount || 0).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m9 12 2 2 4-4" /></svg>} />
-                                            <DetailRow label="Settled By" value={selectedLog.resultData.settledBy || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
-                                            <DetailRow label="Settlement Date" value={selectedLog.resultData.settlementDate ? new Date(selectedLog.resultData.settlementDate).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
+                                            <DetailRow label="Settled Amount" value={`₹${Number(selectedData.settledAmount || 0).toLocaleString()}`} isHighlights icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m9 12 2 2 4-4" /></svg>} />
+                                            <DetailRow label="Settled By" value={selectedData.settledBy || 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>} />
+                                            <DetailRow label="Settlement Date" value={selectedData.settlementDate ? new Date(selectedData.settlementDate).toLocaleDateString() : 'N/A'} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>} />
                                         </div>
                                     </div>
                                 )}
@@ -487,8 +488,8 @@ export default function SearchHistoryPage() {
                                         <h4 className="text-[15px] font-bold text-gray-900 tracking-tight">Documents</h4>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        {selectedLog.resultData?.attachment_documents && selectedLog.resultData.attachment_documents.length > 0 ? (
-                                            selectedLog.resultData.attachment_documents.map((doc: string, idx: number) => {
+                                        {selectedData.attachment_documents && selectedData.attachment_documents.length > 0 ? (
+                                            selectedData.attachment_documents.map((doc: string, idx: number) => {
                                                 const isPdf = doc.toLowerCase().endsWith('.pdf');
                                                 return (
                                                     <a
@@ -537,7 +538,7 @@ export default function SearchHistoryPage() {
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
                                                 {(() => {
-                                                    const displayedPayments = (selectedLog.resultData?.payments || []).filter((p: any) => p.type !== 'settlement');
+                                                    const displayedPayments = (selectedData.payments || []).filter((p: any) => p.type !== 'settlement');
                                                     if (displayedPayments.length === 0) return (
                                                         <tr>
                                                             <td colSpan={3} className="px-6 py-12 text-center text-[13px] font-medium text-gray-400 italic">No recovery payments synchronized yet.</td>
