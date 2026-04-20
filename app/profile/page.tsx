@@ -105,6 +105,8 @@ export default function ProfilePage() {
 
             if (response.status === 401) {
                 localStorage.removeItem('token');
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
                 localStorage.removeItem('user');
                 router.push('/');
                 return;

@@ -125,6 +125,8 @@ export default function MemberHeader({ user, title = "Dashboard", isCollapsed = 
             }
         }
         localStorage.removeItem('token');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         localStorage.removeItem('subMember');
         router.push('/');

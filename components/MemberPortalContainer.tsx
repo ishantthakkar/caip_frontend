@@ -38,12 +38,16 @@ export default function MemberPortalContainer({
                     const payload = JSON.parse(atob(token.split('.')[1]));
                     if (payload.exp * 1000 < Date.now()) {
                         localStorage.removeItem('token');
+                        localStorage.removeItem('accessToken');
+                        localStorage.removeItem('refreshToken');
                         localStorage.removeItem('user');
                         router.push('/');
                         return;
                     }
                 } catch (e) {
                     localStorage.removeItem('token');
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
                     localStorage.removeItem('user');
                     router.push('/');
                     return;

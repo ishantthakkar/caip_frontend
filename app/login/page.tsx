@@ -73,7 +73,12 @@ function LoginContent() {
             const data = await response.json();
 
             if (response.ok) {
-                localStorage.setItem('token', data.token);
+                const accessToken = data.access_token || data.token;
+                localStorage.setItem('token', accessToken);
+                localStorage.setItem('accessToken', accessToken);
+                if (data.refresh_token) {
+                    localStorage.setItem('refreshToken', data.refresh_token);
+                }
                 localStorage.setItem('user', JSON.stringify(data.user));
                 if (data.subMember) {
                     localStorage.setItem('subMember', JSON.stringify(data.subMember));

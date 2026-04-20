@@ -62,6 +62,8 @@ export default function MemberSidebar({ isCollapsed, setIsCollapsed }: MemberSid
             }
         }
         localStorage.removeItem('token');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         localStorage.removeItem('subMember');
         router.push('/');

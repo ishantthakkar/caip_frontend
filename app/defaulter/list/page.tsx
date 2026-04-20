@@ -71,6 +71,8 @@ export default function MemberDefaulterListPage() {
 
             if (response.status === 401) {
                 localStorage.removeItem('token');
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
                 localStorage.removeItem('user');
                 window.location.href = '/';
                 return;

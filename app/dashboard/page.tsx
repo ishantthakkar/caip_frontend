@@ -85,6 +85,8 @@ export default function DashboardPage() {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         router.push('/');
     };
@@ -124,6 +126,8 @@ export default function DashboardPage() {
             });
             if (res.status === 401) {
                 localStorage.removeItem('token');
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
                 localStorage.removeItem('user');
                 router.push('/');
                 return;
