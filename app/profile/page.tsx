@@ -287,6 +287,14 @@ export default function ProfilePage() {
                                         <span className={`font-bold ${item.valueClass || 'text-gray-800'}`}>{item.value}</span>
                                     </div>
                                 ))}
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500 font-semibold">Aadhar :</span>
+                                    <span className="font-bold text-gray-800">{user.aadhar || 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-gray-500 font-semibold">PAN :</span>
+                                    <span className="font-bold text-gray-800">{user.pan || 'N/A'}</span>
+                                </div>
                             </div>
 
                             {/* Stats Summary Area at Bottom */}
@@ -344,7 +352,8 @@ export default function ProfilePage() {
                                         { label: 'Company Name', key: 'companyName' },
                                         { label: 'GST', key: 'gst' },
                                         { label: 'CIN', key: 'cinNumber' },
-                                        { label: 'PAN', key: 'pan' }
+                                        { label: 'PAN', key: 'pan' },
+                                        { label: 'Aadhar Number', key: 'aadhar' }
                                     ].map((field: any) => (
                                         <div key={field.key} className="space-y-1.5 flex flex-col">
                                             <label className="text-sm font-bold text-gray-700">{field.label}</label>

@@ -97,7 +97,8 @@ export default function RegisterPage() {
         yearsInBusiness: '',
         cinNumber: '',
         companyPhoneNumber: '',
-        otp: ''
+        otp: '',
+        aadhar: ''
     });
     const [isGstFetching, setIsGstFetching] = useState(false);
     const [pendingLocation, setPendingLocation] = useState<any>(null);
@@ -139,7 +140,8 @@ export default function RegisterPage() {
                         businessType: fields.businessType || '',
                         yearsInBusiness: fields.yearsInBusiness || '',
                         cinNumber: fields.cinNumber || '',
-                        companyPhoneNumber: fields.companyPhoneNumber || ''
+                        companyPhoneNumber: fields.companyPhoneNumber || '',
+                        aadhar: fields.aadhar || ''
                     }));
                     if (fields.industry) setSelectedIndustry(fields.industry);
                     if (fields.state) setSelectedState(fields.state);
@@ -366,6 +368,31 @@ export default function RegisterPage() {
         }
 
         if (!termsAgreed) newErrors.terms = "You must agree to the Terms";
+        
+        const aadhar = formData.get('aadhar') as string;
+        if (!aadhar) {
+            newErrors.aadhar = "Aadhar Number is required";
+        } else if (!/^\d{12}$/.test(aadhar)) {
+            newErrors.aadhar = "Enter a valid 12-digit Aadhar number";
+        }
+
+        // File Validations
+        const checkFile = (name: string, label: string) => {
+            const file = formData.get(name) as File;
+            if (!file || file.size === 0) {
+                newErrors[name] = `${label} is required`;
+            }
+        };
+
+        if (selectedIndustry === "Pesticide Company") {
+            checkFile("mfgLicence", "MFG Licence");
+            checkFile("gstCertificate", "GST Certificate");
+        } else if (selectedIndustry === "Fertiliser Company") {
+            checkFile("mfgLicence", "Form A2/MFG Licence");
+            checkFile("gstCertificate", "GST Certificate");
+        } else if (selectedIndustry === "Seed Company") {
+            checkFile("seedCertificate", "Seed Association Membership Certificate");
+        }
 
         return newErrors;
     };
@@ -424,28 +451,32 @@ export default function RegisterPage() {
                         district: selectedDistrict,
                         subDistrict: selectedSubDistrict,
                         city: selectedCity,
+                        aadhar: formData.get('aadhar'),
                     },
                     files: []
                 };
 
                 // Handle files using FileReader
-                const files = formData.getAll('businessDocuments') as File[];
-                const validFiles = files.filter(f => f.name && f.size > 0);
+                const fileInputs = ['mfgLicence', 'gstCertificate', 'seedCertificate'];
+                const filePromises: Promise<{ name: string, type: string, data: string }>[] = [];
 
-                if (validFiles.length > 0) {
-                    const filePromises = validFiles.map(file => {
-                        return new Promise<{ name: string, type: string, data: string }>((resolve, reject) => {
+                fileInputs.forEach(inputName => {
+                    const file = formData.get(inputName) as File;
+                    if (file && file.name && file.size > 0) {
+                        filePromises.push(new Promise((resolve, reject) => {
                             const reader = new FileReader();
                             reader.onload = (e) => resolve({
-                                name: file.name,
+                                name: `${inputName}_${file.name}`, // Prefixing to identify it later if needed
                                 type: file.type,
                                 data: e.target?.result as string
                             });
                             reader.onerror = reject;
                             reader.readAsDataURL(file);
-                        });
-                    });
+                        }));
+                    }
+                });
 
+                if (filePromises.length > 0) {
                     dataToSave.files = await Promise.all(filePromises);
                 }
 
@@ -601,19 +632,79 @@ export default function RegisterPage() {
                                                 />
                                             </div>
 
-                                            <div className="mb-4 md:col-span-2">
-                                                <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
-                                                    Business Documents (Upload multiple if needed)
-                                                </label>
-                                                <input
-                                                    type="file"
-                                                    name="businessDocuments"
-                                                    multiple
-                                                    accept=".pdf,image/*"
-                                                    className="w-full border border-gray-200 py-3 px-4 rounded-lg text-xs text-gray-400 file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-agri-green-50 file:text-agri-green-700 hover:file:bg-agri-green-100 transition-all shadow-sm bg-white"
-                                                />
-                                                <p className="text-[10px] text-gray-400 mt-1.5 ml-1 font-medium">Supports multiple PDF and Image files</p>
-                                            </div>
+                                            {selectedIndustry && (
+                                                <div className="md:col-span-2 mt-4">
+                                                    <h6 className="text-sm font-bold text-gray-800 mb-4 ml-1 uppercase tracking-wider border-l-4 border-agri-green-primary pl-3">
+                                                        Documents Required for {selectedIndustry}
+                                                    </h6>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {selectedIndustry === "Pesticide Company" && (
+                                                            <>
+                                                                <div className="mb-4">
+                                                                    <label className="block text-[11px] font-bold text-gray-700 mb-1.5 ml-1 uppercase">
+                                                                        MFG Licence <span className="text-red-500">*</span>
+                                                                    </label>
+                                                                    <input type="file" name="mfgLicence" accept=".pdf,image/*" className="w-full border border-gray-200 py-2 px-3 rounded-lg text-xs shadow-sm" />
+                                                                    {errors.mfgLicence && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.mfgLicence}</p>}
+                                                                </div>
+                                                                <div className="mb-4">
+                                                                    <label className="block text-[11px] font-bold text-gray-700 mb-1.5 ml-1 uppercase">
+                                                                        GST Certificate <span className="text-red-500">*</span>
+                                                                    </label>
+                                                                    <input type="file" name="gstCertificate" accept=".pdf,image/*" className="w-full border border-gray-200 py-2 px-3 rounded-lg text-xs shadow-sm" />
+                                                                    {errors.gstCertificate && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.gstCertificate}</p>}
+                                                                </div>
+                                                                <div className="mb-4">
+                                                                    <FormInput label="Aadhar Number" name="aadhar" placeholder="12-digit Aadhar" required error={errors.aadhar} value={formData.aadhar} onChange={handleInputChange} />
+                                                                </div>
+                                                            </>
+                                                        )}
+
+                                                        {selectedIndustry === "Fertiliser Company" && (
+                                                            <>
+                                                                <div className="mb-4">
+                                                                    <label className="block text-[11px] font-bold text-gray-700 mb-1.5 ml-1 uppercase">
+                                                                        Form A2/MFG Licence <span className="text-red-500">*</span>
+                                                                    </label>
+                                                                    <input type="file" name="mfgLicence" accept=".pdf,image/*" className="w-full border border-gray-200 py-2 px-3 rounded-lg text-xs shadow-sm" />
+                                                                    {errors.mfgLicence && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.mfgLicence}</p>}
+                                                                </div>
+                                                                <div className="mb-4">
+                                                                    <label className="block text-[11px] font-bold text-gray-700 mb-1.5 ml-1 uppercase">
+                                                                        GST Certificate <span className="text-red-500">*</span>
+                                                                    </label>
+                                                                    <input type="file" name="gstCertificate" accept=".pdf,image/*" className="w-full border border-gray-200 py-2 px-3 rounded-lg text-xs shadow-sm" />
+                                                                    {errors.gstCertificate && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.gstCertificate}</p>}
+                                                                </div>
+                                                                <div className="mb-4">
+                                                                    <FormInput label="Aadhar Number" name="aadhar" placeholder="12-digit Aadhar" required error={errors.aadhar} value={formData.aadhar} onChange={handleInputChange} />
+                                                                </div>
+                                                            </>
+                                                        )}
+
+                                                        {selectedIndustry === "Seed Company" && (
+                                                            <>
+                                                                <div className="mb-4">
+                                                                    <label className="block text-[11px] font-bold text-gray-700 mb-1.5 ml-1 uppercase">
+                                                                        Seed Association Membership Certificate <span className="text-red-500">*</span>
+                                                                    </label>
+                                                                    <input type="file" name="seedCertificate" accept=".pdf,image/*" className="w-full border border-gray-200 py-2 px-3 rounded-lg text-xs shadow-sm" />
+                                                                    {errors.seedCertificate && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.seedCertificate}</p>}
+                                                                </div>
+                                                                <div className="mb-4">
+                                                                    <label className="block text-[11px] font-bold text-gray-700 mb-1.5 ml-1 uppercase">
+                                                                        GST Certificate (Optional)
+                                                                    </label>
+                                                                    <input type="file" name="gstCertificate" accept=".pdf,image/*" className="w-full border border-gray-200 py-2 px-3 rounded-lg text-xs shadow-sm" />
+                                                                </div>
+                                                                <div className="mb-4">
+                                                                    <FormInput label="Aadhar Number" name="aadhar" placeholder="12-digit Aadhar" required error={errors.aadhar} value={formData.aadhar} onChange={handleInputChange} />
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="mt-4 mb-6">
