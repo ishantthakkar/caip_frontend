@@ -354,12 +354,39 @@ export default function MemberRequestsPage() {
                             <button onClick={() => setShowDocModal(false)} className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl transition-all cursor-pointer">✕</button>
                         </div>
 
+                        <div className="px-6 pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50 flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Aadhar Number</p>
+                                    <p className="text-sm font-bold text-gray-800">{selectedUser?.aadhar || 'N/A'}</p>
+                                </div>
+                                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">🆔</div>
+                            </div>
+                            <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100/50 flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">PAN Number</p>
+                                    <p className="text-sm font-bold text-gray-800">{selectedUser?.pan || 'N/A'}</p>
+                                </div>
+                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">💳</div>
+                            </div>
+                        </div>
+
                         <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar bg-gray-50/50">
                             {selectedUser?.businessDocuments?.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {selectedUser.businessDocuments.map((doc: string, idx: number) => {
                                         const isPdf = doc.toLowerCase().endsWith('.pdf');
                                         const docUrl = `${ASSETS_BASE_URL}uploads/${doc}`;
+                                        const getDocLabel = (fname: string) => {
+                                            const lowerName = fname.toLowerCase();
+                                            if (lowerName.includes('mfglicence')) return 'MFG Licence';
+                                            if (lowerName.includes('gstcertificate')) return 'GST Certificate';
+                                            if (lowerName.includes('aadharcard')) return 'Aadhar Card';
+                                            if (lowerName.includes('pancard')) return 'PAN Card';
+                                            if (lowerName.includes('seedcertificate')) return 'Seed Certificate';
+                                            return `Document ${idx + 1}`;
+                                        };
+
                                         return (
                                             <a
                                                 key={idx}
@@ -371,7 +398,7 @@ export default function MemberRequestsPage() {
                                                     {isPdf ? '📄' : '🖼️'}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-[12px] font-normal text-black truncate uppercase">DOCUMENT_{idx + 1}</p>
+                                                    <p className="text-[12px] font-bold text-black truncate uppercase">{getDocLabel(doc)}</p>
                                                     <p className="text-[10px] font-medium text-gray-400 capitalize group-hover:text-[#1b5e20]">View File →</p>
                                                 </div>
                                             </a>
@@ -427,6 +454,7 @@ export default function MemberRequestsPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <DetailItem label="Full Name" value={selectedUser.name} />
                                     <DetailItem label="Email Address" value={selectedUser.email} />
+                                    <DetailItem label="Aadhar" value={selectedUser.aadhar} />
                                     <DetailItem label="Pan" value={selectedUser.pan} />
                                     <DetailItem label="Contact Number" value={selectedUser.phone} />
                                     <DetailItem label="Alt Contact Number" value={selectedUser.alternateContactNumber} />
