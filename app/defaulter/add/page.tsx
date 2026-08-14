@@ -163,31 +163,12 @@ export default function AddDefaulterPage() {
                     panFromGst = formData.gst_number.substring(2, 12).toUpperCase();
                 }
 
-                // Consolidate all updates into one state change
-                const gstData = data.pradr?.addr || {};
-                const gstState = gstData.stcd;
-                const matchedState = states.find(s => s.toLowerCase() === (gstState || "").toLowerCase()) || gstState;
-
                 setFormData(prev => ({
                     ...prev,
-                    defaulter_name: data.lgnm || data.tradeNam || prev.defaulter_name,
-                    defaulter_address: data.pradr?.adr || prev.defaulter_address,
+                    defaulter_name: data.legal_name || data.trade_name || prev.defaulter_name,
+                    defaulter_address: data.address || prev.defaulter_address,
                     pan_number: panFromGst || prev.pan_number,
-                    ...(matchedState ? {
-                        state: matchedState,
-                        district: '',
-                        cities: '',
-                        city: ''
-                    } : {})
                 }));
-
-                if (gstData.dst) {
-                    setPendingLocation({
-                        district: gstData.dst,
-                        subDistrict: gstData.st,
-                        city: gstData.loc
-                    });
-                }
             } else {
                 Swal.fire({
                     title: "Registration Failed",

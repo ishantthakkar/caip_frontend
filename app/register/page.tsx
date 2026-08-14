@@ -181,25 +181,12 @@ export default function RegisterPage() {
 
                 setFormData(prev => ({
                     ...prev,
-                    companyName: data.lgnm || data.tradeNames?.[0] || data.tradenames?.[0] || data.tradeName || prev.companyName,
-                    businessAddress: data.pradr?.adr || prev.businessAddress,
+                    companyName: data.legal_name || data.trade_name || prev.companyName,
+                    businessAddress: data.address || prev.businessAddress,
+                    pinCode: data.pincode || prev.pinCode,
                     pan: extractedPan || prev.pan,
                 }));
                 setIsGstVerified(true);
-
-                if (data.pradr?.addr?.stcd) {
-                    const gstState = data.pradr.addr.stcd;
-                    const matchedState = states.find(s => s.toLowerCase() === gstState.toLowerCase()) || gstState;
-                    setSelectedState(matchedState);
-
-                    if (data.pradr.addr.dst) {
-                        setPendingLocation({
-                            district: data.pradr.addr.dst,
-                            subDistrict: data.pradr.addr.st,
-                            city: data.pradr.addr.loc
-                        });
-                    }
-                }
                 setMessage({ type: 'success', text: 'GST details fetched successfully!' });
             } else {
                 setMessage({ type: 'error', text: result.msg || 'Invalid GST number' });
