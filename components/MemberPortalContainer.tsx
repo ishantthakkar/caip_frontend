@@ -23,7 +23,7 @@ export default function MemberPortalContainer({
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     useEffect(() => {
         const checkUser = () => {
