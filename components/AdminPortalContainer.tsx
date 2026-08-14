@@ -22,7 +22,7 @@ export default function AdminPortalContainer({
     const pathname = usePathname();
     const [admin, setAdmin] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isCollapsed, setIsCollapsed] = useState(false);
     const [pendingCount, setPendingCount] = useState(0);
 
     useEffect(() => {
